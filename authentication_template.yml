@@ -1,0 +1,6 @@
+twitch-connector:
+  authentication:
+    user: <FILL IN YOUR TWITCH USER ID>
+    oAuth: <FILL IN YOUR TWITCH OAUTH ID>
+    clientSecret: <FILL IN YOUR TWITCH CLIENT SECRET>
+    clientId: <FILL IN YOUR TWITCH CLIENT ID>

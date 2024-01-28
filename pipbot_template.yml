@@ -1,0 +1,5 @@
+twitch-connector:
+  channels:
+    channelNames:
+      - firstChannel
+      - secondChannel
