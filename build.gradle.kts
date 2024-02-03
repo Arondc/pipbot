@@ -31,6 +31,7 @@ dependencies {
     runtimeOnly("com.h2database:h2")
 
     //starters
+    implementation("org.springframework.modulith:spring-modulith-starter-jpa")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.flywaydb:flyway-core")
 
@@ -38,9 +39,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-
+    implementation("org.springframework.modulith:spring-modulith-starter-test") {
+        exclude("commons-logging", "commons-logging")
+    }
     //3rd party
-    implementation("com.github.twitch4j:twitch4j:1.19.0"){
+    implementation("com.github.twitch4j:twitch4j:1.19.0") {
         exclude("commons-logging", "commons-logging")
     }
 }

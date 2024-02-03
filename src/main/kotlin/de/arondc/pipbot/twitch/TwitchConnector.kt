@@ -6,15 +6,18 @@ import com.github.twitch4j.chat.events.channel.ChannelMessageEvent
 import jakarta.annotation.PostConstruct
 import mu.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
-import org.springframework.context.event.EventListener
+import org.springframework.modulith.events.ApplicationModuleListener
+import org.springframework.scheduling.annotation.Async
+import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 
 @Service
 class TwitchConnector(
     val twitchClient: TwitchClient,
     val twitchConnectorChannels: TwitchConnectorChannels,
-    val publisher: ApplicationEventPublisher
+    val twitchConnectorPublisher: TwitchConnectorPublisher
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -24,11 +27,23 @@ class TwitchConnector(
         twitchConnectorChannels.channelNames.forEach {
             twitchClient.chat.joinChannel(it)
         }
-
         twitchClient.eventManager.getEventHandler(SimpleEventHandler::class.java)
-            .onEvent(ChannelMessageEvent::class.java, ::publishMessage)
+            .onEvent(ChannelMessageEvent::class.java, ::messageReceived)
     }
 
+    fun messageReceived(channelMessageEvent: ChannelMessageEvent) =
+        twitchConnectorPublisher.publishMessage(channelMessageEvent)
+
+    @ApplicationModuleListener
+    @Async
+    fun sendMessage(sendMessageEvent: SendMessageEvent) {
+        twitchClient.chat.sendMessage(sendMessageEvent.channel, sendMessageEvent.message)
+    }
+}
+
+@Component
+class TwitchConnectorPublisher(val publisher: ApplicationEventPublisher) {
+    @Transactional
     fun publishMessage(channelMessageEvent: ChannelMessageEvent) {
         publisher.publishEvent(
             TwitchMessage(
@@ -38,12 +53,6 @@ class TwitchConnector(
                 channelMessageEvent.permissions.map { it.name }.toSet()
             )
         )
-
-    }
-
-    @EventListener
-    fun sendMessage(sendMessageEvent: SendMessageEvent) {
-        twitchClient.chat.sendMessage(sendMessageEvent.channel, sendMessageEvent.message)
     }
 }
 
