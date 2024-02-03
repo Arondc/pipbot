@@ -23,7 +23,7 @@ data class TwitchConnectorConfig(
 @PropertySource(value = ["file:pipbot.yml"], factory = YamlPropertiesFactory::class)
 @ConfigurationProperties(prefix = "twitch-connector.channels")
 data class TwitchConnectorChannels(
-    var channelNames : List<String> = listOf()
+    var channelNames: List<String> = listOf()
 )
 
 /**

@@ -29,7 +29,7 @@ class TwitchConnector(
             .onEvent(ChannelMessageEvent::class.java, ::publishMessage)
     }
 
-    private fun publishMessage(channelMessageEvent: ChannelMessageEvent) {
+    fun publishMessage(channelMessageEvent: ChannelMessageEvent) {
         publisher.publishEvent(
             TwitchMessage(
                 channelMessageEvent.channel.name,

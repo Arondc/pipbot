@@ -13,7 +13,7 @@ class TwitchBotConfig(val twitchConnectorConfig: TwitchConnectorConfig) {
     private val log = KotlinLogging.logger {}
 
     @Bean("twitchClient")
-    fun twitchClient( twitchCredential: OAuth2Credential) : TwitchClient {
+    fun twitchClient(twitchCredential: OAuth2Credential): TwitchClient {
         log.info { "Preparing Twitch client" }
         val twitchClient = TwitchClientBuilder.builder()
             .withClientId(twitchConnectorConfig.clientId)
@@ -29,7 +29,7 @@ class TwitchBotConfig(val twitchConnectorConfig: TwitchConnectorConfig) {
         return twitchClient
     }
 
-    @Bean ("twitchCredential")
+    @Bean("twitchCredential")
     fun twitchCredential(): OAuth2Credential = OAuth2Credential("twitch", twitchConnectorConfig.oAuth)
 
 }

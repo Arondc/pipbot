@@ -11,7 +11,7 @@ class ChatLogger {
 
     @EventListener
     fun logChat(twitchMessage: TwitchMessage) {
-        log.info ( "Channel ${twitchMessage.channel} - User ${twitchMessage.user} - Message ${twitchMessage.message}" )
+        log.info("Channel ${twitchMessage.channel} - User ${twitchMessage.user} - Message ${twitchMessage.message} - Permissions ${twitchMessage.permissions}")
     }
 
 }
