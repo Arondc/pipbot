@@ -9,5 +9,4 @@ class PipbotV2ApplicationTests {
     @Test
     fun contextLoads() {
     }
-
 }

@@ -1,4 +1,4 @@
-package de.arondc.pipbot.twitchConnector
+package de.arondc.pipbot.twitch
 
 import com.github.philippheuer.credentialmanager.domain.OAuth2Credential
 import com.github.twitch4j.TwitchClient
