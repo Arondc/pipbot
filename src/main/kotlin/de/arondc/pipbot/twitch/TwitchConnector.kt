@@ -27,6 +27,7 @@ class TwitchConnector(
         twitchConnectorChannels.channelNames.forEach {
             twitchClient.chat.joinChannel(it)
         }
+        log.debug { "registering eventhandling for twitch" }
         twitchClient.eventManager.getEventHandler(SimpleEventHandler::class.java)
             .onEvent(ChannelMessageEvent::class.java, ::messageReceived)
     }
@@ -37,6 +38,7 @@ class TwitchConnector(
     @ApplicationModuleListener
     @Async
     fun sendMessage(sendMessageEvent: SendMessageEvent) {
+        log.debug { "sending twitch message $sendMessageEvent" }
         twitchClient.chat.sendMessage(sendMessageEvent.channel, sendMessageEvent.message)
     }
 }
