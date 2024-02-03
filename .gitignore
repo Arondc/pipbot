@@ -1,5 +1,6 @@
 pipbot.yml
 authentication.yml
+*.db
 
 HELP.md
 .gradle
