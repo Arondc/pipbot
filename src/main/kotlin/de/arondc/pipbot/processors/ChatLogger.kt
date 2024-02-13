@@ -11,7 +11,6 @@ class ChatLogger {
     private val log = KotlinLogging.logger {}
 
     @ApplicationModuleListener
-    @Async
     fun logChat(twitchMessage: TwitchMessage) {
         log.info("Channel ${twitchMessage.channel} - User ${twitchMessage.user} - Message ${twitchMessage.message} - Permissions ${twitchMessage.permissions}")
     }

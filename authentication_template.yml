@@ -1,6 +1,6 @@
 twitch-connector:
   authentication:
-    user: <FILL IN YOUR TWITCH USER ID>
-    oAuth: <FILL IN YOUR TWITCH OAUTH ID>
+    user: <FILL IN YOUR TWITCH USER ID> # Your username
+    oAuth: <FILL IN YOUR TWITCH OAUTH ID> # Can be grabbed from https://twitchapps.com/tmi
     clientSecret: <FILL IN YOUR TWITCH CLIENT SECRET>
     clientId: <FILL IN YOUR TWITCH CLIENT ID>
