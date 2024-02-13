@@ -2,5 +2,5 @@ twitch-connector:
   authentication:
     user: <FILL IN YOUR TWITCH USER ID> # Your username
     oAuth: <FILL IN YOUR TWITCH OAUTH ID> # Can be grabbed from https://twitchapps.com/tmi
-    clientSecret: <FILL IN YOUR TWITCH CLIENT SECRET>
-    clientId: <FILL IN YOUR TWITCH CLIENT ID>
+    clientSecret: <FILL IN YOUR TWITCH CLIENT SECRET> # Can be obtained by registering this bot as application at https://dev.twitch.tv/console
+    clientId: <FILL IN YOUR TWITCH CLIENT ID> # Can be obtained by registering this bot as application at https://dev.twitch.tv/console

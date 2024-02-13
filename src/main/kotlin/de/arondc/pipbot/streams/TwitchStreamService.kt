@@ -27,8 +27,10 @@ class TwitchStreamService(
 
     private fun fetchStreamFromTwitch(channelName: String): StreamList {
         val token: String = twitchConnectorConfig.accessToken
+        val numbersOfStreamsToFetch = 1
+        val channelsToFetchStreamsFor = listOf(channelName)
         val execute = twitchClient.helix
-            .getStreams(token, null, null, 1, null, null, null, listOf(channelName))
+            .getStreams( token, null, null, numbersOfStreamsToFetch, null, null, null, channelsToFetchStreamsFor)
             .execute()
         log.info { "Found streams for $channelName - $execute" }
         return execute
