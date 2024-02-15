@@ -29,4 +29,8 @@ class MemeEntity(
         strategy = GenerationType.SEQUENCE,
         generator = "memes_sequence"
     ) var id: Long? = null
-)
+) {
+    override fun toString(): String {
+        return "$recordedAt - $channel - $sentByUser - $message - $link - ${stream?.id}"
+    }
+}

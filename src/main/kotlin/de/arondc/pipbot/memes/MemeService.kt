@@ -20,9 +20,8 @@ class MemeService(val memeRepo: MemeRepository, val channelService: ChannelServi
             extractLink(message),
             twitchStreamService.findCurrentStream(channelName)
         )
-        log.info { "Before saving: $meme" }
         val savedMeme = memeRepo.save(meme)
-        log.info { "After saving: $savedMeme" }
+        log.debug { savedMeme }
     }
 
     private fun extractLink(message: String): String {

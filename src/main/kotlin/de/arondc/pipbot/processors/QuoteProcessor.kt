@@ -4,6 +4,7 @@ import de.arondc.pipbot.channels.ChannelEntity
 import de.arondc.pipbot.channels.ChannelService
 import de.arondc.pipbot.quotes.QuoteNotFoundException
 import de.arondc.pipbot.quotes.QuoteService
+import de.arondc.pipbot.services.LanguageService
 import de.arondc.pipbot.twitch.SendMessageEvent
 import de.arondc.pipbot.twitch.TwitchMessage
 import org.springframework.context.ApplicationEventPublisher
@@ -11,7 +12,7 @@ import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.stereotype.Component
 
 @Component
-class QuoteProcessor(val quoteService: QuoteService, val channelService: ChannelService, val publisher: ApplicationEventPublisher) {
+class QuoteProcessor(val quoteService: QuoteService, val channelService: ChannelService, val languageService: LanguageService , val publisher: ApplicationEventPublisher) {
     @ApplicationModuleListener
     fun receiveMessage(twitchMessage: TwitchMessage) {
         when {
@@ -39,13 +40,15 @@ class QuoteProcessor(val quoteService: QuoteService, val channelService: Channel
     fun processAdd(text: String, channel: ChannelEntity) {
         //TODO schlauer machen
         val quoteNumber = quoteService.save(text, channel).number
-        publisher.publishEvent(SendMessageEvent(channel.name, "Zitat #$quoteNumber wurde gespeichert"))
+        val message = languageService.getMessage(channel.name, "quote.added", arrayOf(quoteNumber))
+        publisher.publishEvent(SendMessageEvent(channel.name, message))
     }
 
     fun processDelete(numberAsText: String, channel: ChannelEntity) {
         val quote = quoteService.findByNumber(numberAsText.toLong(), channel)
         quoteService.delete(quote)
-        publisher.publishEvent(SendMessageEvent(channel.name, "Zitat #$numberAsText wurde gelöscht"))
+        val message = languageService.getMessage(channel.name, "quote.deleted", arrayOf(numberAsText))
+        publisher.publishEvent(SendMessageEvent(channel.name, message))
     }
 
     fun processFind(numberOrText: String, channel: ChannelEntity) {
@@ -60,7 +63,8 @@ class QuoteProcessor(val quoteService: QuoteService, val channelService: Channel
             }
             publisher.publishEvent(SendMessageEvent(channel.name, quote.text))
         } catch (qnfe : QuoteNotFoundException) {
-            publisher.publishEvent(SendMessageEvent(channel.name, "Kein Zitat gefunden."))
+            val message = languageService.getMessage(channel.name, "quote.error.does_not_exist")
+            publisher.publishEvent(SendMessageEvent(channel.name, message))
         }
     }
 }

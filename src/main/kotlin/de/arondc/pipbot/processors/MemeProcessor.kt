@@ -1,6 +1,7 @@
 package de.arondc.pipbot.processors
 
 import de.arondc.pipbot.memes.MemeService
+import de.arondc.pipbot.services.LanguageService
 import de.arondc.pipbot.twitch.SendMessageEvent
 import de.arondc.pipbot.twitch.TwitchMessage
 import mu.KotlinLogging
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Component
 import java.text.MessageFormat
 
 @Component
-class MemeProcessor(val memeService : MemeService, val publisher: ApplicationEventPublisher) {
+class MemeProcessor(val memeService : MemeService, val languageService: LanguageService, val publisher: ApplicationEventPublisher) {
     private val log = KotlinLogging.logger {}
 
     private val memeSources: Set<String> = setOf("imgflip.com", "www.youtube.com", "clips.twitch.tv")
@@ -26,8 +27,10 @@ class MemeProcessor(val memeService : MemeService, val publisher: ApplicationEve
     }
 
     private fun respond(twitchMessage: TwitchMessage) {
+        val message =
+            languageService.getMessage(twitchMessage.channel, "twitch.memes.acknowledge", arrayOf(twitchMessage.user))
         publisher.publishEvent(
-            SendMessageEvent(twitchMessage.channel, "Danke für das Meme ${twitchMessage.user}!")
+            SendMessageEvent(twitchMessage.channel, message)
         )
     }
 
