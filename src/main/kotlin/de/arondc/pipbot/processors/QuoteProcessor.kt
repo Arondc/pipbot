@@ -5,16 +5,20 @@ import de.arondc.pipbot.channels.ChannelService
 import de.arondc.pipbot.quotes.QuoteNotFoundException
 import de.arondc.pipbot.quotes.QuoteService
 import de.arondc.pipbot.services.LanguageService
+import de.arondc.pipbot.streams.TwitchStreamService
 import de.arondc.pipbot.twitch.SendMessageEvent
 import de.arondc.pipbot.twitch.TwitchMessage
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.stereotype.Component
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Component
 class QuoteProcessor(
     val quoteService: QuoteService,
     val channelService: ChannelService,
+    val twitchStreamService: TwitchStreamService,
     val languageService: LanguageService,
     val publisher: ApplicationEventPublisher
 ) {
@@ -45,8 +49,9 @@ class QuoteProcessor(
     }
 
     fun processAdd(text: String, channel: ChannelEntity) {
-        //TODO schlauer machen
-        val quoteNumber = quoteService.save(text, channel).number
+        val date = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+        val game = twitchStreamService.findLastGameFor(channel.name)
+        val quoteNumber = quoteService.save("$text ($game - $date)", channel).number
         val message = languageService.getMessage(channel.name, "quote.added", arrayOf(quoteNumber))
         publisher.publishEvent(SendMessageEvent(channel.name, message))
     }
@@ -59,7 +64,6 @@ class QuoteProcessor(
     }
 
     fun processFind(numberOrText: String, channel: ChannelEntity) {
-        //TODO Format für Ausgabe schöner machen (Nummer mit ausgeben)
         try {
             val quote = when {
                 numberOrText.trim().all { it.isDigit() } -> quoteService.findByNumber(
@@ -69,7 +73,7 @@ class QuoteProcessor(
 
                 else -> quoteService.findByText(numberOrText, channel)
             }
-            publisher.publishEvent(SendMessageEvent(channel.name, quote.text))
+            publisher.publishEvent(SendMessageEvent(channel.name, "#${quote.number} ${quote.text}"))
         } catch (qnfe: QuoteNotFoundException) {
             val message = languageService.getMessage(channel.name, "quote.error.does_not_exist")
             publisher.publishEvent(SendMessageEvent(channel.name, message))

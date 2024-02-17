@@ -1,6 +1,9 @@
 package de.arondc.pipbot.streams
 
 import de.arondc.pipbot.channels.ChannelEntity
+import jakarta.persistence.CollectionTable
+import jakarta.persistence.Column
+import jakarta.persistence.ElementCollection
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
@@ -12,20 +15,29 @@ import jakarta.persistence.SequenceGenerator
 import jakarta.persistence.Table
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
+import java.time.LocalDateTime
 
 @Repository
 interface StreamRepository : JpaRepository<StreamEntity, Long> {
-    fun findByChannelAndStart(channel: ChannelEntity, start: Instant): StreamEntity?
+
+    fun findByChannelAndStartTimesContains(channel: ChannelEntity, startTime: LocalDateTime): StreamEntity?
+    /*
+    @Query("select stream from StreamEntity stream  where stream.channel = :channel and :startTime member of stream.startTimes")
+    fun findByChannelAndStartTimesContains(
+        @Param("channel") channel: ChannelEntity,
+        @Param("startTime") startTime: LocalDateTime
+    ): StreamEntity?*/
+    //fun findByChannelAndStart(channel: ChannelEntity, start: Instant): StreamEntity?
 }
 
 @Entity
 @Table(name = "streams")
 class StreamEntity(
-    val start: Instant? = null,
+
+    @ElementCollection
+    @CollectionTable(name = "streams_start_times")
+    @Column(name = "start_time")
+    val startTimes: Set<LocalDateTime>,
     @ManyToOne
     @JoinColumn(nullable = false)
     private val channel: ChannelEntity,
@@ -39,8 +51,12 @@ class StreamEntity(
     )
     val id: Long? = null
 ) {
+
+
+    //TODO: Streamtitel und Spiel auch merken?
+    /*
     val startDate: String
-        //TODO: Streamtitel und Spiel auch merken?
+
         get() {
             if (start == null) {
                 //classic dev comment incoming -> This should never happen!
@@ -54,5 +70,5 @@ class StreamEntity(
             "dd.MM.yyyy"
         )
             .withZone(ZoneId.of("Europe/Berlin"))
-    }
+    }*/
 }

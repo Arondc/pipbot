@@ -7,6 +7,8 @@ import com.github.twitch4j.helix.domain.User
 import de.arondc.pipbot.channels.ChannelService
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 
 @Service
@@ -21,8 +23,13 @@ class TwitchStreamService(
     fun findCurrentStream(channelName: String): StreamEntity {
         val twitchStream = fetchStreamFromTwitch(channelName).streams.first()
         val channel = channelService.findOrCreate(channelName)
-        return streamRepository.findByChannelAndStart(channel, twitchStream.startedAtInstant) ?: streamRepository.save(
-            StreamEntity(twitchStream.startedAtInstant, channel)
+        val startTime = LocalDateTime.ofInstant(twitchStream.startedAtInstant, ZoneId.systemDefault())
+        return streamRepository.findByChannelAndStartTimesContains(
+            channel, startTime
+        ) ?: streamRepository.save(
+            StreamEntity(
+                setOf(startTime), channel
+            )
         )
     }
 
@@ -37,8 +44,8 @@ class TwitchStreamService(
         return execute
     }
 
-    fun findLastGameFor(raidingChannel: String): String {
-        val channelBroadcasterId = getUserInformation(raidingChannel).id
+    fun findLastGameFor(channelName: String): String {
+        val channelBroadcasterId = getUserInformation(channelName).id
         val channelInformation = twitchClient.helix
             .getChannelInformation(twitchConnectorConfig.accessToken, listOf(channelBroadcasterId))
             .execute()

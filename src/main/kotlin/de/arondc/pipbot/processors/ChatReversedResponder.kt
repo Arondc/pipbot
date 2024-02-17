@@ -25,5 +25,4 @@ class ChatReversedResponder(val publisher: ApplicationEventPublisher) {
             )
         }
     }
-
 }

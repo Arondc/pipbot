@@ -14,6 +14,8 @@ class MemeService(
     val twitchStreamService: TwitchStreamService
 ) {
     private val log = KotlinLogging.logger {}
+
+    //TODO in den processor verlagern
     fun saveMeme(channelName: String, user: String, message: String) {
         val channel = channelService.findOrCreate(channelName)
         val meme = MemeEntity(

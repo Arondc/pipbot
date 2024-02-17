@@ -8,7 +8,6 @@ import mu.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.stereotype.Component
-import java.text.MessageFormat
 
 @Component
 class MemeProcessor(
@@ -22,10 +21,13 @@ class MemeProcessor(
 
     @ApplicationModuleListener
     fun receiveMessage(twitchMessage: TwitchMessage) {
-        if (twitchMessage.message.startsWith("!meme ", true) || memeSources.any {
+        if (twitchMessage.message.startsWith("!meme ", true)) {
+            processMemeMessage(twitchMessage.user, twitchMessage.channel, twitchMessage.message.substringAfter("!meme "))
+            respond(twitchMessage)
+        } else if (memeSources.any {
                 twitchMessage.message.contains(it, true)
             }) {
-            processMemeMessage(twitchMessage)
+            processMemeMessage(twitchMessage.user, twitchMessage.channel, twitchMessage.message)
             respond(twitchMessage)
         }
     }
@@ -38,15 +40,8 @@ class MemeProcessor(
         )
     }
 
-    private fun processMemeMessage(twitchMessage: TwitchMessage) {
-        log.info {
-            MessageFormat.format(
-                "Possible meme from {0} detected: {1}",
-                twitchMessage.user,
-                twitchMessage.message
-            )
-        }
-        memeService.saveMeme(twitchMessage.channel, twitchMessage.user, twitchMessage.message)
-
+    private fun processMemeMessage(channel : String, user : String , message : String) {
+        log.info { "Possible meme from $user detected: $message"}
+        memeService.saveMeme(channel, user, message)
     }
 }

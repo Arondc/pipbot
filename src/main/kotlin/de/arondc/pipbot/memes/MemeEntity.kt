@@ -23,7 +23,7 @@ class MemeEntity(
     @ManyToOne val channel: ChannelEntity? = null,
     val sentByUser: String,
     val message: String,
-    val link: String,
+    val link: String, //TODO Brauchen wir das wirklich als eigenes Datenbankfeld?
     @ManyToOne val stream: StreamEntity? = null,
     @Id @SequenceGenerator(name = "memes_sequence", sequenceName = "MEMES_SEQ", allocationSize = 1) @GeneratedValue(
         strategy = GenerationType.SEQUENCE,
