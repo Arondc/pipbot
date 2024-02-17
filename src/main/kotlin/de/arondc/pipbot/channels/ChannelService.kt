@@ -15,7 +15,7 @@ class ChannelService(val channelRepository: ChannelRepository) {
         )
     }
 
-    fun findByName(channelName: String) : ChannelEntity{
+    fun findByName(channelName: String): ChannelEntity {
         return channelRepository.findByName(channelName)!!
     }
 }

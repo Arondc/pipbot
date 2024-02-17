@@ -12,7 +12,12 @@ import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.stereotype.Component
 
 @Component
-class QuoteProcessor(val quoteService: QuoteService, val channelService: ChannelService, val languageService: LanguageService , val publisher: ApplicationEventPublisher) {
+class QuoteProcessor(
+    val quoteService: QuoteService,
+    val channelService: ChannelService,
+    val languageService: LanguageService,
+    val publisher: ApplicationEventPublisher
+) {
     @ApplicationModuleListener
     fun receiveMessage(twitchMessage: TwitchMessage) {
         when {
@@ -22,12 +27,14 @@ class QuoteProcessor(val quoteService: QuoteService, val channelService: Channel
                     channelService.findOrCreate(twitchMessage.channel)
                 )
             }
+
             twitchMessage.message.startsWith("!zitat delete ") -> {
                 processDelete(
                     twitchMessage.message.substringAfter("!zitat delete "),
                     channelService.findOrCreate(twitchMessage.channel)
                 )
             }
+
             twitchMessage.message.startsWith("!zitat ") -> {
                 processFind(
                     twitchMessage.message.substringAfter("!zitat "),
@@ -59,10 +66,11 @@ class QuoteProcessor(val quoteService: QuoteService, val channelService: Channel
                     numberOrText.trim().toLong(),
                     channel
                 )
+
                 else -> quoteService.findByText(numberOrText, channel)
             }
             publisher.publishEvent(SendMessageEvent(channel.name, quote.text))
-        } catch (qnfe : QuoteNotFoundException) {
+        } catch (qnfe: QuoteNotFoundException) {
             val message = languageService.getMessage(channel.name, "quote.error.does_not_exist")
             publisher.publishEvent(SendMessageEvent(channel.name, message))
         }

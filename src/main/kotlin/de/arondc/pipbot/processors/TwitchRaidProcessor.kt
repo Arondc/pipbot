@@ -1,6 +1,6 @@
 package de.arondc.pipbot.processors
 
-import de.arondc.pipbot.channels.ChannelRepository
+import de.arondc.pipbot.channels.ChannelService
 import de.arondc.pipbot.channels.ShoutOutOnRaidType
 import de.arondc.pipbot.services.LanguageService
 import de.arondc.pipbot.streams.TwitchStreamService
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class TwitchRaidProcessor(
-    val channelRepository: ChannelRepository,
+    val channelService: ChannelService,
     val twitchStreamService: TwitchStreamService,
     val languageService: LanguageService,
     val applicationEventPublisher: ApplicationEventPublisher
@@ -22,7 +22,7 @@ class TwitchRaidProcessor(
 
     @ApplicationModuleListener
     fun receiveRaidEvent(twitchRaidEvent: TwitchRaidEvent) {
-        val channel = channelRepository.findByName(twitchRaidEvent.raidedChannel)!!
+        val channel = channelService.findByName(twitchRaidEvent.raidedChannel)!!
         if (channel.automatedShoutoutChannels.isNotEmpty() && !channel.automatedShoutoutChannels.contains(
                 twitchRaidEvent.incomingRaider
             )
@@ -30,24 +30,24 @@ class TwitchRaidProcessor(
             return
         }
 
-        val sendMessageEvent : SendMessageEvent? =
-        when(channel.shoutoutOnRaid){
+        val sendMessageEvent: SendMessageEvent? = when (channel.shoutoutOnRaid) {
             ShoutOutOnRaidType.NONE -> null
             ShoutOutOnRaidType.TEXT -> buildTextMessage(twitchRaidEvent)
             ShoutOutOnRaidType.TWITCH_SHOUTOUT -> {
                 sendShoutoutViaTwitch(twitchRaidEvent)
                 null
             }
+
             ShoutOutOnRaidType.STREAM_ELEMENTS_SHOUTOUT -> sendStreamElementsShoutoutCommand(twitchRaidEvent)
         }
 
-        if(sendMessageEvent != null){
+        if (sendMessageEvent != null) {
             applicationEventPublisher.publishEvent(sendMessageEvent)
         }
 
     }
 
-    private fun buildTextMessage(twitchRaidEvent: TwitchRaidEvent) : SendMessageEvent{
+    private fun buildTextMessage(twitchRaidEvent: TwitchRaidEvent): SendMessageEvent {
         val lastGame = twitchStreamService.findLastGameFor(twitchRaidEvent.incomingRaider)
 
         val message = languageService.getMessage(
@@ -59,7 +59,7 @@ class TwitchRaidProcessor(
         return SendMessageEvent(twitchRaidEvent.raidedChannel, message)
     }
 
-    private fun sendShoutoutViaTwitch(twitchRaidEvent: TwitchRaidEvent){
+    private fun sendShoutoutViaTwitch(twitchRaidEvent: TwitchRaidEvent) {
         twitchStreamService.shoutout(twitchRaidEvent.raidedChannel, twitchRaidEvent.incomingRaider)
     }
 

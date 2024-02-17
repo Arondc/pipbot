@@ -31,7 +31,7 @@ class TwitchStreamService(
         val numbersOfStreamsToFetch = 1
         val channelsToFetchStreamsFor = listOf(channelName)
         val execute = twitchClient.helix
-            .getStreams( token, null, null, numbersOfStreamsToFetch, null, null, null, channelsToFetchStreamsFor)
+            .getStreams(token, null, null, numbersOfStreamsToFetch, null, null, null, channelsToFetchStreamsFor)
             .execute()
         log.debug { "Found streams for $channelName - $execute" }
         return execute

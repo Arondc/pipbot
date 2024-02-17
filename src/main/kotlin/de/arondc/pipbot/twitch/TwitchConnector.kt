@@ -64,7 +64,7 @@ class TwitchConnectorPublisher(val publisher: ApplicationEventPublisher) {
     }
 
     @Transactional
-    fun publishRaid(raidEvent: RaidEvent){
+    fun publishRaid(raidEvent: RaidEvent) {
         publisher.publishEvent(
             TwitchRaidEvent(
                 raidEvent.channel.name,

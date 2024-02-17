@@ -8,7 +8,11 @@ import java.time.LocalDateTime
 import java.util.regex.Pattern
 
 @Service
-class MemeService(val memeRepo: MemeRepository, val channelService: ChannelService, val twitchStreamService: TwitchStreamService) {
+class MemeService(
+    val memeRepo: MemeRepository,
+    val channelService: ChannelService,
+    val twitchStreamService: TwitchStreamService
+) {
     private val log = KotlinLogging.logger {}
     fun saveMeme(channelName: String, user: String, message: String) {
         val channel = channelService.findOrCreate(channelName)

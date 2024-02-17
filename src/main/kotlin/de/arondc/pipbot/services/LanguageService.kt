@@ -11,16 +11,16 @@ import org.springframework.stereotype.Service
 class MessageConfig {
     @Bean("messageSource")
     fun getMessageSource(): MessageSource {
-            val resourceBundleMessageSource = ReloadableResourceBundleMessageSource()
-            resourceBundleMessageSource.setBasename("classpath:messages")
-            resourceBundleMessageSource.setFallbackToSystemLocale(false)
-            return resourceBundleMessageSource
-        }
+        val resourceBundleMessageSource = ReloadableResourceBundleMessageSource()
+        resourceBundleMessageSource.setBasename("classpath:messages")
+        resourceBundleMessageSource.setFallbackToSystemLocale(false)
+        return resourceBundleMessageSource
+    }
 }
 
 @Service
-class LanguageService(val channelService: ChannelService, val messageSource : MessageSource) {
-    fun getMessage(channelName: String, messageKey: String, args: Array<Any>? = null) : String {
+class LanguageService(val channelService: ChannelService, val messageSource: MessageSource) {
+    fun getMessage(channelName: String, messageKey: String, args: Array<Any>? = null): String {
         val locale = channelService.findByName(channelName).language
         return messageSource.getMessage(messageKey, args, locale)
     }

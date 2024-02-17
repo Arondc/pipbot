@@ -19,7 +19,7 @@ import java.time.temporal.ChronoUnit
 
 @Repository
 interface StreamRepository : JpaRepository<StreamEntity, Long> {
-    fun findByChannelAndStart(channel: ChannelEntity, start: Instant) : StreamEntity?
+    fun findByChannelAndStart(channel: ChannelEntity, start: Instant): StreamEntity?
 }
 
 @Entity

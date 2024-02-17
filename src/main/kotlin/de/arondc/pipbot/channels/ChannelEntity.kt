@@ -22,19 +22,20 @@ interface ChannelRepository : JpaRepository<ChannelEntity, Long> {
 @Table(name = "channels")
 class ChannelEntity(
     val name: String,
-    val language : Locale,
+    val language: Locale,
     @Enumerated(EnumType.STRING)
-    val shoutoutOnRaid : ShoutOutOnRaidType,
+    val shoutoutOnRaid: ShoutOutOnRaidType,
     @ElementCollection
     @CollectionTable(name = "channels_automated_shoutouts")
     @Column(name = "channel_name")
-    val automatedShoutoutChannels : List<String>,
+    val automatedShoutoutChannels: List<String>,
     @Id @SequenceGenerator(
         name = "channels_sequence",
         sequenceName = "CHANNELS_SEQ",
         allocationSize = 1
     ) @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "channels_sequence") var id: Long? = null
 )
-enum class ShoutOutOnRaidType{
-    NONE,TEXT,STREAM_ELEMENTS_SHOUTOUT,TWITCH_SHOUTOUT
+
+enum class ShoutOutOnRaidType {
+    NONE, TEXT, STREAM_ELEMENTS_SHOUTOUT, TWITCH_SHOUTOUT
 }

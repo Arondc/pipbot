@@ -11,7 +11,11 @@ import org.springframework.stereotype.Component
 import java.text.MessageFormat
 
 @Component
-class MemeProcessor(val memeService : MemeService, val languageService: LanguageService, val publisher: ApplicationEventPublisher) {
+class MemeProcessor(
+    val memeService: MemeService,
+    val languageService: LanguageService,
+    val publisher: ApplicationEventPublisher
+) {
     private val log = KotlinLogging.logger {}
 
     private val memeSources: Set<String> = setOf("imgflip.com", "www.youtube.com", "clips.twitch.tv")
@@ -35,7 +39,13 @@ class MemeProcessor(val memeService : MemeService, val languageService: Language
     }
 
     private fun processMemeMessage(twitchMessage: TwitchMessage) {
-        log.info { MessageFormat.format("Possible meme from {0} detected: {1}",twitchMessage.user , twitchMessage.message) }
+        log.info {
+            MessageFormat.format(
+                "Possible meme from {0} detected: {1}",
+                twitchMessage.user,
+                twitchMessage.message
+            )
+        }
         memeService.saveMeme(twitchMessage.channel, twitchMessage.user, twitchMessage.message)
 
     }
