@@ -1,0 +1,14 @@
+.table-view {
+    display: table;
+    border-width: 1px;
+    border-style: double;
+    margin: 1em;
+}
+
+
+form {
+    display: table;
+    border-width: 1px;
+    border-style: double;
+    margin: 1em;
+}

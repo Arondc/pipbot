@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home - Pipbot</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet" />
+</head>
+<body>
+
+<h1>Kanäle</h1>
+
+<table class="table-view">
+    <thead>
+    <tr>
+        <td>id</td>
+        <td>name</td>
+        <td>language</td>
+        <td>shoutOutOnRaidMode</td>
+        <td>shoutoutChannels</td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="channel: ${channels}">
+        <td th:text="${channel.id}"></td>
+        <td th:text="${channel.name}"></td>
+        <td th:text="${channel.language}"></td>
+        <td th:text="${{channel.shoutOutOnRaidMode}}"></td>
+        <td th:text="${channel.shoutoutChannels}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<div>
+<form th:action="@{/channels/save}" th:object="${channel}" method="post">
+    <table>
+        <tr>
+            <td><label th:text="|Kanalname|"></label></td>
+            <td><input type="text" th:field="*{name}" /></td>
+        </tr>
+
+        <tr>
+            <td><label th:text="|Sprache|"></label></td>
+            <td><input type="text" th:field="*{language}" /></td>
+        </tr>
+
+        <tr>
+            <td><label th:text="|Raid response mode|"></label></td>
+            <td><select th:field="*{shoutOutOnRaidMode}">
+                <option th:value="NONE" th:text="|Aus|"></option>
+                <option th:value="TEXT" th:text="|Textantwort|"></option>
+                <option th:value="STREAM_ELEMENTS_SHOUTOUT" th:text="|Stream Elements shoutout|"></option>
+                <option th:value="TWITCH_SHOUTOUT" th:text="|Twitch shoutout|"></option>
+            </select></td>
+        </tr>
+
+        <tr>
+            <td><label th:text="|Raid response channels|"></label></td>
+            <td><input th:field="*{shoutoutChannels}" /></td>
+        </tr>
+
+        <tr><td><input type="submit" value="Submit" /></td></tr>
+    </table>
+</form>
+</div>
+
+
+</body>
+</html>

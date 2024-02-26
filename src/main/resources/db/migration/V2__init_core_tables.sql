@@ -17,7 +17,6 @@ create table CHANNELS_AUTOMATED_SHOUTOUTS
 create table MEMES
 (
     ID           BIGINT not null primary key,
-    LINK         CHARACTER VARYING(255),
     MESSAGE      CHARACTER VARYING(255),
     RECORDED_AT  TIMESTAMP,
     SENT_BY_USER CHARACTER VARYING(255),
@@ -32,14 +31,12 @@ create table STREAMS
 (
     ID           BIGINT not null primary key,
     CHANNEL_ID   BIGINT,
-    MERGED_TO_ID BIGINT,
-    constraint STREAMS_CHANNEL_FK foreign key (CHANNEL_ID) references PUBLIC.CHANNELS,
-    constraint STREAMS_MERGED_TO_STREAM_FK foreign key (MERGED_TO_ID) references PUBLIC.STREAMS
+    constraint STREAMS_CHANNEL_FK foreign key (CHANNEL_ID) references PUBLIC.CHANNELS
 );
 CREATE SEQUENCE STREAMS_SEQ AS INTEGER;
 
 create table STREAMS_START_TIMES (
-    STREAM_ENTITY_ID BIGINT not null primary key,
+    STREAM_ENTITY_ID BIGINT not null,
     start_time TIMESTAMP,
     constraint STREAMS_START_TIMES_STREAMS_FK foreign key (STREAM_ENTITY_ID) references PUBLIC.STREAMS
 );

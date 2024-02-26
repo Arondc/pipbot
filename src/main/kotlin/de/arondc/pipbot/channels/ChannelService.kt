@@ -9,13 +9,20 @@ class ChannelService(val channelRepository: ChannelRepository) {
         return channelRepository.findByName(channelName) ?: channelRepository.save(
             ChannelEntity(
                 channelName,
-                Locale.GERMAN, ShoutOutOnRaidType.NONE, listOf()
-
+                Locale.GERMAN, ShoutoutOnRaidType.NONE, listOf()
             )
         )
     }
 
     fun findByName(channelName: String): ChannelEntity {
         return channelRepository.findByName(channelName)!!
+    }
+
+    fun findAll(): List<ChannelEntity> {
+        return channelRepository.findAll()
+    }
+
+    fun save(channelEntity: ChannelEntity) :ChannelEntity {
+        return channelRepository.save(channelEntity)
     }
 }

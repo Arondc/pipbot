@@ -5,9 +5,9 @@ import de.arondc.pipbot.channels.ChannelService
 import de.arondc.pipbot.quotes.QuoteNotFoundException
 import de.arondc.pipbot.quotes.QuoteService
 import de.arondc.pipbot.services.LanguageService
-import de.arondc.pipbot.streams.TwitchStreamService
 import de.arondc.pipbot.twitch.SendMessageEvent
 import de.arondc.pipbot.twitch.TwitchMessage
+import de.arondc.pipbot.twitch.TwitchStreamService
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.stereotype.Component

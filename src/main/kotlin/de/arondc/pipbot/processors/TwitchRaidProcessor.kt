@@ -1,11 +1,11 @@
 package de.arondc.pipbot.processors
 
 import de.arondc.pipbot.channels.ChannelService
-import de.arondc.pipbot.channels.ShoutOutOnRaidType
+import de.arondc.pipbot.channels.ShoutoutOnRaidType
 import de.arondc.pipbot.services.LanguageService
-import de.arondc.pipbot.streams.TwitchStreamService
 import de.arondc.pipbot.twitch.SendMessageEvent
 import de.arondc.pipbot.twitch.TwitchRaidEvent
+import de.arondc.pipbot.twitch.TwitchStreamService
 import mu.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.modulith.events.ApplicationModuleListener
@@ -31,14 +31,14 @@ class TwitchRaidProcessor(
         }
 
         val sendMessageEvent: SendMessageEvent? = when (channel.shoutoutOnRaid) {
-            ShoutOutOnRaidType.NONE -> null
-            ShoutOutOnRaidType.TEXT -> buildTextMessage(twitchRaidEvent)
-            ShoutOutOnRaidType.TWITCH_SHOUTOUT -> {
+            ShoutoutOnRaidType.NONE -> null
+            ShoutoutOnRaidType.TEXT -> buildTextMessage(twitchRaidEvent)
+            ShoutoutOnRaidType.TWITCH_SHOUTOUT -> {
                 sendShoutoutViaTwitch(twitchRaidEvent)
                 null
             }
 
-            ShoutOutOnRaidType.STREAM_ELEMENTS_SHOUTOUT -> sendStreamElementsShoutoutCommand(twitchRaidEvent)
+            ShoutoutOnRaidType.STREAM_ELEMENTS_SHOUTOUT -> sendStreamElementsShoutoutCommand(twitchRaidEvent)
         }
 
         if (sendMessageEvent != null) {

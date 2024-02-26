@@ -1,39 +1,29 @@
 package de.arondc.pipbot.memes
 
-import de.arondc.pipbot.channels.ChannelService
-import de.arondc.pipbot.streams.TwitchStreamService
+import de.arondc.pipbot.streams.StreamEntity
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
-import java.time.LocalDateTime
-import java.util.regex.Pattern
 
 @Service
 class MemeService(
     val memeRepo: MemeRepository,
-    val channelService: ChannelService,
-    val twitchStreamService: TwitchStreamService
 ) {
     private val log = KotlinLogging.logger {}
 
-    //TODO in den processor verlagern
-    fun saveMeme(channelName: String, user: String, message: String) {
-        val channel = channelService.findOrCreate(channelName)
-        val meme = MemeEntity(
-            LocalDateTime.now(),
-            channel,
-            user,
-            message,
-            extractLink(message),
-            twitchStreamService.findCurrentStream(channelName)
-        )
-        val savedMeme = memeRepo.save(meme)
-        log.debug { savedMeme }
+    fun save(memeEntity: MemeEntity) : MemeEntity{
+        return memeRepo.save(memeEntity)
     }
 
-    private fun extractLink(message: String): String {
-        val p = Pattern.compile("https?:(.*?)(\\s.*|$)")
-        val m = p.matcher(message)
-        return if (m.find()) m.group(1) else ""
+    fun findByStream(streamEntity: StreamEntity) : Set<MemeEntity>{
+        return memeRepo.findByStream(streamEntity)
+    }
+
+     fun findAll(): List<MemeEntity> {
+        return memeRepo.findAll()
+    }
+
+    fun findByStreamId(id: Long): List<MemeEntity> {
+        return memeRepo.findByStreamId(id)
     }
 }
 

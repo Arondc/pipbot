@@ -24,7 +24,7 @@ class ChannelEntity(
     val name: String,
     val language: Locale,
     @Enumerated(EnumType.STRING)
-    val shoutoutOnRaid: ShoutOutOnRaidType,
+    val shoutoutOnRaid: ShoutoutOnRaidType,
     @ElementCollection
     @CollectionTable(name = "channels_automated_shoutouts")
     @Column(name = "channel_name")
@@ -36,6 +36,6 @@ class ChannelEntity(
     ) @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "channels_sequence") var id: Long? = null
 )
 
-enum class ShoutOutOnRaidType {
+enum class ShoutoutOnRaidType {
     NONE, TEXT, STREAM_ELEMENTS_SHOUTOUT, TWITCH_SHOUTOUT
 }

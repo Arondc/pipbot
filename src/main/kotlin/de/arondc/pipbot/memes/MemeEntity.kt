@@ -14,7 +14,10 @@ import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
 
 @Repository
-interface MemeRepository : JpaRepository<MemeEntity, Long>
+interface MemeRepository : JpaRepository<MemeEntity, Long> {
+    fun findByStream(stream: StreamEntity) : Set<MemeEntity>
+    fun findByStreamId(id: Long): List<MemeEntity>
+}
 
 @Entity
 @Table(name = "memes")
@@ -23,7 +26,6 @@ class MemeEntity(
     @ManyToOne val channel: ChannelEntity? = null,
     val sentByUser: String,
     val message: String,
-    val link: String, //TODO Brauchen wir das wirklich als eigenes Datenbankfeld?
     @ManyToOne val stream: StreamEntity? = null,
     @Id @SequenceGenerator(name = "memes_sequence", sequenceName = "MEMES_SEQ", allocationSize = 1) @GeneratedValue(
         strategy = GenerationType.SEQUENCE,
@@ -31,6 +33,10 @@ class MemeEntity(
     ) var id: Long? = null
 ) {
     override fun toString(): String {
-        return "$recordedAt - $channel - $sentByUser - $message - $link - ${stream?.id}"
+        return "$recordedAt - $channel - $sentByUser - $message - ${stream?.id}"
+    }
+
+    fun associateToNewStream(newStream : StreamEntity) : MemeEntity {
+        return MemeEntity(recordedAt, channel, sentByUser, message, newStream, id)
     }
 }

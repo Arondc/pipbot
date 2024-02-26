@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Memes</title>
+</head>
+<body>
+<table>
+    <thead>
+    <tr>
+        <th>Kanal</th>
+        <th>Zeit</th>
+        <th>User</th>
+        <th>Link</th>
+        <th>Message</th>
+        <th>Stream</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="meme: ${memes}">
+        <td th:text="${meme.channelName}"></td>
+        <td th:text="${{meme.recordedAt}}"></td>
+        <td th:text="${meme.sentByUser}"></td>
+        <td><a th:if="${!meme.link.isEmpty()}" th:href="${meme.link}">Link</a></td>
+        <td th:text="${meme.message}"></td>
+        <td th:if="${meme.streamId}"><a th:text="|vom ${meme.streamStart}|" th:href="@{/memes(stream-id=${meme.streamId})}"></a></td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>
