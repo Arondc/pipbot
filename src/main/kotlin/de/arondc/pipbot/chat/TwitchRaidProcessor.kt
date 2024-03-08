@@ -1,4 +1,4 @@
-package de.arondc.pipbot.processors
+package de.arondc.pipbot.chat
 
 import de.arondc.pipbot.channels.ChannelService
 import de.arondc.pipbot.channels.ShoutoutOnRaidType
@@ -22,7 +22,7 @@ class TwitchRaidProcessor(
 
     @ApplicationModuleListener
     fun receiveRaidEvent(twitchRaidEvent: TwitchRaidEvent) {
-        val channel = channelService.findByName(twitchRaidEvent.raidedChannel)!!
+        val channel = channelService.findByNameIgnoreCase(twitchRaidEvent.raidedChannel)!!
         if (channel.automatedShoutoutChannels.isNotEmpty() && !channel.automatedShoutoutChannels.contains(
                 twitchRaidEvent.incomingRaider
             )

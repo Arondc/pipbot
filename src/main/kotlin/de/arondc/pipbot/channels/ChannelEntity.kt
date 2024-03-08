@@ -12,10 +12,19 @@ import jakarta.persistence.Id
 import jakarta.persistence.SequenceGenerator
 import jakarta.persistence.Table
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
+import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 import java.util.Locale
 
 interface ChannelRepository : JpaRepository<ChannelEntity, Long> {
-    fun findByName(name: String): ChannelEntity?
+    fun findByNameIgnoreCase(name: String): ChannelEntity?
+    fun findAllByActiveIsTrue() : List<ChannelEntity>
+
+    @Modifying
+    @Query("update ChannelEntity channel set channel.active = :active where channel.id = :id")
+    fun setActiveById(@Param("id") id : Long, @Param("active") active: Boolean)
+
 }
 
 @Entity
@@ -29,12 +38,14 @@ class ChannelEntity(
     @CollectionTable(name = "channels_automated_shoutouts")
     @Column(name = "channel_name")
     val automatedShoutoutChannels: List<String>,
+    val active : Boolean = true,
     @Id @SequenceGenerator(
         name = "channels_sequence",
         sequenceName = "CHANNELS_SEQ",
         allocationSize = 1
     ) @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "channels_sequence") var id: Long? = null
 )
+
 
 enum class ShoutoutOnRaidType {
     NONE, TEXT, STREAM_ELEMENTS_SHOUTOUT, TWITCH_SHOUTOUT

@@ -12,3 +12,7 @@ form {
     border-style: double;
     margin: 1em;
 }
+
+.error {
+    color: red;
+}

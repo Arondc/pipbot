@@ -3,7 +3,6 @@ package de.arondc.pipbot.frontend
 import de.arondc.pipbot.frontend.converters.ChannelDTOToEntityConverter
 import de.arondc.pipbot.frontend.converters.ChannelEntityToDTOConverter
 import de.arondc.pipbot.frontend.converters.MemeEntityToDTOConverter
-import de.arondc.pipbot.frontend.converters.ShoutoutOnRaidTypeFormatter
 import org.springframework.context.annotation.Configuration
 import org.springframework.format.FormatterRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
@@ -14,8 +13,6 @@ class WebConfig : WebMvcConfigurer {
         registry.addConverter(MemeEntityToDTOConverter())
         registry.addConverter(ChannelEntityToDTOConverter())
         registry.addConverter(ChannelDTOToEntityConverter())
-
-        registry.addFormatter(ShoutoutOnRaidTypeFormatter())
     }
 }
 

@@ -1,4 +1,4 @@
-package de.arondc.pipbot.processors
+package de.arondc.pipbot.chat
 
 import de.arondc.pipbot.channels.ChannelService
 import de.arondc.pipbot.memes.MemeEntity

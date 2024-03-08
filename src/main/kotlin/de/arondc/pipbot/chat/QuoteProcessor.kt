@@ -1,4 +1,4 @@
-package de.arondc.pipbot.processors
+package de.arondc.pipbot.chat
 
 import de.arondc.pipbot.channels.ChannelEntity
 import de.arondc.pipbot.channels.ChannelService

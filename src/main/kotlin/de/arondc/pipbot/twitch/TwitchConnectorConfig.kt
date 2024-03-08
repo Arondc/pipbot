@@ -19,13 +19,6 @@ data class TwitchConnectorConfig(
     var clientId: String = ""
 )
 
-@Configuration
-@PropertySource(value = ["file:pipbot.yml"], factory = YamlPropertiesFactory::class)
-@ConfigurationProperties(prefix = "twitch-connector.channels")
-data class TwitchConnectorChannels(
-    var channelNames: List<String> = listOf()
-)
-
 /**
  * Factory that can be used as factory in a PropertiesSource to allow loading yml files as properties
  * @see PropertySource

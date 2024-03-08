@@ -1,4 +1,4 @@
-package de.arondc.pipbot.processors
+package de.arondc.pipbot.chat
 
 import de.arondc.pipbot.streams.StreamService
 import de.arondc.pipbot.twitch.TwitchMessage
