@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.mvc.support.RedirectAttributes
-import java.util.Optional
 
 @Controller
 @RequestMapping("/channels")
@@ -22,16 +21,16 @@ class ChannelsController(val frontendService: FrontendService) {
     }
 
     @ModelAttribute("channel")
-    fun initChannel(@RequestParam("channel-id") channelId: Optional<Long>): ChannelDTO {
-        return if (channelId.isPresent) {
-            frontendService.getChannel(channelId.get())
+    fun initChannel(@RequestParam("channel-id") channelId: Long?): ChannelDTO {
+        return if (channelId != null) {
+            frontendService.getChannel(channelId)
         } else {
             ChannelDTO()
         }
     }
 
     @GetMapping("")
-    fun viewChannels(model: Model, @RequestParam("channel-id") channelId: Optional<Long>): String {
+    fun viewChannels(model: Model): String {
         return "channels"
     }
 
@@ -57,8 +56,10 @@ class ChannelsController(val frontendService: FrontendService) {
     }
 
     @GetMapping("/delete")
-    fun deleteChannel(@RequestParam("channel-id") channelId: Optional<Long>): String {
-        channelId.ifPresent { id -> frontendService.deleteChannel(id) }
+    fun deleteChannel(@RequestParam("channel-id") channelId: Long?): String {
+        if (channelId != null) {
+            frontendService.deleteChannel(channelId)
+        }
         return "redirect:/channels"
     }
 

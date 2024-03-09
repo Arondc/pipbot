@@ -8,23 +8,20 @@ import mu.KotlinLogging
 import org.springframework.core.convert.ConversionService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.Optional
 
 @Service
 class FrontendService(val memeService: MemeService, val channelService: ChannelService, val conversionService: ConversionService, val botTwitchConnector: BotTwitchConnector) {
     private val log = KotlinLogging.logger {}
 
-    fun getMemes(streamId: Optional<Long> = Optional.empty()): List<MemeDTO> {
-        var memes: List<MemeDTO> = listOf()
-        streamId
-            .ifPresentOrElse(
-                { id ->
-                    memes =
-                        memeService.findByStreamId(id).mapNotNull { conversionService.convert(it, MemeDTO::class.java) }
-                },
-                { memes = memeService.findAll().mapNotNull { conversionService.convert(it, MemeDTO::class.java) } }
-            )
-        return memes
+    fun getMemes(streamId: Long? = null): List<MemeDTO> {
+        val memes =
+            if (streamId != null) {
+                memeService.findByStreamId(streamId)
+            } else {
+                memeService.findAll()
+            }
+
+        return memes.mapNotNull { conversionService.convert(it, MemeDTO::class.java) }
     }
 
     fun getChannels() : List<ChannelDTO> {
