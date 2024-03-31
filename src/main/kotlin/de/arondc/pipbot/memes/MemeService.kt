@@ -1,15 +1,12 @@
 package de.arondc.pipbot.memes
 
 import de.arondc.pipbot.streams.StreamEntity
-import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 @Service
 class MemeService(
     val memeRepo: MemeRepository,
 ) {
-    private val log = KotlinLogging.logger {}
-
     fun save(memeEntity: MemeEntity): MemeEntity {
         return memeRepo.save(memeEntity)
     }

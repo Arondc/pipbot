@@ -25,11 +25,5 @@ class LanguageService(val channelService: ChannelService, val messageSource: Mes
         val locale = channelService.findByNameIgnoreCase(channelName)?.language ?: Locale.getDefault()
         return messageSource.getMessage(messageKey, args, locale)
     }
-
-    @JvmOverloads
-    fun getMessage(messageKey: String, args: Array<Any>? = null): String {
-        val locale = Locale.getDefault()
-        return messageSource.getMessage(messageKey, args, locale)
-    }
 }
 
