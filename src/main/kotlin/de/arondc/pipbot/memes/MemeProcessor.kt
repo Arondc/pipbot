@@ -46,7 +46,7 @@ class MemeProcessor(
 
     private fun processMemeMessage(channelName : String, user : String , message : String) {
         log.info { "Possible meme from $user detected: $message"}
-        val channel = channelService.findOrCreate(channelName)
+        val channel = channelService.findByNameIgnoreCase(channelName)
         val meme = MemeEntity(
             LocalDateTime.now(),
             channel,

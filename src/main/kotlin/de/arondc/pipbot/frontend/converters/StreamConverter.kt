@@ -14,6 +14,6 @@ class StreamEntityToDTOConverter : Converter<StreamEntity, StreamDTO> {
 
 class StreamDTOToEntityConverter(private val channelService: ChannelService) : Converter<StreamDTO, StreamEntity> {
     override fun convert(source: StreamDTO): StreamEntity {
-        return StreamEntity(source.startTimes.toSet(), channelService.findOrCreate(source.channelName))
+        return StreamEntity(source.startTimes.toSet(), channelService.findByNameIgnoreCase(source.channelName)!!)
     }
 }

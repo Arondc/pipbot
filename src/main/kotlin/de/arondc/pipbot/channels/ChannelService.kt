@@ -4,18 +4,9 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import java.util.Locale
 
 @Service
 class ChannelService(val channelRepository: ChannelRepository) {
-    fun findOrCreate(channelName: String): ChannelEntity {
-        return channelRepository.findByNameIgnoreCase(channelName) ?: channelRepository.save(
-            ChannelEntity(
-                channelName,
-                Locale.GERMAN, ShoutoutOnRaidType.NONE, listOf()
-            )
-        )
-    }
 
     fun findByNameIgnoreCase(channelName: String): ChannelEntity? {
         return channelRepository.findByNameIgnoreCase(channelName)

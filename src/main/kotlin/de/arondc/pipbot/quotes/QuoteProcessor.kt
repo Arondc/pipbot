@@ -28,7 +28,7 @@ class QuoteProcessor(
             twitchMessage.message.startsWith("!zitat add ") -> {
                 processAdd(twitchMessage,
                     twitchMessage.message.substringAfter("!zitat add "),
-                    channelService.findOrCreate(twitchMessage.channel)
+                    channelService.findByNameIgnoreCase(twitchMessage.channel)!!
                 )
             }
 
@@ -36,14 +36,14 @@ class QuoteProcessor(
                 processDelete(
                     twitchMessage,
                     twitchMessage.message.substringAfter("!zitat delete "),
-                    channelService.findOrCreate(twitchMessage.channel)
+                    channelService.findByNameIgnoreCase(twitchMessage.channel)!!
                 )
             }
 
             twitchMessage.message.startsWith("!zitat ") -> {
                 processFind(
                     twitchMessage.message.substringAfter("!zitat "),
-                    channelService.findOrCreate(twitchMessage.channel)
+                    channelService.findByNameIgnoreCase(twitchMessage.channel)!!
                 )
             }
         }

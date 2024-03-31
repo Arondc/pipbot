@@ -12,13 +12,9 @@ class StreamService(
     val twitchStreamService: TwitchStreamService,
     val channelService: ChannelService
 ) {
-    fun findCurrentStream(channelName: String): StreamEntity {
-        val twitchStream = try {
-            twitchStreamService.fetchStreamFromTwitch(channelName).streams.first()
-        } catch (_: NoSuchElementException) {
-            throw StreamServiceException("No currently running stream found for $channelName")
-        }
-        val channel = channelService.findOrCreate(channelName)
+    fun findCurrentStream(channelName: String): StreamEntity? {
+        val twitchStream = twitchStreamService.fetchStreamFromTwitch(channelName).streams.firstOrNull() ?: return null
+        val channel = channelService.findByNameIgnoreCase(channelName)!!
         val startTime = LocalDateTime.ofInstant(twitchStream.startedAtInstant, ZoneId.systemDefault())
         return streamRepository.findByChannelAndStartTimesContains(
             channel, startTime
