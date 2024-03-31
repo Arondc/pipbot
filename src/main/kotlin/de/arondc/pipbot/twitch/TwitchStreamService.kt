@@ -60,7 +60,7 @@ class TwitchStreamService(
     }
 
     @Transactional
-    fun joinChannel(channel : String){
+    fun joinChannel(channel: String) {
         log.debug { "Sending event to join twitch channel $channel" }
         publisher.publishEvent(JoinTwitchChannelEvent(channel))
     }

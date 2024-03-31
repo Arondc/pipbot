@@ -9,7 +9,7 @@ import java.time.LocalDateTime
 @Repository
 interface StreamRepository : JpaRepository<StreamEntity, Long> {
     fun findByChannelAndStartTimesContains(channel: ChannelEntity, startTime: LocalDateTime): StreamEntity?
-    fun findAllByChannelName(channelName: String) : List<StreamEntity>
+    fun findAllByChannelName(channelName: String): List<StreamEntity>
 
 }
 
@@ -31,9 +31,9 @@ class StreamEntity(
         generator = "streams_sequence"
     )
     val id: Long? = null
-){
+) {
 
-    fun associateAdditionalStartTime(additionalStartTime : Set<LocalDateTime>) : StreamEntity {
+    fun associateAdditionalStartTime(additionalStartTime: Set<LocalDateTime>): StreamEntity {
         return StreamEntity(startTimes.toMutableSet().plus(additionalStartTime), channel, id)
     }
 

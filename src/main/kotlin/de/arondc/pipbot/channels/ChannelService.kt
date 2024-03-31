@@ -16,11 +16,11 @@ class ChannelService(val channelRepository: ChannelRepository) {
         return channelRepository.findAll()
     }
 
-    fun findActive() : List<ChannelEntity> {
-        return  channelRepository.findAllByActiveIsTrue()
+    fun findActive(): List<ChannelEntity> {
+        return channelRepository.findAllByActiveIsTrue()
     }
 
-    fun save(channelEntity: ChannelEntity) :ChannelEntity {
+    fun save(channelEntity: ChannelEntity): ChannelEntity {
         return channelRepository.save(channelEntity)
     }
 
@@ -29,7 +29,7 @@ class ChannelService(val channelRepository: ChannelRepository) {
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    fun setActiveById(channelId : Long, active : Boolean){
+    fun setActiveById(channelId: Long, active: Boolean) {
         channelRepository.setActiveById(channelId, active)
     }
 

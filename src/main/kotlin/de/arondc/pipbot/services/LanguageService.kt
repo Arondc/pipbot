@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.stereotype.Service
-import java.util.Locale
+import java.util.*
 
 @Configuration
 class MessageConfig {
@@ -27,7 +27,7 @@ class LanguageService(val channelService: ChannelService, val messageSource: Mes
     }
 
     @JvmOverloads
-    fun getMessage(messageKey: String, args: Array<Any>? = null) : String {
+    fun getMessage(messageKey: String, args: Array<Any>? = null): String {
         val locale = Locale.getDefault()
         return messageSource.getMessage(messageKey, args, locale)
     }

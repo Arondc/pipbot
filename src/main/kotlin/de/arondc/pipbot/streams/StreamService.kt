@@ -26,15 +26,14 @@ class StreamService(
     }
 
 
-
     fun findAll(): List<StreamEntity> {
         return streamRepository.findAll()
     }
 
     fun save(streamEntity: StreamEntity) = streamRepository.save(streamEntity)
     fun delete(streamEntity: StreamEntity) = streamRepository.delete(streamEntity)
-    fun findById(streamId : Long) = streamRepository.findById(streamId)
-    fun deleteAll(streams : Iterable<StreamEntity>) = streamRepository.deleteAll(streams)
+    fun findById(streamId: Long) = streamRepository.findById(streamId)
+    fun deleteAll(streams: Iterable<StreamEntity>) = streamRepository.deleteAll(streams)
     fun findAllByChannelName(channelName: String) = streamRepository.findAllByChannelName(channelName)
 
 }

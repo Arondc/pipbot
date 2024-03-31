@@ -1,6 +1,6 @@
 package de.arondc.pipbot.events
 
-enum class TwitchPermission(private val level : Long) {
+enum class TwitchPermission(private val level: Long) {
     //ROLES WITHOUT SPECIAL PERMISSIONS
     PRIME_TURBO(0),
     PARTNER(0),
@@ -25,11 +25,11 @@ enum class TwitchPermission(private val level : Long) {
     BROADCASTER(30),
     OWNER(100);
 
-    fun isSatisfiedBy(permission : TwitchPermission) : Boolean {
+    fun isSatisfiedBy(permission: TwitchPermission): Boolean {
         return permission.level >= this.level
     }
 }
 
-fun Iterable<TwitchPermission>.satisfies(minimalPermission : TwitchPermission) : Boolean {
+fun Iterable<TwitchPermission>.satisfies(minimalPermission: TwitchPermission): Boolean {
     return this.any { minimalPermission.isSatisfiedBy(it) }
 }

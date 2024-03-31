@@ -26,7 +26,11 @@ class MemeProcessor(
     @ApplicationModuleListener
     fun receiveMessage(twitchMessage: TwitchMessage) {
         if (twitchMessage.message.startsWith("!meme ", true)) {
-            processMemeMessage(twitchMessage.channel, twitchMessage.user, twitchMessage.message.substringAfter("!meme "))
+            processMemeMessage(
+                twitchMessage.channel,
+                twitchMessage.user,
+                twitchMessage.message.substringAfter("!meme ")
+            )
             respond(twitchMessage)
         } else if (memeSources.any {
                 twitchMessage.message.contains(it, true)
@@ -44,8 +48,8 @@ class MemeProcessor(
         )
     }
 
-    private fun processMemeMessage(channelName : String, user : String , message : String) {
-        log.info { "Possible meme from $user detected: $message"}
+    private fun processMemeMessage(channelName: String, user: String, message: String) {
+        log.info { "Possible meme from $user detected: $message" }
         val channel = channelService.findByNameIgnoreCase(channelName)
         val meme = MemeEntity(
             LocalDateTime.now(),

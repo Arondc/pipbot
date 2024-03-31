@@ -26,12 +26,12 @@ class StreamsController(val frontendService: FrontendService) {
     }
 
     @GetMapping("")
-    fun viewStreams(model: Model) : String {
+    fun viewStreams(model: Model): String {
         return "streams"
     }
 
     @PostMapping("/merge")
-    fun mergeStreams(@ModelAttribute mergeInfo: MergeInfoDTO) : String {
+    fun mergeStreams(@ModelAttribute mergeInfo: MergeInfoDTO): String {
         log.info { "merge info = $mergeInfo" }
         frontendService.mergeStreams(mergeInfo.streamIds)
         return "redirect:/streams"

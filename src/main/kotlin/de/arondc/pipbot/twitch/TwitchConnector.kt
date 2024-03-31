@@ -39,7 +39,7 @@ class TwitchConnector(
     }
 
     @EventListener
-    fun runAfterApplicationStarted(event : ApplicationReadyEvent) {
+    fun runAfterApplicationStarted(event: ApplicationReadyEvent) {
         val channels = channelService.findActive().map { it.name }
         log.info { "joining twitch channels: $channels" }
         channels.forEach {

@@ -10,15 +10,15 @@ class MemeService(
 ) {
     private val log = KotlinLogging.logger {}
 
-    fun save(memeEntity: MemeEntity) : MemeEntity{
+    fun save(memeEntity: MemeEntity): MemeEntity {
         return memeRepo.save(memeEntity)
     }
 
-    fun findByStream(streamEntity: StreamEntity) : Set<MemeEntity>{
+    fun findByStream(streamEntity: StreamEntity): Set<MemeEntity> {
         return memeRepo.findByStream(streamEntity)
     }
 
-     fun findAll(): List<MemeEntity> {
+    fun findAll(): List<MemeEntity> {
         return memeRepo.findAll()
     }
 

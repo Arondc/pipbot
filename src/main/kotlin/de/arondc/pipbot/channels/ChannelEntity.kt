@@ -1,29 +1,19 @@
 package de.arondc.pipbot.channels
 
-import jakarta.persistence.CollectionTable
-import jakarta.persistence.Column
-import jakarta.persistence.ElementCollection
-import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
-import jakarta.persistence.SequenceGenerator
-import jakarta.persistence.Table
+import jakarta.persistence.*
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
-import java.util.Locale
+import java.util.*
 
 interface ChannelRepository : JpaRepository<ChannelEntity, Long> {
     fun findByNameIgnoreCase(name: String): ChannelEntity?
-    fun findAllByActiveIsTrue() : List<ChannelEntity>
+    fun findAllByActiveIsTrue(): List<ChannelEntity>
 
     @Modifying
     @Query("update ChannelEntity channel set channel.active = :active where channel.id = :id")
-    fun setActiveById(@Param("id") id : Long, @Param("active") active: Boolean)
+    fun setActiveById(@Param("id") id: Long, @Param("active") active: Boolean)
 
 }
 
@@ -38,7 +28,7 @@ class ChannelEntity(
     @CollectionTable(name = "channels_automated_shoutouts")
     @Column(name = "channel_name")
     val automatedShoutoutChannels: List<String>,
-    val active : Boolean = true,
+    val active: Boolean = true,
     @Id @SequenceGenerator(
         name = "channels_sequence",
         sequenceName = "CHANNELS_SEQ",

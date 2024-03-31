@@ -15,7 +15,14 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-class FrontendService(val memeService: MemeService, val channelService: ChannelService, val streamService: StreamService, val conversionService: ConversionService, val twitchStreamService: TwitchStreamService, val mergeService: MergeService) {
+class FrontendService(
+    val memeService: MemeService,
+    val channelService: ChannelService,
+    val streamService: StreamService,
+    val conversionService: ConversionService,
+    val twitchStreamService: TwitchStreamService,
+    val mergeService: MergeService
+) {
     private val log = KotlinLogging.logger {}
 
     fun getMemes(streamId: Long? = null): List<MemeDTO> {
@@ -29,7 +36,7 @@ class FrontendService(val memeService: MemeService, val channelService: ChannelS
         return memes.mapNotNull { conversionService.convert(it, MemeDTO::class.java) }
     }
 
-    fun getChannels() : List<ChannelDTO> {
+    fun getChannels(): List<ChannelDTO> {
         val channels = channelService.findAll()
         return channels.mapNotNull { conversionService.convert(it, ChannelDTO::class.java) }
     }
@@ -41,29 +48,29 @@ class FrontendService(val memeService: MemeService, val channelService: ChannelS
             channelService.save(channelEntity)
             twitchStreamService.joinChannel(channelEntity.name)
         } else {
-            log.info{"Channel ${newChannel.name} exists already"}
+            log.info { "Channel ${newChannel.name} exists already" }
             throw FrontendException("Channel ${newChannel.name} exists already")
         }
     }
 
-    fun updateChannel(newChannelInformation : ChannelDTO) {
+    fun updateChannel(newChannelInformation: ChannelDTO) {
         val existingChannel = channelService.findById(newChannelInformation.id!!)
-        if(existingChannel != null){
+        if (existingChannel != null) {
             val channelEntity = conversionService.convert(newChannelInformation, ChannelEntity::class.java)!!
             channelService.save(channelEntity)
-            if(existingChannel.name != channelEntity.name) {
+            if (existingChannel.name != channelEntity.name) {
                 twitchStreamService.leaveChannel(existingChannel.name)
                 twitchStreamService.joinChannel(channelEntity.name)
             }
         } else {
-            log.info{"Channel with id ${newChannelInformation.id} does not exist"}
+            log.info { "Channel with id ${newChannelInformation.id} does not exist" }
             throw FrontendException("Channel with id ${newChannelInformation.id} does not exist")
         }
     }
 
     fun getChannel(channelId: Long): ChannelDTO {
         val channelEntity = channelService.findById(channelId)
-        return if(channelEntity == null){
+        return if (channelEntity == null) {
             ChannelDTO()
         } else {
             ChannelDTO(
@@ -79,26 +86,26 @@ class FrontendService(val memeService: MemeService, val channelService: ChannelS
 
     fun deleteChannel(id: Long) {
         val channel = channelService.findById(id)
-        if(channel != null){
+        if (channel != null) {
             channelService.deleteChannel(channel)
-            if(!channel.active) {
+            if (!channel.active) {
                 twitchStreamService.leaveChannel(channel.name)
             }
         }
     }
 
     @Transactional
-    fun activateChannel(channelId: Long){
+    fun activateChannel(channelId: Long) {
         val channel = channelService.findById(channelId)
-        if(channel != null) {
+        if (channel != null) {
             channelService.setActiveById(channelId, true)
             twitchStreamService.joinChannel(channel.name)
         }
     }
 
-    fun deactivateChannel(channelId : Long) {
+    fun deactivateChannel(channelId: Long) {
         val channel = channelService.findById(channelId)
-        if(channel != null) {
+        if (channel != null) {
             channelService.setActiveById(channelId, false)
             twitchStreamService.leaveChannel(channel.name)
         }
@@ -108,7 +115,7 @@ class FrontendService(val memeService: MemeService, val channelService: ChannelS
         return streamService.findAll().mapNotNull { conversionService.convert(it, StreamDTO::class.java) }.toList()
     }
 
-    fun mergeStreams(streamIds : List<Long>) {
+    fun mergeStreams(streamIds: List<Long>) {
         mergeService.mergeStreams(streamIds)
     }
 

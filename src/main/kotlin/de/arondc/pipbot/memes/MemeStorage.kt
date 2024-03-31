@@ -9,7 +9,7 @@ import java.time.LocalDateTime
 
 @Repository
 interface MemeRepository : JpaRepository<MemeEntity, Long> {
-    fun findByStream(stream: StreamEntity) : Set<MemeEntity>
+    fun findByStream(stream: StreamEntity): Set<MemeEntity>
     fun findByStreamId(id: Long): List<MemeEntity>
 }
 
@@ -30,7 +30,7 @@ class MemeEntity(
         return "$recordedAt - $channel - $sentByUser - $message - ${stream?.id}"
     }
 
-    fun associateToNewStream(newStream : StreamEntity) : MemeEntity {
+    fun associateToNewStream(newStream: StreamEntity): MemeEntity {
         return MemeEntity(recordedAt, channel, sentByUser, message, newStream, id)
     }
 }
