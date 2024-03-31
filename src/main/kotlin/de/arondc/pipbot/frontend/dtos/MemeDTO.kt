@@ -1,4 +1,4 @@
-package de.arondc.pipbot.frontend
+package de.arondc.pipbot.frontend.dtos
 
 import java.time.LocalDateTime
 

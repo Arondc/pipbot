@@ -1,7 +1,7 @@
 package de.arondc.pipbot.frontend.converters
 
 import de.arondc.pipbot.channels.ChannelEntity
-import de.arondc.pipbot.frontend.ChannelDTO
+import de.arondc.pipbot.frontend.dtos.ChannelDTO
 import org.springframework.core.convert.converter.Converter
 
 

@@ -1,7 +1,7 @@
-package de.arondc.pipbot.frontend
+package de.arondc.pipbot.frontend.dtos
 
 import de.arondc.pipbot.channels.ShoutoutOnRaidType
-import java.util.Locale
+import java.util.*
 
 class ChannelDTO(
     val id : Long? = null,

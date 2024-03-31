@@ -1,17 +1,7 @@
 package de.arondc.pipbot.streams
 
 import de.arondc.pipbot.channels.ChannelEntity
-import jakarta.persistence.CollectionTable
-import jakarta.persistence.Column
-import jakarta.persistence.ElementCollection
-import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
-import jakarta.persistence.SequenceGenerator
-import jakarta.persistence.Table
+import jakarta.persistence.*
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
@@ -19,6 +9,8 @@ import java.time.LocalDateTime
 @Repository
 interface StreamRepository : JpaRepository<StreamEntity, Long> {
     fun findByChannelAndStartTimesContains(channel: ChannelEntity, startTime: LocalDateTime): StreamEntity?
+    fun findAllByChannelName(channelName: String) : List<StreamEntity>
+
 }
 
 @Entity

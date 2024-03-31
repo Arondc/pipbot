@@ -2,9 +2,11 @@
 
 ## Todos before adding Pipbot to GitHub
 
-1. TODOs im Code abräumen
-2. Frontend
-
+## Nice to have
+1. Bot konfiguration in DB packen
+   1. Oberflächensprache
+2. Datenbank des alten Bots importieren
+3. Tests schreiben
 
 ## Setup
 

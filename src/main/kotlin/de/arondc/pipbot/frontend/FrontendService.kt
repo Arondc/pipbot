@@ -2,15 +2,19 @@ package de.arondc.pipbot.frontend
 
 import de.arondc.pipbot.channels.ChannelEntity
 import de.arondc.pipbot.channels.ChannelService
+import de.arondc.pipbot.frontend.dtos.ChannelDTO
+import de.arondc.pipbot.frontend.dtos.MemeDTO
+import de.arondc.pipbot.frontend.dtos.StreamDTO
 import de.arondc.pipbot.memes.MemeService
-import de.arondc.pipbot.twitch.BotTwitchConnector
+import de.arondc.pipbot.streams.StreamService
+import de.arondc.pipbot.twitch.TwitchStreamService
 import mu.KotlinLogging
 import org.springframework.core.convert.ConversionService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-class FrontendService(val memeService: MemeService, val channelService: ChannelService, val conversionService: ConversionService, val botTwitchConnector: BotTwitchConnector) {
+class FrontendService(val memeService: MemeService, val channelService: ChannelService, val streamService: StreamService, val conversionService: ConversionService, val twitchStreamService: TwitchStreamService) {
     private val log = KotlinLogging.logger {}
 
     fun getMemes(streamId: Long? = null): List<MemeDTO> {
@@ -34,7 +38,7 @@ class FrontendService(val memeService: MemeService, val channelService: ChannelS
         if (existingChannel == null) {
             val channelEntity = conversionService.convert(newChannel, ChannelEntity::class.java)!!
             channelService.save(channelEntity)
-            botTwitchConnector.joinTwitchChannel(channelEntity.name)
+            twitchStreamService.joinChannel(channelEntity.name)
         } else {
             log.info{"Channel ${newChannel.name} exists already"}
             throw FrontendException("Channel ${newChannel.name} exists already")
@@ -47,8 +51,8 @@ class FrontendService(val memeService: MemeService, val channelService: ChannelS
             val channelEntity = conversionService.convert(newChannelInformation, ChannelEntity::class.java)!!
             channelService.save(channelEntity)
             if(existingChannel.name != channelEntity.name) {
-                botTwitchConnector.leaveTwitchChannel(existingChannel.name)
-                botTwitchConnector.joinTwitchChannel(channelEntity.name)
+                twitchStreamService.leaveChannel(existingChannel.name)
+                twitchStreamService.joinChannel(channelEntity.name)
             }
         } else {
             log.info{"Channel with id ${newChannelInformation.id} does not exist"}
@@ -77,7 +81,7 @@ class FrontendService(val memeService: MemeService, val channelService: ChannelS
         if(channel != null){
             channelService.deleteChannel(channel)
             if(!channel.active) {
-                botTwitchConnector.leaveTwitchChannel(channel.name)
+                twitchStreamService.leaveChannel(channel.name)
             }
         }
     }
@@ -87,7 +91,7 @@ class FrontendService(val memeService: MemeService, val channelService: ChannelS
         val channel = channelService.findById(channelId)
         if(channel != null) {
             channelService.setActiveById(channelId, true)
-            botTwitchConnector.joinTwitchChannel(channel.name)
+            twitchStreamService.joinChannel(channel.name)
         }
     }
 
@@ -95,9 +99,18 @@ class FrontendService(val memeService: MemeService, val channelService: ChannelS
         val channel = channelService.findById(channelId)
         if(channel != null) {
             channelService.setActiveById(channelId, false)
-            botTwitchConnector.leaveTwitchChannel(channel.name)
+            twitchStreamService.leaveChannel(channel.name)
         }
     }
+
+    fun getStreams(): List<StreamDTO> {
+        return streamService.findAll().mapNotNull { conversionService.convert(it, StreamDTO::class.java) }.toList()
+    }
+
+    fun mergeStreams(streamIds : List<Long>) {
+        streamService.mergeStreams(streamIds)
+    }
+
 }
 
 class FrontendException(message: String) : RuntimeException(message)

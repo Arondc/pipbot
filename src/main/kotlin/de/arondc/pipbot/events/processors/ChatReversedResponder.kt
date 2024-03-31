@@ -1,7 +1,7 @@
-package de.arondc.pipbot.chat
+package de.arondc.pipbot.events.processors
 
-import de.arondc.pipbot.twitch.SendMessageEvent
-import de.arondc.pipbot.twitch.TwitchMessage
+import de.arondc.pipbot.events.SendMessageEvent
+import de.arondc.pipbot.events.TwitchMessage
 import mu.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.modulith.events.ApplicationModuleListener

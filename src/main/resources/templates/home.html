@@ -6,9 +6,9 @@
 </head>
 <body>
 <ul>
-  <li><a th:text="|Kanäle|" th:href="@{/channels}"></a></li>
-  <li><a th:text="|Meme Liste|" th:href="@{/memes}"></a></li>
-  <li><a th:text="|Streams|" th:href="@{/streams}"></a></li> <!-- TODO einbauen! -->
+  <li><a th:text="${#messages.msg('frontend.home.links.channels')}" th:href="@{/channels}"></a></li>
+  <li><a th:text="${#messages.msg('frontend.home.links.memes')}" th:href="@{/memes}"></a></li>
+  <li><a th:text="${#messages.msg('frontend.home.links.streams')}" th:href="@{/streams}"></a></li>
   <!-- <li><a th:text="|Import / Export|" th:href="@{/data}"></a></li> -->
 </ul>
 </body>

@@ -1,10 +1,10 @@
-package de.arondc.pipbot.chat
+package de.arondc.pipbot.events.processors
 
 import de.arondc.pipbot.channels.ChannelService
 import de.arondc.pipbot.channels.ShoutoutOnRaidType
+import de.arondc.pipbot.events.SendMessageEvent
+import de.arondc.pipbot.events.TwitchRaidEvent
 import de.arondc.pipbot.services.LanguageService
-import de.arondc.pipbot.twitch.SendMessageEvent
-import de.arondc.pipbot.twitch.TwitchRaidEvent
 import de.arondc.pipbot.twitch.TwitchStreamService
 import mu.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher

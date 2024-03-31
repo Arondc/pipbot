@@ -7,27 +7,24 @@
 </head>
 <body>
 
-<h1>Kanäle</h1>
+<h1 th:text="${#messages.msg('frontend.channels.header')}"></h1>
 
 <table class="table-view">
     <thead>
     <tr>
-        <!-- TODO Überschriften in Language Service übersetzen -->
-        <!-- <td>id</td> -->
-        <td>name</td>
-        <td>language</td>
-        <td>shoutOutOnRaidMode</td>
-        <td>shoutoutChannels</td>
+        <td th:text="${#messages.msg('frontend.channels.table.headers.name')}"></td>
+        <td th:text="${#messages.msg('frontend.channels.table.headers.language')}"></td>
+        <td th:text="${#messages.msg('frontend.channels.table.headers.shoutoutOnRaidMode')}"></td>
+        <td th:text="${#messages.msg('frontend.channels.table.headers.shoutoutWhitelist')}"></td>
         <td></td>
         <td></td>
     </tr>
     </thead>
     <tbody>
     <tr th:each="channel: ${channels}">
-        <!-- <td th:text="${channel.id}"></td> -->
         <td th:text="${channel.name}"></td>
         <td th:text="${channel.language}"></td>
-        <td th:text="${@languageService.getMessage('shoutout.on.raid.mode.'+channel.shoutOutOnRaidMode)}"></td>
+        <td th:text="${#messages.msg('shoutout.on.raid.mode.'+channel.shoutOutOnRaidMode)}"></td>
         <td th:text="${channel.shoutoutChannels}"></td>
         <td> <a th:href="@{/channels(channel-id=${channel.id})}">edit</a>  </td>
         <td> <a th:href="@{/channels/delete(channel-id=${channel.id})}">delete</a></td>
@@ -45,24 +42,24 @@
     <input type="hidden" th:field="*{id}" id="id">
     <table>
         <tr>
-            <td><label th:text="|Kanalname|"></label></td>
-            <td><input type="text" th:field="*{name}" /></td>
+            <td><label th:text="${#messages.msg('frontend.channels.table.headers.name')}" th:for="name"></label></td>
+            <td><input type="text" th:id="name" th:field="*{name}" /></td>
         </tr>
         <tr>
-            <td><label th:text="|Sprache|"></label></td>
+            <td><label th:text="${#messages.msg('frontend.channels.table.headers.language')}" th:for="language"></label></td>
             <td><input type="text" th:field="*{language}" /></td>
         </tr>
         <tr>
-            <td><label th:text="|Raid response mode|"></label></td>
+            <td><label th:text="${#messages.msg('frontend.channels.table.headers.shoutoutOnRaidMode')}" th:for="shoutOutOnRaidMode"></label></td>
             <td><select th:field="*{shoutOutOnRaidMode}">
-                <option th:value="NONE" th:text="${@languageService.getMessage('shoutout.on.raid.mode.NONE')}"></option>
-                <option th:value="TEXT" th:text="${@languageService.getMessage('shoutout.on.raid.mode.TEXT')}"></option>
-                <option th:value="STREAM_ELEMENTS_SHOUTOUT" th:text="${@languageService.getMessage('shoutout.on.raid.mode.STREAM_ELEMENTS_SHOUTOUT')}"></option>
-                <option th:value="TWITCH_SHOUTOUT" th:text="${@languageService.getMessage('shoutout.on.raid.mode.TWITCH_SHOUTOUT')}"></option>
+                <option th:value="NONE" th:text="${#messages.msg('shoutout.on.raid.mode.NONE')}"></option>
+                <option th:value="TEXT" th:text="${#messages.msg('shoutout.on.raid.mode.TEXT')}"></option>
+                <option th:value="STREAM_ELEMENTS_SHOUTOUT" th:text="${#messages.msg('shoutout.on.raid.mode.STREAM_ELEMENTS_SHOUTOUT')}"></option>
+                <option th:value="TWITCH_SHOUTOUT" th:text="${#messages.msg('shoutout.on.raid.mode.TWITCH_SHOUTOUT')}"></option>
             </select></td>
         </tr>
         <tr>
-            <td><label th:text="|Raid response channels|"></label></td>
+            <td><label th:text="${#messages.msg('frontend.channels.table.headers.shoutoutWhitelist')}" th:for="shoutoutChannels"></label></td>
             <td><input th:field="*{shoutoutChannels}" /></td>
         </tr>
         <tr><td><input type="submit" value="Submit" /></td></tr>

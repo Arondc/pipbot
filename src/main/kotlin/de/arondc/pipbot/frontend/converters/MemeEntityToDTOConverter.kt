@@ -1,6 +1,6 @@
 package de.arondc.pipbot.frontend.converters
 
-import de.arondc.pipbot.frontend.MemeDTO
+import de.arondc.pipbot.frontend.dtos.MemeDTO
 import de.arondc.pipbot.memes.MemeEntity
 import org.springframework.core.convert.converter.Converter
 import java.time.LocalDateTime

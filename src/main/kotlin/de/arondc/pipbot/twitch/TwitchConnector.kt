@@ -5,6 +5,9 @@ import com.github.twitch4j.TwitchClient
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent
 import com.github.twitch4j.chat.events.channel.RaidEvent
 import de.arondc.pipbot.channels.ChannelService
+import de.arondc.pipbot.events.SendMessageEvent
+import de.arondc.pipbot.events.TwitchMessage
+import de.arondc.pipbot.events.TwitchRaidEvent
 import jakarta.annotation.PostConstruct
 import mu.KotlinLogging
 import org.springframework.boot.context.event.ApplicationReadyEvent
@@ -20,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional
 class TwitchConnector(
     val twitchClient: TwitchClient,
     val twitchConnectorPublisher: TwitchConnectorPublisher,
-    val botTwitchConnector:BotTwitchConnector,
+    val twitchStreamService: TwitchStreamService,
     val channelService: ChannelService
 ) {
     private val log = KotlinLogging.logger {}
@@ -39,7 +42,7 @@ class TwitchConnector(
         val channels = channelService.findActive().map { it.name }
         log.info { "joining twitch channels: $channels" }
         channels.forEach {
-            botTwitchConnector.joinTwitchChannel(it)
+            twitchStreamService.joinChannel(it)
         }
     }
 
@@ -65,7 +68,7 @@ class TwitchConnectorPublisher(val publisher: ApplicationEventPublisher) {
                 channelMessageEvent.channel.name,
                 channelMessageEvent.user.name,
                 channelMessageEvent.message,
-                channelMessageEvent.permissions.map { it.name }.toSet()
+                channelMessageEvent.permissions.map { TwitchPermission.valueOf(it.name) }.toSet()
             )
         )
     }
@@ -81,21 +84,3 @@ class TwitchConnectorPublisher(val publisher: ApplicationEventPublisher) {
         )
     }
 }
-
-//TODO bessere Namen überlegen!!
-@Component
-class BotTwitchConnector(val publisher: ApplicationEventPublisher) {
-    private val log = KotlinLogging.logger {}
-    @Transactional
-    fun joinTwitchChannel(channel : String){
-        log.debug { "Sending event to join twitch channel $channel" }
-        publisher.publishEvent(BotJoinTwitchChannelEvent(channel))
-    }
-
-    @Transactional
-    fun leaveTwitchChannel(channel: String) {
-        log.debug { "Sending event to leave twitch channel $channel" }
-        publisher.publishEvent(BotLeaveTwitchChannelEvent(channel))
-    }
-}
-

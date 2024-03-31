@@ -1,13 +1,15 @@
-package de.arondc.pipbot.chat
+package de.arondc.pipbot.events.processors
 
 import de.arondc.pipbot.channels.ChannelEntity
 import de.arondc.pipbot.channels.ChannelService
+import de.arondc.pipbot.events.SendMessageEvent
+import de.arondc.pipbot.events.TwitchMessage
 import de.arondc.pipbot.quotes.QuoteNotFoundException
 import de.arondc.pipbot.quotes.QuoteService
 import de.arondc.pipbot.services.LanguageService
-import de.arondc.pipbot.twitch.SendMessageEvent
-import de.arondc.pipbot.twitch.TwitchMessage
+import de.arondc.pipbot.twitch.TwitchPermission
 import de.arondc.pipbot.twitch.TwitchStreamService
+import de.arondc.pipbot.twitch.satisfies
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.stereotype.Component
@@ -26,7 +28,7 @@ class QuoteProcessor(
     fun receiveMessage(twitchMessage: TwitchMessage) {
         when {
             twitchMessage.message.startsWith("!zitat add ") -> {
-                processAdd(
+                processAdd(twitchMessage,
                     twitchMessage.message.substringAfter("!zitat add "),
                     channelService.findOrCreate(twitchMessage.channel)
                 )
@@ -34,6 +36,7 @@ class QuoteProcessor(
 
             twitchMessage.message.startsWith("!zitat delete ") -> {
                 processDelete(
+                    twitchMessage,
                     twitchMessage.message.substringAfter("!zitat delete "),
                     channelService.findOrCreate(twitchMessage.channel)
                 )
@@ -48,19 +51,23 @@ class QuoteProcessor(
         }
     }
 
-    fun processAdd(text: String, channel: ChannelEntity) {
-        val date = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
-        val game = twitchStreamService.findLastGameFor(channel.name)
-        val quoteNumber = quoteService.save("$text ($game - $date)", channel).number
-        val message = languageService.getMessage(channel.name, "quote.added", arrayOf(quoteNumber))
-        publisher.publishEvent(SendMessageEvent(channel.name, message))
+    fun processAdd(twitchMessage: TwitchMessage, text: String, channel: ChannelEntity) {
+        if(twitchMessage.permissions.satisfies(TwitchPermission.SUBSCRIBER)) {
+            val date = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+            val game = twitchStreamService.findLastGameFor(channel.name)
+            val quoteNumber = quoteService.save("$text ($game - $date)", channel).number
+            val message = languageService.getMessage(channel.name, "quote.added", arrayOf(quoteNumber))
+            publisher.publishEvent(SendMessageEvent(channel.name, message))
+        }
     }
 
-    fun processDelete(numberAsText: String, channel: ChannelEntity) {
-        val quote = quoteService.findByNumber(numberAsText.toLong(), channel)
-        quoteService.delete(quote)
-        val message = languageService.getMessage(channel.name, "quote.deleted", arrayOf(numberAsText))
-        publisher.publishEvent(SendMessageEvent(channel.name, message))
+    fun processDelete(twitchMessage: TwitchMessage, numberAsText: String, channel: ChannelEntity) {
+        if(twitchMessage.permissions.satisfies(TwitchPermission.MODERATOR)) {
+            val quote = quoteService.findByNumber(numberAsText.toLong(), channel)
+            quoteService.delete(quote)
+            val message = languageService.getMessage(channel.name, "quote.deleted", arrayOf(numberAsText))
+            publisher.publishEvent(SendMessageEvent(channel.name, message))
+        }
     }
 
     fun processFind(numberOrText: String, channel: ChannelEntity) {

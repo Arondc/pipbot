@@ -1,12 +1,12 @@
-package de.arondc.pipbot.chat
+package de.arondc.pipbot.events.processors
 
 import de.arondc.pipbot.channels.ChannelService
+import de.arondc.pipbot.events.SendMessageEvent
+import de.arondc.pipbot.events.TwitchMessage
 import de.arondc.pipbot.memes.MemeEntity
 import de.arondc.pipbot.memes.MemeService
 import de.arondc.pipbot.services.LanguageService
 import de.arondc.pipbot.streams.StreamService
-import de.arondc.pipbot.twitch.SendMessageEvent
-import de.arondc.pipbot.twitch.TwitchMessage
 import mu.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.modulith.events.ApplicationModuleListener
@@ -28,12 +28,12 @@ class MemeProcessor(
     @ApplicationModuleListener
     fun receiveMessage(twitchMessage: TwitchMessage) {
         if (twitchMessage.message.startsWith("!meme ", true)) {
-            processMemeMessage(twitchMessage.user, twitchMessage.channel, twitchMessage.message.substringAfter("!meme "))
+            processMemeMessage(twitchMessage.channel, twitchMessage.user, twitchMessage.message.substringAfter("!meme "))
             respond(twitchMessage)
         } else if (memeSources.any {
                 twitchMessage.message.contains(it, true)
             }) {
-            processMemeMessage(twitchMessage.user, twitchMessage.channel, twitchMessage.message)
+            processMemeMessage(twitchMessage.channel, twitchMessage.user, twitchMessage.message)
             respond(twitchMessage)
         }
     }

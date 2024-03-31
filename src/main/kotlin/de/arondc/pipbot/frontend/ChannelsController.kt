@@ -1,14 +1,11 @@
 package de.arondc.pipbot.frontend
 
+import de.arondc.pipbot.frontend.dtos.ChannelDTO
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.validation.BindingResult
 import org.springframework.validation.ObjectError
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.ModelAttribute
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.servlet.mvc.support.RedirectAttributes
 
 @Controller
@@ -48,9 +45,7 @@ class ChannelsController(val frontendService: FrontendService) {
             }
         } catch (frontendException: FrontendException) {
             bindingResult.addError(ObjectError("globalError", frontendException.message))
-            //TODO low-prio : Gibt's das auch in schön?
-            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.channel", bindingResult)
-            redirectAttributes.addFlashAttribute("channel", newChannelInformation)
+            addFlashAttributesToRedirect(redirectAttributes, bindingResult, newChannelInformation, "channel")
         }
         return "redirect:/channels"
     }
@@ -64,18 +59,31 @@ class ChannelsController(val frontendService: FrontendService) {
     }
 
     @GetMapping("/deactivate")
-    fun deactivateChannel(@RequestParam("channel-id") channelId: Long?) : String {
-        if(channelId != null) {
+    fun deactivateChannel(@RequestParam("channel-id") channelId: Long?): String {
+        if (channelId != null) {
             frontendService.deactivateChannel(channelId)
         }
         return "redirect:/channels"
     }
 
     @GetMapping("/activate")
-    fun activateChannel(@RequestParam("channel-id") channelId: Long?) : String {
-        if(channelId != null) {
+    fun activateChannel(@RequestParam("channel-id") channelId: Long?): String {
+        if (channelId != null) {
             frontendService.activateChannel(channelId)
         }
         return "redirect:/channels"
+    }
+
+    private fun addFlashAttributesToRedirect(
+        redirectAttributes: RedirectAttributes,
+        bindingResult: BindingResult,
+        formObject: Any,
+        formObjectName: String
+    ) {
+        redirectAttributes.addFlashAttribute(
+            "org.springframework.validation.BindingResult.$formObjectName",
+            bindingResult
+        )
+        redirectAttributes.addFlashAttribute(formObjectName, formObject)
     }
 }

@@ -5,15 +5,18 @@
     <title>Memes</title>
 </head>
 <body>
+
+<h1 th:text="${#messages.msg('frontend.memes.header')}"></h1>
+
 <table>
     <thead>
     <tr>
-        <th>Kanal</th>
-        <th>Zeit</th>
-        <th>User</th>
-        <th>Link</th>
-        <th>Message</th>
-        <th>Stream</th>
+        <th th:text="${#messages.msg('frontend.memes.table.headers.channel')}"></th>
+        <th th:text="${#messages.msg('frontend.memes.table.headers.recordedAt')}"></th>
+        <th th:text="${#messages.msg('frontend.memes.table.headers.user')}"></th>
+        <th th:text="${#messages.msg('frontend.memes.table.headers.link')}"></th>
+        <th th:text="${#messages.msg('frontend.memes.table.headers.message')}"></th>
+        <th th:text="${#messages.msg('frontend.memes.table.headers.stream')}"></th>
     </tr>
     </thead>
     <tbody>

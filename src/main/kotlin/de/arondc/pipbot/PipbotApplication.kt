@@ -6,9 +6,9 @@ import org.springframework.scheduling.annotation.EnableAsync
 
 
 fun main(args: Array<String>) {
-    runApplication<PipbotV2Application>(*args)
+    runApplication<PipbotApplication>(*args)
 }
 
 @SpringBootApplication
 @EnableAsync
-class PipbotV2Application
+class PipbotApplication
