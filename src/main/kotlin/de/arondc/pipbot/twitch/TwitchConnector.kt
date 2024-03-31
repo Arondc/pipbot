@@ -7,6 +7,7 @@ import com.github.twitch4j.chat.events.channel.RaidEvent
 import de.arondc.pipbot.channels.ChannelService
 import de.arondc.pipbot.events.SendMessageEvent
 import de.arondc.pipbot.events.TwitchMessage
+import de.arondc.pipbot.events.TwitchPermission
 import de.arondc.pipbot.events.TwitchRaidEvent
 import jakarta.annotation.PostConstruct
 import mu.KotlinLogging

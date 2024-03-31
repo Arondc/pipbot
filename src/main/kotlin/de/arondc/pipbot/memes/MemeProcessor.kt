@@ -1,10 +1,8 @@
-package de.arondc.pipbot.events.processors
+package de.arondc.pipbot.memes
 
 import de.arondc.pipbot.channels.ChannelService
 import de.arondc.pipbot.events.SendMessageEvent
 import de.arondc.pipbot.events.TwitchMessage
-import de.arondc.pipbot.memes.MemeEntity
-import de.arondc.pipbot.memes.MemeService
 import de.arondc.pipbot.services.LanguageService
 import de.arondc.pipbot.streams.StreamService
 import mu.KotlinLogging

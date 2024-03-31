@@ -1,4 +1,4 @@
-package de.arondc.pipbot.events.processors
+package de.arondc.pipbot.chat
 
 import de.arondc.pipbot.events.TwitchMessage
 import mu.KotlinLogging

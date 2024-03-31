@@ -7,6 +7,7 @@ import de.arondc.pipbot.frontend.dtos.MemeDTO
 import de.arondc.pipbot.frontend.dtos.StreamDTO
 import de.arondc.pipbot.memes.MemeService
 import de.arondc.pipbot.streams.StreamService
+import de.arondc.pipbot.streams_merge.MergeService
 import de.arondc.pipbot.twitch.TwitchStreamService
 import mu.KotlinLogging
 import org.springframework.core.convert.ConversionService
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-class FrontendService(val memeService: MemeService, val channelService: ChannelService, val streamService: StreamService, val conversionService: ConversionService, val twitchStreamService: TwitchStreamService) {
+class FrontendService(val memeService: MemeService, val channelService: ChannelService, val streamService: StreamService, val conversionService: ConversionService, val twitchStreamService: TwitchStreamService, val mergeService: MergeService) {
     private val log = KotlinLogging.logger {}
 
     fun getMemes(streamId: Long? = null): List<MemeDTO> {
@@ -108,7 +109,7 @@ class FrontendService(val memeService: MemeService, val channelService: ChannelS
     }
 
     fun mergeStreams(streamIds : List<Long>) {
-        streamService.mergeStreams(streamIds)
+        mergeService.mergeStreams(streamIds)
     }
 
 }

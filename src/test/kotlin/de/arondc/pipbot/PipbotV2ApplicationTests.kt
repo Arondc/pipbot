@@ -14,7 +14,7 @@ class PipbotV2ApplicationTests {
 
     @Test
     fun createApplicationModuleModelUMLs() {
-        val modules: ApplicationModules = ApplicationModules.of(PipbotV2Application::class.java)
+        val modules: ApplicationModules = ApplicationModules.of(PipbotApplication::class.java)
         Documenter(modules)
             .writeModulesAsPlantUml()
             .writeIndividualModulesAsPlantUml()
@@ -24,7 +24,7 @@ class PipbotV2ApplicationTests {
 
     @Test
     fun verifyApplicationModuleModel() {
-        val modules: ApplicationModules = ApplicationModules.of(PipbotV2Application::class.java)
+        val modules: ApplicationModules = ApplicationModules.of(PipbotApplication::class.java)
         modules.verify().forEach { println(it) }
     }
 

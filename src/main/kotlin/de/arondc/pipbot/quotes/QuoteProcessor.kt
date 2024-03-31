@@ -1,15 +1,13 @@
-package de.arondc.pipbot.events.processors
+package de.arondc.pipbot.quotes
 
 import de.arondc.pipbot.channels.ChannelEntity
 import de.arondc.pipbot.channels.ChannelService
 import de.arondc.pipbot.events.SendMessageEvent
 import de.arondc.pipbot.events.TwitchMessage
-import de.arondc.pipbot.quotes.QuoteNotFoundException
-import de.arondc.pipbot.quotes.QuoteService
+import de.arondc.pipbot.events.TwitchPermission
+import de.arondc.pipbot.events.satisfies
 import de.arondc.pipbot.services.LanguageService
-import de.arondc.pipbot.twitch.TwitchPermission
 import de.arondc.pipbot.twitch.TwitchStreamService
-import de.arondc.pipbot.twitch.satisfies
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.stereotype.Component

@@ -1,4 +1,4 @@
-package de.arondc.pipbot.events.processors
+package de.arondc.pipbot.twitch
 
 import com.github.twitch4j.TwitchClient
 import de.arondc.pipbot.events.JoinTwitchChannelEvent

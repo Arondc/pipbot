@@ -1,4 +1,4 @@
-package de.arondc.pipbot.twitch
+package de.arondc.pipbot.events
 
 enum class TwitchPermission(private val level : Long) {
     //ROLES WITHOUT SPECIAL PERMISSIONS

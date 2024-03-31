@@ -1,12 +1,10 @@
-package de.arondc.pipbot.events.processors
+package de.arondc.pipbot.twitch
 
 import de.arondc.pipbot.channels.ChannelService
 import de.arondc.pipbot.channels.ShoutoutOnRaidType
 import de.arondc.pipbot.events.SendMessageEvent
 import de.arondc.pipbot.events.TwitchRaidEvent
 import de.arondc.pipbot.services.LanguageService
-import de.arondc.pipbot.twitch.TwitchStreamService
-import mu.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.stereotype.Component
@@ -18,8 +16,6 @@ class TwitchRaidProcessor(
     val languageService: LanguageService,
     val applicationEventPublisher: ApplicationEventPublisher
 ) {
-    private val log = KotlinLogging.logger {}
-
     @ApplicationModuleListener
     fun receiveRaidEvent(twitchRaidEvent: TwitchRaidEvent) {
         val channel = channelService.findByNameIgnoreCase(twitchRaidEvent.raidedChannel)!!
