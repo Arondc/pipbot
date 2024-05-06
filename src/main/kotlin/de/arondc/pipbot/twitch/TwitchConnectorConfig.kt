@@ -10,7 +10,7 @@ import org.springframework.core.io.support.EncodedResource
 
 
 @Configuration
-@PropertySource(value = ["file:authentication.yml"], factory = YamlPropertiesFactory::class)
+@PropertySource(value = ["file:authentication.yml"], factory = YamlPropertiesFactory::class, ignoreResourceNotFound = true)
 @ConfigurationProperties(prefix = "twitch-connector.authentication")
 data class TwitchConnectorConfig(
     var user: String = "",
