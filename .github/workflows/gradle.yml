@@ -18,7 +18,7 @@ jobs:
 
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
 
 
 
@@ -29,9 +29,6 @@ jobs:
       with:
         java-version: '21'
         distribution: 'temurin'
-
-    - name: Setup Kotlin
-      uses: fwilhe2/setup-kotlin@0.2.0
 
     # Configure Gradle for optimal use in GiHub Actions, including caching of downloaded dependencies.
     # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
