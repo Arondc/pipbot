@@ -8,5 +8,4 @@ class HomeController {
     @GetMapping("")
     fun home() = "home"
 
-
 }
