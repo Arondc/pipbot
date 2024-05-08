@@ -21,7 +21,7 @@ class PollProcessor(
             //!poll [options=Option1,Option2,Option3,....] "text"    -> Poll mit Antwortoptionen   (options = 1/2)
             //!poll [time=5m] "text"                                 -> Poll mit beliebigem Teitlimit
             //!poll [open=true] "text"                               -> Poll mit offener Antwort
-            //!poll options=1:2 time=5m "1=Dings 2=Bumms"
+            //!poll options=1,2 time=5m "1=Dings 2=Bumms"
 
             //TODO !poll help
             twitchMessage.message.equals("!poll", ignoreCase = true) -> {
@@ -39,7 +39,7 @@ class PollProcessor(
     }
 
     private fun buildPollParameters(arguments: String = ""): Map<String, String> {
-        val pollParameters = mutableMapOf("time" to "3m", "options" to "1:2", "text" to "", "open" to "false")
+        val pollParameters = mutableMapOf("time" to "3m", "options" to "1,2", "text" to "", "open" to "false")
         var remainingArguments = arguments
         remainingArguments = parseArgument(remainingArguments, "time", pollParameters)
         remainingArguments = parseArgument(remainingArguments, "options", pollParameters)
