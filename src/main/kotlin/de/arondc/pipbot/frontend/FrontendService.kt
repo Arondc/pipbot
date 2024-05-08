@@ -1,7 +1,10 @@
 package de.arondc.pipbot.frontend
 
+import de.arondc.pipbot.autoresponder.AutoResponseEntity
+import de.arondc.pipbot.autoresponder.AutoResponseService
 import de.arondc.pipbot.channels.ChannelEntity
 import de.arondc.pipbot.channels.ChannelService
+import de.arondc.pipbot.frontend.dtos.AutoResponseDTO
 import de.arondc.pipbot.frontend.dtos.ChannelDTO
 import de.arondc.pipbot.frontend.dtos.MemeDTO
 import de.arondc.pipbot.frontend.dtos.StreamDTO
@@ -21,7 +24,8 @@ class FrontendService(
     val streamService: StreamService,
     val conversionService: ConversionService,
     val twitchStreamService: TwitchStreamService,
-    val mergeService: MergeService
+    val mergeService: MergeService,
+    val autoResponseService: AutoResponseService
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -88,7 +92,7 @@ class FrontendService(
         val channel = channelService.findById(id)
         if (channel != null) {
             channelService.deleteChannel(channel)
-            if (!channel.active) {
+            if (channel.active) {
                 twitchStreamService.leaveChannel(channel.name)
             }
         }
@@ -117,6 +121,41 @@ class FrontendService(
 
     fun mergeStreams(streamIds: List<Long>) {
         mergeService.mergeStreams(streamIds)
+    }
+
+    fun getAutoResponses(): List<AutoResponseDTO> {
+        return autoResponseService.findAll().mapNotNull { conversionService.convert(it, AutoResponseDTO::class.java) }.toList()
+    }
+
+    fun getAutoResponse(autoResponseId: Long): AutoResponseDTO {
+        val autoResponseEntity : AutoResponseEntity = autoResponseService.findById(autoResponseId) ?: return AutoResponseDTO()
+        return conversionService.convert(autoResponseEntity, AutoResponseDTO::class.java)!!
+    }
+
+    fun createAutoResponse(autoResponseInformation: AutoResponseDTO) {
+        val newEntity = conversionService.convert(autoResponseInformation, AutoResponseEntity::class.java)!!
+        //TODO Kanäle als dropdown
+        //TODO Commands nicht doppelt erlauben für den gleichen Kanal
+        //TODO AutoResponses auch per command pflegbar machen
+        if(newEntity.channel == null){
+            throw RuntimeException("Kanal existiert nicht")
+        }
+        autoResponseService.save(newEntity)
+    }
+
+    fun updateAutoResponse(autoResponseInformation: AutoResponseDTO) {
+        val existingAutoResponse = autoResponseService.findById(autoResponseInformation.id!!)
+        if (existingAutoResponse != null) {
+            val updatedAutoResponse = conversionService.convert(autoResponseInformation, AutoResponseEntity::class.java)!!
+            autoResponseService.save(updatedAutoResponse)
+        }
+    }
+
+    fun deleteAutoResponse(autoResponseId: Long) {
+        val existingAutoResponse = autoResponseService.findById(autoResponseId)
+        if(existingAutoResponse != null) {
+            autoResponseService.delete(existingAutoResponse)
+        }
     }
 
 }

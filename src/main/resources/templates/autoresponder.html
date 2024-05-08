@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home - Pipbot</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet" />
+</head>
+<body>
+
+<h1 th:text="${#messages.msg('frontend.autoresponder.header')}"></h1>
+
+<table class="table-view">
+    <thead>
+    <tr>
+        <td th:text="${#messages.msg('frontend.autoresponder.table.headers.channel')}"></td>
+        <td th:text="${#messages.msg('frontend.autoresponder.table.headers.command')}"></td>
+        <td th:text="${#messages.msg('frontend.autoresponder.table.headers.message')}"></td>
+        <td></td>
+        <td></td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="ar: ${autoresponses}">
+        <td th:text="${ar.channel}"></td>
+        <td th:text="${ar.command}"></td>
+        <td th:text="${ar.message}"></td>
+        <td> <a th:href="@{/autoresponder(auto-response-id=${ar.id})}">edit</a>  </td>
+        <td> <a th:href="@{/autoresponder/delete(auto-response-id=${ar.id})}">delete</a></td>
+    </tr>
+    </tbody>
+</table>
+
+<div>
+<form th:action="@{/autoresponder/save}" th:object="${autoresponse}" method="post">
+    <div th:if="${#fields.hasErrors('global')}">
+        <p th:each="err : ${#fields.errors('global')}" th:text="${err}" class="error"></p>
+    </div>
+    <input type="hidden" th:field="*{id}" id="id">
+    <table>
+        <tr>
+            <td><label th:text="${#messages.msg('frontend.autoresponder.table.headers.channel')}" th:for="channel"></label></td>
+            <td><input type="text" th:id="name" th:field="*{channel}" /></td>
+        </tr>
+        <tr>
+            <td><label th:text="${#messages.msg('frontend.autoresponder.table.headers.command')}" th:for="command"></label></td>
+            <td><input type="text" th:field="*{command}" /></td>
+        </tr>
+
+        <tr>
+            <td><label th:text="${#messages.msg('frontend.autoresponder.table.headers.message')}" th:for="message"></label></td>
+            <td><input type="text" th:field="*{message}" /></td>
+        </tr>
+        <tr><td><input type="submit" value="Erstellen/Anpassen" /></td></tr>
+    </table>
+</form>
+</div>
+
+
+</body>
+</html>

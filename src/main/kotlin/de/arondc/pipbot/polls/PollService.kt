@@ -13,9 +13,8 @@ import java.time.format.DateTimeParseException
 import java.util.*
 import kotlin.concurrent.schedule
 
-// TODO Autoresponder
 // TODO [Kommandos der Module sammeln, sodass es keine Überschneidungen gibt]
-// TODO Internationalisierung der GUI
+// TODO Internationalisierung der GUI per Konfiguration/Link umschaltbar machen
 
 @Service
 class PollService(
