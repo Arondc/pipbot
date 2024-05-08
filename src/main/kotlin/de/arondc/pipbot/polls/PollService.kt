@@ -1,6 +1,7 @@
 package de.arondc.pipbot.polls
 
 import de.arondc.pipbot.events.SendMessageEvent
+import de.arondc.pipbot.services.LanguageService
 import jakarta.transaction.Transactional
 import mu.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
@@ -12,10 +13,16 @@ import java.time.format.DateTimeParseException
 import java.util.*
 import kotlin.concurrent.schedule
 
-// TODO Internationalisierung
+// TODO Autoresponder
+// TODO [Kommandos der Module sammeln, sodass es keine Überschneidungen gibt]
+// TODO Internationalisierung der GUI
 
 @Service
-class PollService(val pollPublisher: PollPublisher, val applicationEventPublisher: ApplicationEventPublisher) {
+class PollService(
+    val pollPublisher: PollPublisher,
+    val languageService: LanguageService,
+    val applicationEventPublisher: ApplicationEventPublisher
+) {
     private val log = KotlinLogging.logger {}
 
     val polls = mutableMapOf<String, MutableSet<Poll>>()
@@ -26,7 +33,7 @@ class PollService(val pollPublisher: PollPublisher, val applicationEventPublishe
             val configOpenPoll = pollParameters.getValue("open").toBoolean()
             val options = when (configOpenPoll) {
                 true -> setOf()
-                false -> pollParameters["options"]!!.split(":").toSet()
+                false -> pollParameters["options"]!!.split(",").toSet()
             }
 
             val poll = Poll(
@@ -34,15 +41,10 @@ class PollService(val pollPublisher: PollPublisher, val applicationEventPublishe
                     Duration.parse("PT${pollParameters["time"]}")
                 )
             )
-            validatePoll(configOpenPoll, channelName, poll)
+            validatePoll(poll, channelName, configOpenPoll)
 
-            startPoll(channelName, poll)
-
-            val answers = "Antworte mit " + when(poll.isOpenPoll()){
-                true -> "\"?<hier deine Antwort>\""
-                false -> poll.options.joinToString(" ") { "?$it" }
-            }
-            applicationEventPublisher.publishEvent(SendMessageEvent(channelName, "Poll gestartet - $answers"))
+            startPoll(poll, channelName)
+            notifyChatAboutPollStart(poll, channelName)
 
             log.info { poll }
             log.info { "timer ends at ${Date.from(poll.endTime.atZone(ZoneOffset.systemDefault()).toInstant())}" }
@@ -51,18 +53,27 @@ class PollService(val pollPublisher: PollPublisher, val applicationEventPublishe
         } catch (ex: PollCreationException) {
             pollPublisher.publishEvent(
                 SendMessageEvent(
-                    channelName,
-                    ex.msg
+                    channelName, ex.msg
                 )
             )
-        } catch (ex : DateTimeParseException) {
+        } catch (ex: DateTimeParseException) {
+            val errMsg = languageService.getMessage(
+                channelName, "polls.error.parameter.time", arrayOf(pollParameters.getValue("time"))
+            )
             pollPublisher.publishEvent(
-                SendMessageEvent(
-                    channelName,
-                    "Angabe der Zeit für den Poll ist ungültig ${pollParameters["time"]}"
-                )
+                SendMessageEvent(channelName, errMsg)
             )
         }
+    }
+
+    private fun notifyChatAboutPollStart(poll: Poll, channelName: String) {
+        val startMessage = when (poll.isOpenPoll()) {
+            true -> languageService.getMessage(channelName, "polls.poll.started.open")
+            false -> languageService.getMessage(
+                channelName, "polls.poll.started.answers", arrayOf(poll.options.joinToString(" ") { "?$it" })
+            )
+        }
+        applicationEventPublisher.publishEvent(SendMessageEvent(channelName, startMessage))
     }
 
     fun acceptAnswer(message: String, channelName: String, userName: String) {
@@ -77,9 +88,8 @@ class PollService(val pollPublisher: PollPublisher, val applicationEventPublishe
         }
 
         countAnswer(foundPoll, userName, message)
-        if (foundPoll.hasOptions()) {
-            pollPublisher.publishEvent(SendMessageEvent(channelName, "Deine Antwort wurde gezählt $userName"))
-        }
+        val response = languageService.getMessage(channelName, "polls.poll.countedAnswer", arrayOf(userName))
+        pollPublisher.publishEvent(SendMessageEvent(channelName, response))
     }
 
     fun closePoll(poll: Poll, channelName: String) {
@@ -88,7 +98,8 @@ class PollService(val pollPublisher: PollPublisher, val applicationEventPublishe
             false -> countAnswersForPollWithOptions(poll)
         }
         val title = poll.text.ifBlank { "" }
-        val sendMessageEvent = SendMessageEvent(channelName, "Poll $title beendet - $results")
+        val message = languageService.getMessage(channelName, "polls.poll.result", arrayOf(title, results))
+        val sendMessageEvent = SendMessageEvent(channelName, message)
         pollPublisher.publishEvent(sendMessageEvent)
         polls[channelName]!!.remove(poll)
     }
@@ -101,18 +112,18 @@ class PollService(val pollPublisher: PollPublisher, val applicationEventPublishe
         answers[poll]!!.asSequence().groupingBy { it.value }.eachCount().toList()
             .sortedByDescending { (_, value) -> value }.joinToString(", ") { (k, v) -> "${k}=${v}" }
 
-    private fun validatePoll(configuredForOpenPoll: Boolean, channelName: String, poll: Poll) {
+    private fun validatePoll(poll: Poll, channelName: String, configuredForOpenPoll: Boolean) {
         if (!configuredForOpenPoll && poll.options.all { it.isBlank() }) {
-            throw PollCreationException("Die Umfrage konnte nicht erzeugt werden, es existieren keine Antwortmöglichkeiten.")
+            throw PollCreationException(languageService.getMessage(channelName, "polls.error.noOptionsGiven"))
         }
         if (pollsWithOverlappingOptionsExist(channelName, poll)) {
-            throw PollCreationException("Die neue Umfrage konnte nicht gestartet werden, es existiert bereits eine Umfrage mit überlappenden Antwortmöglichkeiten")
+            throw PollCreationException(languageService.getMessage(channelName, "polls.error.overlappingOptions"))
         }
         if (runningOpenPollExists(channelName)) {
-            throw PollCreationException("Die neue Umfrage konnte nicht gestartet werden, es existiert bereits eine offene Umfrage.")
+            throw PollCreationException(languageService.getMessage(channelName, "polls.error.openPollRunning"))
         }
         if (runningPollsExistAndNewPollIsOpen(channelName, poll)) {
-            throw PollCreationException("Die neue Umfrage konnte nicht gestartet werden, zur Zeit laufen bereits Umfragen, sodass keine offene Umfrage gestartet werden kann.")
+            throw PollCreationException(languageService.getMessage(channelName, "polls.error.openPollNotStartable"))
         }
     }
 
@@ -124,7 +135,7 @@ class PollService(val pollPublisher: PollPublisher, val applicationEventPublishe
     private fun pollsWithOverlappingOptionsExist(channelName: String, poll: Poll) =
         polls[channelName]?.flatMap { p -> p.options }?.any { poll.options.contains(it) } == true
 
-    private fun startPoll(channelName: String, poll: Poll) {
+    private fun startPoll(poll: Poll, channelName: String) {
         polls.putIfAbsent(channelName, mutableSetOf())
         polls[channelName]!!.add(poll)
         answers[poll] = mutableMapOf()
