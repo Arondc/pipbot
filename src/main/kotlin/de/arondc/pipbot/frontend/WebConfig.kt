@@ -16,6 +16,8 @@ class WebConfig(val channelService: ChannelService) : WebMvcConfigurer {
         registry.addConverter(StreamEntityToDTOConverter())
         registry.addConverter(AutoResponseDTOToEntityConverter(channelService))
         registry.addConverter(AutoResponseEntityToDTOConverter())
+        registry.addConverter(AutoModPhraseDTOToEntityConverter(channelService))
+        registry.addConverter(AutoModPhraseEntityToDTOConverter())
     }
 }
 
