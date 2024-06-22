@@ -6,7 +6,13 @@ import org.springframework.stereotype.Service
 @Service
 class MemeService(
     val memeRepo: MemeRepository,
+    val memeBrowserSourceQueue: MemeBrowserSourceQueue
 ) {
+
+    fun forwardMemeToBrowserSource(channelName: String, message: String){
+        memeBrowserSourceQueue.queue(channelName, message)
+    }
+
     fun save(memeEntity: MemeEntity): MemeEntity {
         return memeRepo.save(memeEntity)
     }
