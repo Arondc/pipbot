@@ -40,14 +40,10 @@ jobs:
       - name: 'Upload Artifact'
         uses: actions/upload-artifact@v4
         with:
-          name: pipbot.jar
-          path: build/libs/pipbot-0.0.1-SNAPSHOT.jar
-
-      - name: 'Upload Artifact'
-        uses: actions/upload-artifact@v4
-        with:
-          name: authentication.yml
-          path: authentication_template.yml
+          name: pipbot
+          path: |
+            build/libs/pipbot-0.0.1-SNAPSHOT.jar
+            authentication_template.yml
 
   dependency-submission:
 
