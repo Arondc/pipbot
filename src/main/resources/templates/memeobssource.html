@@ -1,0 +1,39 @@
+<html>
+<head>
+    <script th:src="@{/js/jquery-3.7.1.min.js}" type="text/javascript"></script>
+    <script th:inline="javascript" type="text/javascript">
+        function httpGet(theUrl)
+        {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open( "GET", theUrl, false );
+            xmlHttp.send( null );
+            return xmlHttp.responseText;
+        }
+
+        function getAndAppend(newMessageUrl) {
+            var picUrl = httpGet(newMessageUrl);
+            if(picUrl.length > 0){
+                appendDiv(picUrl);
+            }
+            setTimeout(getAndAppend,10000,newMessageUrl);
+        }
+
+        function appendDiv(picContent) {
+            var new_div = $(`<div style="display: none;"><img width="` + [[${imgWidth}]] + `" src="${picContent}"></div>`).hide();
+            $('#anzeige').append(new_div);
+            new_div
+                .slideDown(1000).delay(5000).slideUp(1000, function () {
+                $('#anzeige').remove(new_div)
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            getAndAppend('http://'+ [[${address}]] +'/browser/memes/' + [[${channelName}]] + '/next_meme');
+        }, false);
+    </script>
+</head>
+<body style="background-color: transparent">
+
+<div id="anzeige"></div>
+</body>
+</html>
