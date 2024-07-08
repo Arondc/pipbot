@@ -149,6 +149,12 @@ As the meme browser source is only showing the memes for about 10 seconds, it ma
 To access this monitor your can use `http://localhost:8080/browser/memes/<your channel name>/monitor`.
 This view will update every second and will always show the latest meme.
 
+The browser source monitor supports the same URL parameters as the meme browser source itself. 
+
+``imgWidth`` - Changes the default width of the shown image in the browser source
+``address`` - Changes the default server to use for requesting the last shown meme in the browser source
+
+
 ### Quotes
 (documentation is WIP)
 
