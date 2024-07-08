@@ -125,6 +125,7 @@ To set up the browser source, add it to your OBS scene with the following settin
 There are optional URL parameters you can provide to change the behaviour of the meme browser source.
 
 ``imgWidth`` - Changes the default width of the shown image in the browser source
+
 ``address`` - Changes the default server to use for requesting new memes in the browser source
 
 ##### Examples
@@ -152,6 +153,13 @@ This view will update every second and will always show the latest meme.
 The browser source monitor supports the same URL parameters as the meme browser source itself. 
 
 ``imgWidth`` - Changes the default width of the shown image in the browser source
+``address`` - Changes the default server to use for requesting the last shown meme in the browser source
+
+
+The browser source monitor supports the same URL parameters as the meme browser source itself. 
+
+``imgWidth`` - Changes the default width of the shown image in the browser source
+
 ``address`` - Changes the default server to use for requesting the last shown meme in the browser source
 
 
