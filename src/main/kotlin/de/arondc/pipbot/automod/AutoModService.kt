@@ -66,7 +66,7 @@ class ChatMessageCache(private val cacheSize: Long){
                 mutableListOf(message)
             } else {
                 messageList.add(message)
-                if(cacheSize > 3) {
+                if(cacheSize > 3) { //TODO 3?
                     messageList.removeFirst()
                 }
                 messageList
