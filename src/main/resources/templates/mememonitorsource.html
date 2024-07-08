@@ -22,12 +22,12 @@
         }
 
         function appendDiv(picContent) {
-            var new_div = $(`<div><img width="600px" src="${picContent}"></div>`);
+            var new_div = $(`<div><img width="` + [[${imgWidth}]] + `" src="${picContent}"></div>`);
             $('#anzeige').html(new_div);
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            getAndAppend('http://localhost:8080/browser/memes/' + [[${channelName}]] + '/last_returned_meme');
+            getAndAppend('http://'+ [[${address}]] +'/browser/memes/' + [[${channelName}]] + '/last_returned_meme');
         }, false);
     </script>
 </head>

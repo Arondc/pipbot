@@ -22,8 +22,13 @@ class MemeBrowserSourceController(val memeBrowserSourceQueue: MemeBrowserSourceQ
 	}
 
 	@GetMapping("/{channelName}/monitor")
-	fun monitorBrowserSource(@PathVariable channelName: String, model: Model): String {
+	fun monitorBrowserSource(
+		@PathVariable channelName: String,
+		@RequestParam imgWidth: String = "600px",
+		@RequestParam address: String = "localhost:8080", model: Model): String {
 		model.set("channelName", channelName)
+		model.set("imgWidth", imgWidth)
+		model.set("address", address)
 		return "mememonitorsource"
 	}
 
