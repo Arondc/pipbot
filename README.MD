@@ -1,6 +1,7 @@
 **Table of contents**
 <!-- TOC -->
 * [Pipbot - A multichannel Twitch Chatbot written in Kotlin](#pipbot---a-multichannel-twitch-chatbot-written-in-kotlin)
+  * [Build from sources](#build-from-sources)
   * [Setting up the bot](#setting-up-the-bot)
   * [Configuring your channel](#configuring-your-channel)
   * [Features](#features)
@@ -8,6 +9,8 @@
     * [Meme recognition & browser source](#meme-recognition--browser-source)
       * [Meme recording](#meme-recording)
       * [Meme browser source](#meme-browser-source)
+        * [Examples](#examples)
+        * [Meme browser source monitor](#meme-browser-source-monitor)
     * [Quotes](#quotes)
     * [Raid reactions](#raid-reactions)
     * [Polls](#polls)
@@ -24,6 +27,17 @@
 # Pipbot - A multichannel Twitch Chatbot written in Kotlin
 Disclaimer: The bots surface and command list is currently german only. An english version is already planned.
 
+## Build from sources
+
+1. Clone the git repository onto your own machine
+2. Make sure you have a Java JDK 21 or newer installed on your machine
+3. Make sure your have the Java installation set as JAVA_HOME environment variable or in your PATH
+4. Run
+```shell
+./gradlew assemble
+```
+5. The build should be available in the ``build/libs`` directory
+
 ## Setting up the bot
 You need the following prerequisites:
 * JVM 21 oder newer
@@ -34,7 +48,7 @@ You need the following prerequisites:
     * Download the template `authentication_template.yml` into the same folder as the release
     * Rename the template file to `authentication.yml`
     * Edit the following values in the file
-        * Set `twitch-connector.authentication.user` to the user name the bot should use
+        * Set `twitch-connector.authentication.user` to the username the bot should use
         * Set `twitch-connector.authentication.oAuth` with the oauth token of your bot's account
 3. The bot can be started via the command line
 ```shell
@@ -98,7 +112,7 @@ This includes the channel name, the time the meme was sent, the user that sent i
 
 
 #### Meme browser source
-The bot currently supports providing imgflip memes directly as a browser source. This allows showing memes in your stream by simply setting up another browser source (similarly as the stream overlay you may already use).
+The bot currently supports providing imgflip memes (jpg & gif) directly as a browser source. This allows showing memes in your stream by simply setting up another browser source (similarly as the stream overlay you may already use).
 
 To set up the browser source, add it to your OBS scene with the following settings
 
@@ -107,6 +121,33 @@ To set up the browser source, add it to your OBS scene with the following settin
 | URL           | `http://localhost:8080/browser/memes/<your channel name>`                            |
 | Width         | 600 (the bot currently supports only this with and will scale images accordingly)    |
 | Height        | The height of your stream (to use the whole screen in case the images are very high) |
+
+There are optional URL parameters you can provide to change the behaviour of the meme browser source.
+
+``imgWidth`` - Changes the default width of the shown image in the browser source
+``address`` - Changes the default server to use for requesting new memes in the browser source
+
+##### Examples
+
+| Example urls                                                                                | Used settings                                                  |
+|---------------------------------------------------------------------------------------------|----------------------------------------------------------------|
+| `http://localhost:8080/browser/memes/mychannel`                                             | imgWidth=600px (default)<br/> address=localhost:8080 (default) |
+| `http://localhost:8080/browser/memes/mychannel?imgWidth=300px`                              | imgWidth=300px<br/> address=localhost:8080  (default)          |
+| `http://localhost:8080/browser/memes/mychannel?address=123.123.123.123:1234`                | imgWidth=600px (default)<br/> address=123.123.123.123:1234     |
+| `http://localhost:8080/browser/memes/mychannel?imgWidth=100px&address=123.123.123.123:1234` | imgWidth=100px<br/> address=123.123.123.123:1234               |
+
+Example configuration in OBS using the default width (Breite) and address
+
+![img.png](doc/img.png)
+
+Please make sure that your source is not squished in OBS by shift dragging the anchor points, else your memes will look squished too.
+
+##### Meme browser source monitor
+
+As the meme browser source is only showing the memes for about 10 seconds, it may be helpful to have a URL to monitor the memes for yourself that always shows the latest shown meme on your channel.
+
+To access this monitor your can use `http://localhost:8080/browser/memes/<your channel name>/monitor`.
+This view will update every second and will always show the latest meme.
 
 ### Quotes
 (documentation is WIP)
@@ -117,7 +158,6 @@ To set up the browser source, add it to your OBS scene with the following settin
 | !zitat delete \<number>           | Deleted the quote with the given number                                                                     |
 | !zitat \<number>                  | Searches the quote with the given number                                                                    |
 | !zitat \<text>                    | Searches a quote with the given text (if there is more than one a random one with the text will be picked)  |
-
 
 ### Raid reactions
 (documentation is WIP)
