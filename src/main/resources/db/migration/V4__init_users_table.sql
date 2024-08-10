@@ -11,6 +11,7 @@ create table user_channel_information
     channel_id BIGINT not null ,
     last_seen  TIMESTAMP,
     amount_of_visited_streams BIGINT,
+    highest_twitch_user_level CHARACTER VARYING(20),
     constraint USER_CHANNELS_INFORMATION_USER_FK foreign key (user_id) references PUBLIC.USERS,
     constraint USER_CHANNELS_INFORMATION_CHANNEL_FK foreign key (channel_id) references PUBLIC.CHANNELS,
     primary key(user_id, channel_id)

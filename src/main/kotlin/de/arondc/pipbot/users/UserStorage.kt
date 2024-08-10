@@ -1,6 +1,7 @@
 package de.arondc.pipbot.users
 
 import de.arondc.pipbot.channels.ChannelEntity
+import de.arondc.pipbot.events.TwitchPermission
 import jakarta.persistence.*
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
@@ -50,6 +51,9 @@ class UserChannelInformationEntity(
 
     val amountOfVisitedStreams: Long = 0,
 
+    @Enumerated(EnumType.STRING)
+    val highestTwitchUserLevel: TwitchPermission = TwitchPermission.EVERYONE,
+
     @EmbeddedId
     val id : UserChannelInformationEntityPK = UserChannelInformationEntityPK(user.id!!, channel.id!!)
 ){
@@ -58,6 +62,7 @@ class UserChannelInformationEntity(
         channel = channel,
         lastSeen = LocalDateTime.now(),
         amountOfVisitedStreams = amountOfVisitedStreams + 1,
+        highestTwitchUserLevel = highestTwitchUserLevel,
         id = id
     )
 
@@ -66,6 +71,16 @@ class UserChannelInformationEntity(
         channel = channel,
         lastSeen = LocalDateTime.now(),
         amountOfVisitedStreams = amountOfVisitedStreams,
+        highestTwitchUserLevel = highestTwitchUserLevel,
+        id = id
+    )
+
+    fun withHighestUserLevel(highestTwitchUserLevel: TwitchPermission) = UserChannelInformationEntity(
+        user = user,
+        channel = channel,
+        lastSeen = lastSeen,
+        amountOfVisitedStreams = amountOfVisitedStreams,
+        highestTwitchUserLevel = highestTwitchUserLevel,
         id = id
     )
 

@@ -2,6 +2,7 @@ package de.arondc.pipbot.users
 
 import de.arondc.pipbot.events.SendMessageEvent
 import de.arondc.pipbot.events.TwitchMessage
+import de.arondc.pipbot.events.TwitchPermission
 import mu.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.modulith.events.ApplicationModuleListener
@@ -22,18 +23,18 @@ class UserProcessor(
 
     @ApplicationModuleListener
     fun receiveMessage(twitchMessage: TwitchMessage) {
-        recognizeUser(twitchMessage.channel, twitchMessage.user)
+        recognizeUser(twitchMessage.channel, twitchMessage.user, twitchMessage.permissions)
         handleRequest(twitchMessage.channel, twitchMessage.message, twitchMessage.user)
     }
 
-    private fun recognizeUser(channel: String, userName: String) {
-        userService.recognizeUser(channel, userName)
+    private fun recognizeUser(channel: String, userName: String, permissions: Set<TwitchPermission>) {
+        userService.recognizeUser(channel, userName, permissions)
     }
 
     private fun handleRequest(channel: String, message: String, user: String) {
 
         val responseMessage = when {
-            message.startsWith("!lastseen") -> handleLastSeen(message.substringAfter("!lastseen "), channel)
+            message.startsWith("!lastseen") -> handleLastSeen(message.substringAfter("!lastseen"), channel, user)
             else -> null
         }
 
@@ -42,9 +43,10 @@ class UserProcessor(
         }
     }
 
-    private fun handleLastSeen(username: String, channel: String) : String {
-        val info = userService.getUserChannelInformation(username, channel) ?: return "Ich kenne $username nicht!"
-        return "$username war schon ${info.amountOfVisitedStreams}x da, zuletzt am ${info.lastSeen?.format(DATE_FORMAT)} um ${
+    private fun handleLastSeen(username: String, channel: String, userCalling : String) : String {
+        val userParam = username.trim().ifEmpty { userCalling }
+        val info = userService.getUserChannelInformation(userParam, channel) ?: return "Ich kenne $userParam nicht!"
+        return "$userParam war schon ${info.amountOfVisitedStreams}x da, zuletzt am ${info.lastSeen?.format(DATE_FORMAT)} um ${
             info.lastSeen?.format(
                 TIME_FORMAT
             )
