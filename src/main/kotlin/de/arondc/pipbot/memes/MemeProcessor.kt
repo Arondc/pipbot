@@ -65,7 +65,7 @@ class MemeProcessor(
             channel,
             user,
             message,
-            streamService.findCurrentStream(channelName)
+            streamService.findOrPersistCurrentStream(channelName)
         )
         log.debug { meme }
         memeService.save(meme)
