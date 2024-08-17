@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 
 @Repository
 interface UserStorage : JpaRepository<UserEntity, Long>{
-    fun findByName(username: String): UserEntity?
+    fun findByNameIgnoreCase(username: String): UserEntity?
 }
 
 @Repository
@@ -40,48 +40,22 @@ class UserChannelInformationEntity(
     @ManyToOne
     @MapsId("userId")
     @JoinColumn(name = "user_id")
-    val user : UserEntity,
+    val user: UserEntity,
 
     @ManyToOne
     @MapsId("channelId")
     @JoinColumn(name = "channel_id")
     val channel: ChannelEntity,
 
-    val lastSeen: LocalDateTime? = null,
+    var lastSeen: LocalDateTime = LocalDateTime.now(),
 
-    val amountOfVisitedStreams: Long = 0,
+    var amountOfVisitedStreams: Long = 0,
 
     @Enumerated(EnumType.STRING)
-    val highestTwitchUserLevel: TwitchPermission = TwitchPermission.EVERYONE,
+    var highestTwitchUserLevel: TwitchPermission = TwitchPermission.EVERYONE,
+
+    var followerSince: LocalDateTime? = null,
 
     @EmbeddedId
-    val id : UserChannelInformationEntityPK = UserChannelInformationEntityPK(user.id!!, channel.id!!)
-){
-    fun withNewLastSeenAndCount() = UserChannelInformationEntity(
-        user = user,
-        channel = channel,
-        lastSeen = LocalDateTime.now(),
-        amountOfVisitedStreams = amountOfVisitedStreams + 1,
-        highestTwitchUserLevel = highestTwitchUserLevel,
-        id = id
-    )
-
-    fun withNewLastSeen() = UserChannelInformationEntity(
-        user = user,
-        channel = channel,
-        lastSeen = LocalDateTime.now(),
-        amountOfVisitedStreams = amountOfVisitedStreams,
-        highestTwitchUserLevel = highestTwitchUserLevel,
-        id = id
-    )
-
-    fun withHighestUserLevel(highestTwitchUserLevel: TwitchPermission) = UserChannelInformationEntity(
-        user = user,
-        channel = channel,
-        lastSeen = lastSeen,
-        amountOfVisitedStreams = amountOfVisitedStreams,
-        highestTwitchUserLevel = highestTwitchUserLevel,
-        id = id
-    )
-
-}
+    val id: UserChannelInformationEntityPK = UserChannelInformationEntityPK(user.id!!, channel.id!!)
+)
