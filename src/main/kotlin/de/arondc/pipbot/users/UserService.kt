@@ -76,7 +76,6 @@ class UserService(
         info.lastSeen = LocalDateTime.now()
     }
 
-    //TODO Antwort internationalisieren
     //TODO Oberfläche? (ggf. auch erst mit dem Automod)
     //TODO Doku: ER/JPA & Messaging & ggf Komponenten Diagram
     //TODO: ^----> ggf. auch restrukturieren
