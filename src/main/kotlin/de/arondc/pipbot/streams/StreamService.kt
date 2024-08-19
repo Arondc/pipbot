@@ -1,5 +1,6 @@
 package de.arondc.pipbot.streams
 
+import com.github.twitch4j.helix.domain.Stream
 import de.arondc.pipbot.channels.ChannelService
 import de.arondc.pipbot.twitch.TwitchStreamService
 import org.springframework.stereotype.Service
@@ -12,9 +13,13 @@ class StreamService(
     val twitchStreamService: TwitchStreamService,
     val channelService: ChannelService
 ) {
-    fun findCurrentStream(channelName: String): StreamEntity? {
-        val twitchStream = twitchStreamService.fetchStreamFromTwitch(channelName).streams.firstOrNull() ?: return null
-        val channel = channelService.findByNameIgnoreCase(channelName)!!
+    fun findOrPersistCurrentStream(channelName: String): StreamEntity? {
+        val twitchStream = twitchStreamService.fetchCurrentStreamsForChannels(listOf(channelName)).streams.firstOrNull() ?: return null
+        return findOrCreateMatchingStream(twitchStream)
+    }
+
+    fun findOrCreateMatchingStream(twitchStream: Stream): StreamEntity {
+        val channel = channelService.findByNameIgnoreCase(twitchStream.userName)!!
         val startTime = LocalDateTime.ofInstant(twitchStream.startedAtInstant, ZoneId.systemDefault())
         return streamRepository.findByChannelAndStartTimesContains(
             channel, startTime

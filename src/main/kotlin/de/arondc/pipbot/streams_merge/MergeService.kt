@@ -13,7 +13,7 @@ class MergeService(val streamService: StreamService, val memeService: MemeServic
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     fun mergeStream(channelName: String) {
-        val sourceStream = streamService.findCurrentStream(channelName)
+        val sourceStream = streamService.findOrPersistCurrentStream(channelName)
             ?: throw StreamServiceException("No currently running stream found")
         val targetStream = findLatestStreamBefore(sourceStream)
             ?: throw StreamServiceException("No stream before the currently running stream found")

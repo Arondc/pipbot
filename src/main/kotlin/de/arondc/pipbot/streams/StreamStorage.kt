@@ -17,7 +17,7 @@ interface StreamRepository : JpaRepository<StreamEntity, Long> {
 @Table(name = "streams")
 class StreamEntity(
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "streams_start_times")
     @Column(name = "start_time")
     val startTimes: Set<LocalDateTime>,

@@ -2,6 +2,7 @@ package de.arondc.pipbot.twitch
 
 import com.github.philippheuer.credentialmanager.domain.OAuth2Credential
 import com.github.twitch4j.TwitchClient
+import com.github.twitch4j.helix.domain.ChattersList
 import com.github.twitch4j.helix.domain.StreamList
 import com.github.twitch4j.helix.domain.User
 import de.arondc.pipbot.events.JoinTwitchChannelEvent
@@ -10,6 +11,7 @@ import mu.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
 
 
 @Service
@@ -20,14 +22,25 @@ class TwitchStreamService(
 ) {
     private val log = KotlinLogging.logger {}
 
-    fun fetchStreamFromTwitch(channelName: String): StreamList {
+    fun fetchCurrentStreamsForChannels(channelNames: List<String>): StreamList {
+        return fetchStreamsFromTwitch(channelNames)
+    }
+
+    private fun fetchStreamsFromTwitch(channelNames: List<String>): StreamList {
         val token: String = twitchConnectorConfig.accessToken
-        val numbersOfStreamsToFetch = 1
-        val channelsToFetchStreamsFor = listOf(channelName)
-        val execute = twitchClient.helix
-            .getStreams(token, null, null, numbersOfStreamsToFetch, null, null, null, channelsToFetchStreamsFor)
+        val numbersOfStreamsToFetch = channelNames.size
+        val execute = twitchClient.helix.getStreams(
+                token,
+                null,
+                null,
+                numbersOfStreamsToFetch,
+                null,
+                null,
+                null,
+                channelNames
+            )
             .execute()
-        log.debug { "Found streams for $channelName - $execute" }
+        log.debug { "Found streams for $channelNames - $execute" }
         return execute
     }
 
@@ -57,6 +70,39 @@ class TwitchStreamService(
                 moderatorId
             ).execute()
         }
+    }
+
+    fun getFollowerInfoFor(channelName: String, userName: String): Instant? {
+        val channelBroadcasterId = getUserInformation(channelName).id
+        val userId = getUserInformation(userName).id
+        val channelInfo = twitchClient.helix.getChannelFollowers(
+            twitchConnectorConfig.accessToken,
+            channelBroadcasterId,
+            userId,
+            null,
+            null
+        ).execute()
+
+        return when {
+            channelInfo.follows == null -> null
+            channelInfo.follows!!.isEmpty() -> null
+            else -> channelInfo.follows!![0].followedAt
+        }
+    }
+
+    fun getChatUserList(channelName: String): ChattersList {
+        val channelBroadcasterId = getUserInformation(channelName).id
+        val moderatorId = getUserInformation(twitchConnectorConfig.userName).id
+        val chatList = twitchClient.helix.getChatters(
+            twitchConnectorConfig.accessToken,
+            channelBroadcasterId,
+            moderatorId,
+            null,
+            null
+        )
+            .execute()
+        log.debug {chatList}
+        return chatList
     }
 
     @Transactional

@@ -11,6 +11,8 @@ import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 
+private const val IMGFLIP_COM = "imgflip.com"
+
 @Component
 class MemeProcessor(
     val memeService: MemeService,
@@ -21,7 +23,7 @@ class MemeProcessor(
 ) {
     private val log = KotlinLogging.logger {}
 
-    private val memeSources: Set<String> = setOf("imgflip.com", "www.youtube.com", "clips.twitch.tv")
+    private val memeSources: Set<String> = setOf(IMGFLIP_COM, "www.youtube.com", "clips.twitch.tv")
 
     @ApplicationModuleListener
     fun receiveMessage(twitchMessage: TwitchMessage) {
@@ -37,6 +39,13 @@ class MemeProcessor(
             }) {
             processMemeMessage(twitchMessage.channel, twitchMessage.user, twitchMessage.message)
             respond(twitchMessage)
+        }
+    }
+
+    @ApplicationModuleListener
+    fun receiveBrowserSourceMessages(twitchMessage: TwitchMessage) {
+        if(twitchMessage.message.contains(IMGFLIP_COM, true)){
+            memeService.forwardMemeToBrowserSource(twitchMessage.channel, twitchMessage.message)
         }
     }
 
@@ -56,7 +65,7 @@ class MemeProcessor(
             channel,
             user,
             message,
-            streamService.findCurrentStream(channelName)
+            streamService.findOrPersistCurrentStream(channelName)
         )
         log.debug { meme }
         memeService.save(meme)

@@ -6,12 +6,17 @@ import de.arondc.pipbot.autoresponder.AutoResponseEntity
 import de.arondc.pipbot.autoresponder.AutoResponseService
 import de.arondc.pipbot.channels.ChannelEntity
 import de.arondc.pipbot.channels.ChannelService
-import de.arondc.pipbot.frontend.dtos.*
+import de.arondc.pipbot.events.*
+import de.arondc.pipbot.frontend.dtos.AutoResponseDTO
+import de.arondc.pipbot.frontend.dtos.ChannelDTO
+import de.arondc.pipbot.frontend.dtos.MemeDTO
+import de.arondc.pipbot.frontend.dtos.StreamDTO
 import de.arondc.pipbot.memes.MemeService
 import de.arondc.pipbot.streams.StreamService
 import de.arondc.pipbot.streams_merge.MergeService
 import de.arondc.pipbot.twitch.TwitchStreamService
 import mu.KotlinLogging
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.core.convert.ConversionService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -26,6 +31,7 @@ class FrontendService(
     val mergeService: MergeService,
     val autoResponseService: AutoResponseService,
     val autoModService: AutoModService,
+    val eventPublisher: ApplicationEventPublisher
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -45,12 +51,14 @@ class FrontendService(
         return channels.mapNotNull { conversionService.convert(it, ChannelDTO::class.java) }
     }
 
+    @Transactional
     fun createNewChannel(newChannel: ChannelDTO) {
         val existingChannel = channelService.findByNameIgnoreCase(newChannel.name)
         if (existingChannel == null) {
             val channelEntity = conversionService.convert(newChannel, ChannelEntity::class.java)!!
             channelService.save(channelEntity)
             twitchStreamService.joinChannel(channelEntity.name)
+            eventPublisher.publishEvent(UpdateUserListForChannelEvent(channelEntity.name))
         } else {
             log.info { "Channel ${newChannel.name} exists already" }
             throw FrontendException("Channel ${newChannel.name} exists already")

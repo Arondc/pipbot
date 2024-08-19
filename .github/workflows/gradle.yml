@@ -37,6 +37,14 @@ jobs:
       - name: Build with Gradle Wrapper
         run: ./gradlew build
 
+      - name: 'Upload Artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipbot
+          path: |
+            build/libs/pipbot-0.0.1-SNAPSHOT.jar
+            authentication_template.yml
+
   dependency-submission:
 
     runs-on: ubuntu-latest
