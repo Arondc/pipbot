@@ -1,7 +1,7 @@
 package de.arondc.pipbot.chat
 
 import de.arondc.pipbot.events.SendMessageEvent
-import de.arondc.pipbot.events.TwitchMessage
+import de.arondc.pipbot.events.TwitchMessageEvent
 import mu.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.modulith.events.ApplicationModuleListener
@@ -14,13 +14,13 @@ class ChatReversedResponder(val publisher: ApplicationEventPublisher) {
 
     @ApplicationModuleListener
     @Async
-    fun respond(twitchMessage: TwitchMessage) {
+    fun respond(twitchMessageEvent: TwitchMessageEvent) {
         log.debug { "responding to message" }
-        if (twitchMessage.message.startsWith("!reverse ")) {
+        if (twitchMessageEvent.message.startsWith("!reverse ")) {
             publisher.publishEvent(
                 SendMessageEvent(
-                    twitchMessage.channel,
-                    twitchMessage.message.substringAfter("!reverse ").reversed()
+                    twitchMessageEvent.channel,
+                    twitchMessageEvent.message.substringAfter("!reverse ").reversed()
                 )
             )
         }

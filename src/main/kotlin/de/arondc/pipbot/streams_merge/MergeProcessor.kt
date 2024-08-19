@@ -1,7 +1,7 @@
 package de.arondc.pipbot.streams_merge
 
 import de.arondc.pipbot.events.SendMessageEvent
-import de.arondc.pipbot.events.TwitchMessage
+import de.arondc.pipbot.events.TwitchMessageEvent
 import de.arondc.pipbot.events.TwitchPermission
 import de.arondc.pipbot.events.satisfies
 import de.arondc.pipbot.streams.StreamServiceException
@@ -13,13 +13,13 @@ import org.springframework.stereotype.Component
 class MergeProcessor(val mergeService: MergeService, val applicationEventPublisher: ApplicationEventPublisher) {
 
     @ApplicationModuleListener
-    fun receiveMessage(twitchMessage: TwitchMessage) {
-        if (twitchMessage.message.startsWith("!merge") && twitchMessage.permissions.satisfies(TwitchPermission.MODERATOR)) {
+    fun receiveMessage(twitchMessageEvent: TwitchMessageEvent) {
+        if (twitchMessageEvent.message.startsWith("!merge") && twitchMessageEvent.permissions.satisfies(TwitchPermission.MODERATOR)) {
             try {
-                mergeService.mergeStream(twitchMessage.channel)
+                mergeService.mergeStream(twitchMessageEvent.channel)
             } catch (e: StreamServiceException) {
                 applicationEventPublisher.publishEvent(
-                    SendMessageEvent(twitchMessage.channel, e.message ?: "Fehler")
+                    SendMessageEvent(twitchMessageEvent.channel, e.message ?: "Fehler")
                 )
             }
         }

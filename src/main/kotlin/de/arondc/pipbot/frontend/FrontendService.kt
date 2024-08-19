@@ -6,11 +6,8 @@ import de.arondc.pipbot.autoresponder.AutoResponseEntity
 import de.arondc.pipbot.autoresponder.AutoResponseService
 import de.arondc.pipbot.channels.ChannelEntity
 import de.arondc.pipbot.channels.ChannelService
-import de.arondc.pipbot.events.*
-import de.arondc.pipbot.frontend.dtos.AutoResponseDTO
-import de.arondc.pipbot.frontend.dtos.ChannelDTO
-import de.arondc.pipbot.frontend.dtos.MemeDTO
-import de.arondc.pipbot.frontend.dtos.StreamDTO
+import de.arondc.pipbot.events.UpdateUserListForChannelEvent
+import de.arondc.pipbot.frontend.dtos.*
 import de.arondc.pipbot.memes.MemeService
 import de.arondc.pipbot.streams.StreamService
 import de.arondc.pipbot.streams_merge.MergeService
@@ -171,9 +168,6 @@ class FrontendService(
 
     fun createAutoModPhrase(autoResponseInformation: AutoModPhraseDTO) {
         val newEntity = conversionService.convert(autoResponseInformation, AutoModPhraseEntity::class.java)!!
-        if(newEntity.channel == null){
-            throw RuntimeException("Kanal existiert nicht")
-        }
         autoModService.save(newEntity)
     }
 
@@ -182,6 +176,11 @@ class FrontendService(
         if (existingAutoModPhrase != null) {
             autoModService.delete(existingAutoModPhrase)
         }
+    }
+
+    fun getAutoModChannels(): List<AutoModChannelDTO> {
+        return channelService.findAll().mapNotNull { conversionService.convert(it, AutoModChannelDTO::class.java) }
+            .toList()
     }
 }
 

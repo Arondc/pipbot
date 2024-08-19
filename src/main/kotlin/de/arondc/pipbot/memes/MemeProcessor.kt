@@ -2,7 +2,7 @@ package de.arondc.pipbot.memes
 
 import de.arondc.pipbot.channels.ChannelService
 import de.arondc.pipbot.events.SendMessageEvent
-import de.arondc.pipbot.events.TwitchMessage
+import de.arondc.pipbot.events.TwitchMessageEvent
 import de.arondc.pipbot.services.LanguageService
 import de.arondc.pipbot.streams.StreamService
 import mu.KotlinLogging
@@ -26,34 +26,34 @@ class MemeProcessor(
     private val memeSources: Set<String> = setOf(IMGFLIP_COM, "www.youtube.com", "clips.twitch.tv")
 
     @ApplicationModuleListener
-    fun receiveMessage(twitchMessage: TwitchMessage) {
-        if (twitchMessage.message.startsWith("!meme ", true)) {
+    fun receiveMessage(twitchMessageEvent: TwitchMessageEvent) {
+        if (twitchMessageEvent.message.startsWith("!meme ", true)) {
             processMemeMessage(
-                twitchMessage.channel,
-                twitchMessage.user,
-                twitchMessage.message.substringAfter("!meme ")
+                twitchMessageEvent.channel,
+                twitchMessageEvent.user,
+                twitchMessageEvent.message.substringAfter("!meme ")
             )
-            respond(twitchMessage)
+            respond(twitchMessageEvent)
         } else if (memeSources.any {
-                twitchMessage.message.contains(it, true)
+                twitchMessageEvent.message.contains(it, true)
             }) {
-            processMemeMessage(twitchMessage.channel, twitchMessage.user, twitchMessage.message)
-            respond(twitchMessage)
+            processMemeMessage(twitchMessageEvent.channel, twitchMessageEvent.user, twitchMessageEvent.message)
+            respond(twitchMessageEvent)
         }
     }
 
     @ApplicationModuleListener
-    fun receiveBrowserSourceMessages(twitchMessage: TwitchMessage) {
-        if(twitchMessage.message.contains(IMGFLIP_COM, true)){
-            memeService.forwardMemeToBrowserSource(twitchMessage.channel, twitchMessage.message)
+    fun receiveBrowserSourceMessages(twitchMessageEvent: TwitchMessageEvent) {
+        if(twitchMessageEvent.message.contains(IMGFLIP_COM, true)){
+            memeService.forwardMemeToBrowserSource(twitchMessageEvent.channel, twitchMessageEvent.message)
         }
     }
 
-    private fun respond(twitchMessage: TwitchMessage) {
+    private fun respond(twitchMessageEvent: TwitchMessageEvent) {
         val message =
-            languageService.getMessage(twitchMessage.channel, "twitch.memes.acknowledge", arrayOf(twitchMessage.user))
+            languageService.getMessage(twitchMessageEvent.channel, "twitch.memes.acknowledge", arrayOf(twitchMessageEvent.user))
         publisher.publishEvent(
-            SendMessageEvent(twitchMessage.channel, message)
+            SendMessageEvent(twitchMessageEvent.channel, message)
         )
     }
 

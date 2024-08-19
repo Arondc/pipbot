@@ -3,7 +3,7 @@ package de.arondc.pipbot.quotes
 import de.arondc.pipbot.channels.ChannelEntity
 import de.arondc.pipbot.channels.ChannelService
 import de.arondc.pipbot.events.SendMessageEvent
-import de.arondc.pipbot.events.TwitchMessage
+import de.arondc.pipbot.events.TwitchMessageEvent
 import de.arondc.pipbot.events.TwitchPermission
 import de.arondc.pipbot.events.satisfies
 import de.arondc.pipbot.services.LanguageService
@@ -23,35 +23,35 @@ class QuoteProcessor(
     val publisher: ApplicationEventPublisher
 ) {
     @ApplicationModuleListener
-    fun receiveMessage(twitchMessage: TwitchMessage) {
+    fun receiveMessage(twitchMessageEvent: TwitchMessageEvent) {
         when {
-            twitchMessage.message.startsWith("!zitat add ") -> {
+            twitchMessageEvent.message.startsWith("!zitat add ") -> {
                 processAdd(
-                    twitchMessage,
-                    twitchMessage.message.substringAfter("!zitat add "),
-                    channelService.findByNameIgnoreCase(twitchMessage.channel)!!
+                    twitchMessageEvent,
+                    twitchMessageEvent.message.substringAfter("!zitat add "),
+                    channelService.findByNameIgnoreCase(twitchMessageEvent.channel)!!
                 )
             }
 
-            twitchMessage.message.startsWith("!zitat delete ") -> {
+            twitchMessageEvent.message.startsWith("!zitat delete ") -> {
                 processDelete(
-                    twitchMessage,
-                    twitchMessage.message.substringAfter("!zitat delete "),
-                    channelService.findByNameIgnoreCase(twitchMessage.channel)!!
+                    twitchMessageEvent,
+                    twitchMessageEvent.message.substringAfter("!zitat delete "),
+                    channelService.findByNameIgnoreCase(twitchMessageEvent.channel)!!
                 )
             }
 
-            twitchMessage.message.startsWith("!zitat ") -> {
+            twitchMessageEvent.message.startsWith("!zitat ") -> {
                 processFind(
-                    twitchMessage.message.substringAfter("!zitat "),
-                    channelService.findByNameIgnoreCase(twitchMessage.channel)!!
+                    twitchMessageEvent.message.substringAfter("!zitat "),
+                    channelService.findByNameIgnoreCase(twitchMessageEvent.channel)!!
                 )
             }
         }
     }
 
-    fun processAdd(twitchMessage: TwitchMessage, text: String, channel: ChannelEntity) {
-        if (twitchMessage.permissions.satisfies(TwitchPermission.SUBSCRIBER)) {
+    fun processAdd(twitchMessageEvent: TwitchMessageEvent, text: String, channel: ChannelEntity) {
+        if (twitchMessageEvent.permissions.satisfies(TwitchPermission.SUBSCRIBER)) {
             val date = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
             val game = twitchStreamService.findLastGameFor(channel.name)
             val quoteNumber = quoteService.save("$text ($game - $date)", channel).number
@@ -60,8 +60,8 @@ class QuoteProcessor(
         }
     }
 
-    fun processDelete(twitchMessage: TwitchMessage, numberAsText: String, channel: ChannelEntity) {
-        if (twitchMessage.permissions.satisfies(TwitchPermission.MODERATOR)) {
+    fun processDelete(twitchMessageEvent: TwitchMessageEvent, numberAsText: String, channel: ChannelEntity) {
+        if (twitchMessageEvent.permissions.satisfies(TwitchPermission.MODERATOR)) {
             val quote = quoteService.findByNumber(numberAsText.toLong(), channel)
             quoteService.delete(quote)
             val message = languageService.getMessage(channel.name, "quote.deleted", arrayOf(numberAsText))

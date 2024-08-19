@@ -2,7 +2,7 @@ package de.arondc.pipbot.automod
 
 import de.arondc.pipbot.channels.ChannelService
 import de.arondc.pipbot.events.NewAutoModPhraseEvent
-import de.arondc.pipbot.events.TwitchMessage
+import de.arondc.pipbot.events.TwitchMessageEvent
 import mu.KotlinLogging
 import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.stereotype.Component
@@ -15,11 +15,11 @@ class AutoModProcessor(
     private val log = KotlinLogging.logger {}
 
     @ApplicationModuleListener
-    fun receiveChatMessage(twitchMessage: TwitchMessage) {
+    fun receiveChatMessage(twitchMessageEvent: TwitchMessageEvent) {
         autoModService.processChat(
-            channelService.findByNameIgnoreCase(twitchMessage.channel)!!,
-            twitchMessage.user,
-            twitchMessage.message
+            channelService.findByNameIgnoreCase(twitchMessageEvent.channel)!!,
+            twitchMessageEvent.user,
+            twitchMessageEvent.message
         )
     }
 

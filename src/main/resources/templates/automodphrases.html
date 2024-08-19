@@ -35,7 +35,11 @@
     <table>
         <tr>
             <td><label th:text="${#messages.msg('frontend.automod.phrases.table.headers.channel')}" th:for="channel"></label></td>
-            <td><input type="text" th:id="name" th:field="*{channel}" /></td>
+            <td>
+                <select th:field="*{channel}">
+                    <option th:each="channel: ${channels}" th:text="${channel.name}" th:value="${channel.name}"></option>
+                </select>
+            </td>
         </tr>
         <tr>
             <td><label th:text="${#messages.msg('frontend.automod.phrases.table.headers.text')}" th:for="text"></label></td>

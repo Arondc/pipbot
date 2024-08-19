@@ -1,5 +1,6 @@
 package de.arondc.pipbot.frontend
 
+import de.arondc.pipbot.frontend.dtos.AutoModChannelDTO
 import de.arondc.pipbot.frontend.dtos.AutoModPhraseDTO
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -15,6 +16,11 @@ class AutoModPhraseController(val frontendService: FrontendService) {
     @ModelAttribute("automodphrases")
     fun initAutoResponseList(): List<AutoModPhraseDTO> {
         return frontendService.getAutoModPhrases()
+    }
+
+    @ModelAttribute("channels")
+    fun initChannelList(): List<AutoModChannelDTO> {
+        return frontendService.getAutoModChannels()
     }
 
     @ModelAttribute("automodphrase")

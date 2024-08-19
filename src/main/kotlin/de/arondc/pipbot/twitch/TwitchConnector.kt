@@ -6,7 +6,7 @@ import com.github.twitch4j.chat.events.channel.ChannelMessageEvent
 import com.github.twitch4j.chat.events.channel.RaidEvent
 import de.arondc.pipbot.channels.ChannelService
 import de.arondc.pipbot.events.SendMessageEvent
-import de.arondc.pipbot.events.TwitchMessage
+import de.arondc.pipbot.events.TwitchMessageEvent
 import de.arondc.pipbot.events.TwitchPermission
 import de.arondc.pipbot.events.TwitchRaidEvent
 import jakarta.annotation.PostConstruct
@@ -65,7 +65,7 @@ class TwitchConnectorPublisher(val publisher: ApplicationEventPublisher) {
     @Transactional
     fun publishMessage(channelMessageEvent: ChannelMessageEvent) {
         publisher.publishEvent(
-            TwitchMessage(
+            TwitchMessageEvent(
                 channelMessageEvent.channel.name,
                 channelMessageEvent.user.name,
                 channelMessageEvent.message,
