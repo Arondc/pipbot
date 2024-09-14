@@ -17,7 +17,6 @@ data class EventMessageInfo(
     val normalizedText: String,
 )
 
-
 data class SendMessageEvent(val channel: String, val message: String)
 data class TwitchRaidEvent(val raidedChannel: String, val incomingRaider: String, val size: Int)
 data class JoinTwitchChannelEvent(val channel: String)

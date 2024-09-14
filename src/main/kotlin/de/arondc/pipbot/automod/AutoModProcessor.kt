@@ -19,7 +19,7 @@ class AutoModProcessor(
         autoModService.processChat(
             channelService.findByNameIgnoreCase(twitchMessageEvent.channel)!!,
             twitchMessageEvent.userInfo.userName,
-            twitchMessageEvent.messageInfo.text
+            twitchMessageEvent.messageInfo
         )
     }
 

@@ -1,10 +1,7 @@
 package de.arondc.pipbot.automod
 
 import de.arondc.pipbot.channels.ChannelEntity
-import de.arondc.pipbot.events.ModerationActionEvent
-import de.arondc.pipbot.events.NewAutoModPhraseEvent
-import de.arondc.pipbot.events.SendMessageEvent
-import de.arondc.pipbot.events.TwitchPermission
+import de.arondc.pipbot.events.*
 import de.arondc.pipbot.users.UserService
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
@@ -27,22 +24,33 @@ class AutoModService(
     private final var chatMessageCache : ChatMessageCache = ChatMessageCache(cacheSize)
 
     @Transactional
-    fun processChat(channel: ChannelEntity, userName: String, message: String) {
-        chatMessageCache.store(userName, channel.name, message)
+    fun processChat(channel: ChannelEntity, userName: String, messageInfo: EventMessageInfo) {
+        chatMessageCache.store(userName, channel.name, messageInfo)
 
         val badPhrases = autoModPhraseRepository.findByChannelName(channel = channel.name)
-        val moderationDecision = badPhrases.any { phrase -> message.contains(phrase.text, true) }
+        val moderationDecision = decideIfModerationIsNecessary(badPhrases, messageInfo)
         if(moderationDecision) {
             eventPublisher.publishEvent(ModerationActionEvent(channel.name, userName))
         }
+    }
+
+    private fun decideIfModerationIsNecessary(
+        badPhrases: List<AutoModPhraseEntity>,
+        messageInfo: EventMessageInfo
+    ) = badPhrases.any { phrase ->
+        messageInfo.text.contains(phrase.text,true) ||
+                messageInfo.normalizedText.contains(phrase.text, true)
     }
 
     @Transactional
     fun processNewPhrase(channel: ChannelEntity, newPhrase: String) {
         val userChatRecords = chatMessageCache.getChatRecordsOfChannel(channel.name)
         userChatRecords
-            .filter { (_, messages) ->
-                messages.any { message -> message.contains(newPhrase, true) }
+            .filter { (_, messageInfos) ->
+                messageInfos.any { messageInfo ->
+                    messageInfo.text.contains(newPhrase, true) ||
+                            messageInfo.normalizedText.contains(newPhrase, true)
+                }
             }
             .map { (userName, _) -> userName }
             .forEach { user ->
@@ -73,6 +81,7 @@ class AutoModService(
             userInformation.followerSince != null && ChronoUnit.MONTHS.between(
                 userInformation.followerSince, LocalDateTime.now()
             ) >= 6 -> {
+                log.info { "Actioning on Moderation event for ${event.user} in ${event.channel}" }
                 eventPublisher.publishEvent(
                     SendMessageEvent(
                         channel = event.channel, message = "${event.user} war böse"
@@ -81,6 +90,7 @@ class AutoModService(
             }
 
             else -> {
+                log.info { "Actioning on Moderation event for ${event.user} in ${event.channel}" }
                 eventPublisher.publishEvent(
                     SendMessageEvent(
                         channel = event.channel, message = "${event.user} war SEHR böse"
@@ -89,20 +99,19 @@ class AutoModService(
             }
         }
     }
-
 }
 
 class ChatMessageCache(private val maxCacheSize: Long){
     data class UserInChannel(val userName: String, val channelName: String)
 
-    private val messagesOfUsers = mutableMapOf<UserInChannel, MutableList<String>>()
+    private val messagesOfUsers = mutableMapOf<UserInChannel, MutableList<EventMessageInfo>>()
 
-    fun store(userName: String, channelName: String, message: String) {
+    fun store(userName: String, channelName: String, messageInfo: EventMessageInfo) {
         messagesOfUsers.compute(UserInChannel(userName, channelName)) { _,messageList ->
             if(messageList == null) {
-                mutableListOf(message)
+                mutableListOf(messageInfo)
             } else {
-                messageList.add(message)
+                messageList.add(messageInfo)
                 if(messageList.size >= maxCacheSize) {
                     messageList.removeFirst()
                 }
@@ -111,7 +120,7 @@ class ChatMessageCache(private val maxCacheSize: Long){
         }
     }
 
-    fun getChatRecordsOfChannel(channel: String): Map<String, List<String>> {
+    fun getChatRecordsOfChannel(channel: String): Map<String, List<EventMessageInfo>> {
         return messagesOfUsers
             .filter { (userInChannel, _) -> userInChannel.channelName == channel }
             .map { it.key.userName to it.value }.toMap()
