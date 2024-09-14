@@ -47,6 +47,7 @@ class TwitchConnector(
 
     fun messageReceived(channelMessageEvent: ChannelMessageEvent) =
         twitchConnectorPublisher.publishMessage(channelMessageEvent)
+        //TODO subscriberMonths für die UserList mit abgreifen!
 
     fun raidEventReceived(raidEvent: RaidEvent) = twitchConnectorPublisher.publishRaid(raidEvent)
 
@@ -71,7 +72,8 @@ class TwitchConnectorPublisher(val publisher: ApplicationEventPublisher) {
                 ),
                 EventMessageInfo(
                     channelMessageEvent.message,
-                    normalizeMessage(channelMessageEvent.message)
+                    normalizeMessage(channelMessageEvent.message),
+                    messageContainsLink(channelMessageEvent.message),
                 )
             )
         )
@@ -80,6 +82,13 @@ class TwitchConnectorPublisher(val publisher: ApplicationEventPublisher) {
     private fun normalizeMessage(message: String) =
         Normalizer.normalize(message, Normalizer.Form.NFD)
             .replace("\\p{InCombiningDiacriticalMarks}+".toRegex(), "")
+
+
+    private fun messageContainsLink(message: String): Boolean {
+        val couldBeATopLevelDomainEnding = """\S+\.\S{2,3}\b"""
+        return message.contains("""http(s)?://""".toRegex()) ||
+                message.contains(couldBeATopLevelDomainEnding.toRegex())
+    }
 
     @Transactional
     fun publishRaid(raidEvent: RaidEvent) {

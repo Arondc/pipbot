@@ -15,6 +15,7 @@ data class EventUserInfo(
 data class EventMessageInfo(
     val text: String,
     val normalizedText: String,
+    val hasLink: Boolean,
 )
 
 data class SendMessageEvent(val channel: String, val message: String)
