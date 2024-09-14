@@ -1,14 +1,13 @@
 package de.arondc.pipbot.frontend
 
+import de.arondc.pipbot.automod.AutoModPhraseEntity
+import de.arondc.pipbot.automod.AutoModService
 import de.arondc.pipbot.autoresponder.AutoResponseEntity
 import de.arondc.pipbot.autoresponder.AutoResponseService
 import de.arondc.pipbot.channels.ChannelEntity
 import de.arondc.pipbot.channels.ChannelService
 import de.arondc.pipbot.events.UpdateUserListForChannelEvent
-import de.arondc.pipbot.frontend.dtos.AutoResponseDTO
-import de.arondc.pipbot.frontend.dtos.ChannelDTO
-import de.arondc.pipbot.frontend.dtos.MemeDTO
-import de.arondc.pipbot.frontend.dtos.StreamDTO
+import de.arondc.pipbot.frontend.dtos.*
 import de.arondc.pipbot.memes.MemeService
 import de.arondc.pipbot.streams.StreamService
 import de.arondc.pipbot.streams_merge.MergeService
@@ -28,6 +27,7 @@ class FrontendService(
     val twitchStreamService: TwitchStreamService,
     val mergeService: MergeService,
     val autoResponseService: AutoResponseService,
+    val autoModService: AutoModService,
     val eventPublisher: ApplicationEventPublisher
 ) {
     private val log = KotlinLogging.logger {}
@@ -163,6 +163,25 @@ class FrontendService(
         }
     }
 
+    fun getAutoModPhrases(): List<AutoModPhraseDTO> =
+        autoModService.findAll().mapNotNull { conversionService.convert(it, AutoModPhraseDTO::class.java) }.toList()
+
+    fun createAutoModPhrase(autoResponseInformation: AutoModPhraseDTO) {
+        val newEntity = conversionService.convert(autoResponseInformation, AutoModPhraseEntity::class.java)!!
+        autoModService.save(newEntity)
+    }
+
+    fun deleteAutoModPhrase(autoModPhraseId: Long) {
+        val existingAutoModPhrase = autoModService.findById(autoModPhraseId)
+        if (existingAutoModPhrase != null) {
+            autoModService.delete(existingAutoModPhrase)
+        }
+    }
+
+    fun getAutoModChannels(): List<AutoModChannelDTO> {
+        return channelService.findAll().mapNotNull { conversionService.convert(it, AutoModChannelDTO::class.java) }
+            .toList()
+    }
 }
 
 class FrontendException(message: String) : RuntimeException(message)

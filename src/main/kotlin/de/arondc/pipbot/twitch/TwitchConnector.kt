@@ -5,10 +5,7 @@ import com.github.twitch4j.TwitchClient
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent
 import com.github.twitch4j.chat.events.channel.RaidEvent
 import de.arondc.pipbot.channels.ChannelService
-import de.arondc.pipbot.events.SendMessageEvent
-import de.arondc.pipbot.events.TwitchMessage
-import de.arondc.pipbot.events.TwitchPermission
-import de.arondc.pipbot.events.TwitchRaidEvent
+import de.arondc.pipbot.events.*
 import jakarta.annotation.PostConstruct
 import mu.KotlinLogging
 import org.springframework.boot.context.event.ApplicationReadyEvent
@@ -18,6 +15,7 @@ import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
+import java.text.Normalizer
 
 
 @Component
@@ -49,6 +47,7 @@ class TwitchConnector(
 
     fun messageReceived(channelMessageEvent: ChannelMessageEvent) =
         twitchConnectorPublisher.publishMessage(channelMessageEvent)
+        //TODO subscriberMonths für die UserList mit abgreifen!
 
     fun raidEventReceived(raidEvent: RaidEvent) = twitchConnectorPublisher.publishRaid(raidEvent)
 
@@ -65,13 +64,30 @@ class TwitchConnectorPublisher(val publisher: ApplicationEventPublisher) {
     @Transactional
     fun publishMessage(channelMessageEvent: ChannelMessageEvent) {
         publisher.publishEvent(
-            TwitchMessage(
+            TwitchMessageEvent(
                 channelMessageEvent.channel.name,
-                channelMessageEvent.user.name,
-                channelMessageEvent.message,
-                channelMessageEvent.permissions.map { TwitchPermission.valueOf(it.name) }.toSet()
+                EventUserInfo(
+                    channelMessageEvent.user.name,
+                    channelMessageEvent.permissions.map { TwitchPermission.valueOf(it.name) }.toSet()
+                ),
+                EventMessageInfo(
+                    channelMessageEvent.message,
+                    normalizeMessage(channelMessageEvent.message),
+                    messageContainsLink(channelMessageEvent.message),
+                )
             )
         )
+    }
+
+    private fun normalizeMessage(message: String) =
+        Normalizer.normalize(message, Normalizer.Form.NFD)
+            .replace("\\p{InCombiningDiacriticalMarks}+".toRegex(), "")
+
+
+    private fun messageContainsLink(message: String): Boolean {
+        val couldBeATopLevelDomainEnding = """\S+\.\S{2,3}\b"""
+        return message.contains("""http(s)?://""".toRegex()) ||
+                message.contains(couldBeATopLevelDomainEnding.toRegex())
     }
 
     @Transactional
