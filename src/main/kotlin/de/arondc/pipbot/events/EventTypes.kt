@@ -2,10 +2,21 @@ package de.arondc.pipbot.events
 
 data class TwitchMessageEvent(
     val channel: String,
-    val user: String,
-    val message: String,
+    val userInfo: EventUserInfo,
+    val messageInfo: EventMessageInfo,
+
+    )
+
+data class EventUserInfo(
+    val userName: String,
     val permissions: Set<TwitchPermission>
 )
+
+data class EventMessageInfo(
+    val text: String,
+    val normalizedText: String,
+)
+
 
 data class SendMessageEvent(val channel: String, val message: String)
 data class TwitchRaidEvent(val raidedChannel: String, val incomingRaider: String, val size: Int)

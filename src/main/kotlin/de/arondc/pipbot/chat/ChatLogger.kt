@@ -11,7 +11,7 @@ class ChatLogger {
 
     @ApplicationModuleListener
     fun logChat(twitchMessageEvent: TwitchMessageEvent) {
-        log.info("Channel ${twitchMessageEvent.channel} - User ${twitchMessageEvent.user} - Message ${twitchMessageEvent.message} - Permissions ${twitchMessageEvent.permissions}")
+        log.info("Channel ${twitchMessageEvent.channel} - User ${twitchMessageEvent.userInfo} - Message ${twitchMessageEvent.messageInfo.text} - Permissions ${twitchMessageEvent.userInfo.permissions}")
     }
 
 }

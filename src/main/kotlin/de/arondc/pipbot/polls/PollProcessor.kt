@@ -24,16 +24,16 @@ class PollProcessor(
             //!poll options=1,2 time=5m "1=Dings 2=Bumms"
 
             //TODO !poll help
-            twitchMessageEvent.message.equals("!poll", ignoreCase = true) -> {
+            twitchMessageEvent.messageInfo.text.equals("!poll", ignoreCase = true) -> {
                 val pollParameters = buildPollParameters()
                 pollService.createAndStartPoll(pollParameters, twitchMessageEvent.channel)
             }
-            twitchMessageEvent.message.startsWith("!poll ") -> {
-                val pollParameters = buildPollParameters(twitchMessageEvent.message.substringAfter("!poll "))
+            twitchMessageEvent.messageInfo.text.startsWith("!poll ") -> {
+                val pollParameters = buildPollParameters(twitchMessageEvent.messageInfo.text.substringAfter("!poll "))
                 pollService.createAndStartPoll(pollParameters, twitchMessageEvent.channel)
             }
-            twitchMessageEvent.message.startsWith("?") -> {
-                pollService.acceptAnswer(twitchMessageEvent.message.trimStart('?'), twitchMessageEvent.channel, twitchMessageEvent.user)
+            twitchMessageEvent.messageInfo.text.startsWith("?") -> {
+                pollService.acceptAnswer(twitchMessageEvent.messageInfo.text.trimStart('?'), twitchMessageEvent.channel, twitchMessageEvent.userInfo.userName)
             }
         }
     }

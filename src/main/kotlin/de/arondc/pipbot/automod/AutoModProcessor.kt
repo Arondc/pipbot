@@ -18,8 +18,8 @@ class AutoModProcessor(
     fun receiveChatMessage(twitchMessageEvent: TwitchMessageEvent) {
         autoModService.processChat(
             channelService.findByNameIgnoreCase(twitchMessageEvent.channel)!!,
-            twitchMessageEvent.user,
-            twitchMessageEvent.message
+            twitchMessageEvent.userInfo.userName,
+            twitchMessageEvent.messageInfo.text
         )
     }
 

@@ -15,9 +15,9 @@ class AutoResponseProcessor(val autoResponseService: AutoResponseService, val pu
     @ApplicationModuleListener
     @Async
     fun respond(twitchMessageEvent: TwitchMessageEvent) {
-        if(twitchMessageEvent.message.startsWith("!")) {
+        if(twitchMessageEvent.messageInfo.text.startsWith("!")) {
             val response =
-                autoResponseService.getAutoResponse(twitchMessageEvent.channel, twitchMessageEvent.message.substringAfter("!"))
+                autoResponseService.getAutoResponse(twitchMessageEvent.channel, twitchMessageEvent.messageInfo.text.substringAfter("!"))
             log.debug { "Autoresponder response: $response" }
             if(response != null) {
                 publisher.publishEvent(

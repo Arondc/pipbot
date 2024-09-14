@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("org.springframework.boot") version "3.3.2"
+    id("org.springframework.boot") version "3.3.3"
     id("io.spring.dependency-management") version "1.1.6"
     kotlin("jvm") version "1.9.24"
     kotlin("plugin.spring") version "1.9.24"
@@ -19,7 +19,7 @@ repositories {
     mavenCentral()
 }
 
-extra["springModulithVersion"] = "1.1.2"
+extra["springModulithVersion"] = "1.2.3"
 
 dependencies {
     //Kotlin dependencies
@@ -43,7 +43,7 @@ dependencies {
         exclude("commons-logging", "commons-logging")
     }
     //3rd party
-    implementation("com.github.twitch4j:twitch4j:1.19.0") {
+    implementation("com.github.twitch4j:twitch4j:1.21.0") {
         exclude("commons-logging", "commons-logging")
     }
 }

@@ -14,7 +14,7 @@ class MergeProcessor(val mergeService: MergeService, val applicationEventPublish
 
     @ApplicationModuleListener
     fun receiveMessage(twitchMessageEvent: TwitchMessageEvent) {
-        if (twitchMessageEvent.message.startsWith("!merge") && twitchMessageEvent.permissions.satisfies(TwitchPermission.MODERATOR)) {
+        if (twitchMessageEvent.messageInfo.text.startsWith("!merge") && twitchMessageEvent.userInfo.permissions.satisfies(TwitchPermission.MODERATOR)) {
             try {
                 mergeService.mergeStream(twitchMessageEvent.channel)
             } catch (e: StreamServiceException) {

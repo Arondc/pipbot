@@ -22,13 +22,13 @@ class UserProcessor(
 
     @ApplicationModuleListener
     fun receiveMessage(twitchMessageEvent: TwitchMessageEvent) {
-        handleRequest(twitchMessageEvent.channel, twitchMessageEvent.message, twitchMessageEvent.user)
+        handleRequest(twitchMessageEvent.channel, twitchMessageEvent.messageInfo.text, twitchMessageEvent.userInfo.userName)
 
         eventPublisher.publishEvent(
             UpdateChannelInformationForUserEvent(
                 twitchMessageEvent.channel,
-                twitchMessageEvent.user,
-                twitchMessageEvent.permissions
+                twitchMessageEvent.userInfo.userName,
+                twitchMessageEvent.userInfo.permissions
             )
         )
     }

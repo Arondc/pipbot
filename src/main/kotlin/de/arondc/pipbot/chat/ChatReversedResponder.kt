@@ -16,11 +16,11 @@ class ChatReversedResponder(val publisher: ApplicationEventPublisher) {
     @Async
     fun respond(twitchMessageEvent: TwitchMessageEvent) {
         log.debug { "responding to message" }
-        if (twitchMessageEvent.message.startsWith("!reverse ")) {
+        if (twitchMessageEvent.messageInfo.text.startsWith("!reverse ")) {
             publisher.publishEvent(
                 SendMessageEvent(
                     twitchMessageEvent.channel,
-                    twitchMessageEvent.message.substringAfter("!reverse ").reversed()
+                    twitchMessageEvent.messageInfo.text.substringAfter("!reverse ").reversed()
                 )
             )
         }

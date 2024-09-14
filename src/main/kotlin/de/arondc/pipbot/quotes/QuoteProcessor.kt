@@ -25,25 +25,25 @@ class QuoteProcessor(
     @ApplicationModuleListener
     fun receiveMessage(twitchMessageEvent: TwitchMessageEvent) {
         when {
-            twitchMessageEvent.message.startsWith("!zitat add ") -> {
+            twitchMessageEvent.messageInfo.text.startsWith("!zitat add ") -> {
                 processAdd(
                     twitchMessageEvent,
-                    twitchMessageEvent.message.substringAfter("!zitat add "),
+                    twitchMessageEvent.messageInfo.text.substringAfter("!zitat add "),
                     channelService.findByNameIgnoreCase(twitchMessageEvent.channel)!!
                 )
             }
 
-            twitchMessageEvent.message.startsWith("!zitat delete ") -> {
+            twitchMessageEvent.messageInfo.text.startsWith("!zitat delete ") -> {
                 processDelete(
                     twitchMessageEvent,
-                    twitchMessageEvent.message.substringAfter("!zitat delete "),
+                    twitchMessageEvent.messageInfo.text.substringAfter("!zitat delete "),
                     channelService.findByNameIgnoreCase(twitchMessageEvent.channel)!!
                 )
             }
 
-            twitchMessageEvent.message.startsWith("!zitat ") -> {
+            twitchMessageEvent.messageInfo.text.startsWith("!zitat ") -> {
                 processFind(
-                    twitchMessageEvent.message.substringAfter("!zitat "),
+                    twitchMessageEvent.messageInfo.text.substringAfter("!zitat "),
                     channelService.findByNameIgnoreCase(twitchMessageEvent.channel)!!
                 )
             }
@@ -51,7 +51,7 @@ class QuoteProcessor(
     }
 
     fun processAdd(twitchMessageEvent: TwitchMessageEvent, text: String, channel: ChannelEntity) {
-        if (twitchMessageEvent.permissions.satisfies(TwitchPermission.SUBSCRIBER)) {
+        if (twitchMessageEvent.userInfo.permissions.satisfies(TwitchPermission.SUBSCRIBER)) {
             val date = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
             val game = twitchStreamService.findLastGameFor(channel.name)
             val quoteNumber = quoteService.save("$text ($game - $date)", channel).number
@@ -61,7 +61,7 @@ class QuoteProcessor(
     }
 
     fun processDelete(twitchMessageEvent: TwitchMessageEvent, numberAsText: String, channel: ChannelEntity) {
-        if (twitchMessageEvent.permissions.satisfies(TwitchPermission.MODERATOR)) {
+        if (twitchMessageEvent.userInfo.permissions.satisfies(TwitchPermission.MODERATOR)) {
             val quote = quoteService.findByNumber(numberAsText.toLong(), channel)
             quoteService.delete(quote)
             val message = languageService.getMessage(channel.name, "quote.deleted", arrayOf(numberAsText))

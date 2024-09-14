@@ -27,31 +27,31 @@ class MemeProcessor(
 
     @ApplicationModuleListener
     fun receiveMessage(twitchMessageEvent: TwitchMessageEvent) {
-        if (twitchMessageEvent.message.startsWith("!meme ", true)) {
+        if (twitchMessageEvent.messageInfo.text.startsWith("!meme ", true)) {
             processMemeMessage(
                 twitchMessageEvent.channel,
-                twitchMessageEvent.user,
-                twitchMessageEvent.message.substringAfter("!meme ")
+                twitchMessageEvent.userInfo.userName,
+                twitchMessageEvent.messageInfo.text.substringAfter("!meme ")
             )
             respond(twitchMessageEvent)
         } else if (memeSources.any {
-                twitchMessageEvent.message.contains(it, true)
+                twitchMessageEvent.messageInfo.text.contains(it, true)
             }) {
-            processMemeMessage(twitchMessageEvent.channel, twitchMessageEvent.user, twitchMessageEvent.message)
+            processMemeMessage(twitchMessageEvent.channel, twitchMessageEvent.userInfo.userName, twitchMessageEvent.messageInfo.text)
             respond(twitchMessageEvent)
         }
     }
 
     @ApplicationModuleListener
     fun receiveBrowserSourceMessages(twitchMessageEvent: TwitchMessageEvent) {
-        if(twitchMessageEvent.message.contains(IMGFLIP_COM, true)){
-            memeService.forwardMemeToBrowserSource(twitchMessageEvent.channel, twitchMessageEvent.message)
+        if(twitchMessageEvent.messageInfo.text.contains(IMGFLIP_COM, true)){
+            memeService.forwardMemeToBrowserSource(twitchMessageEvent.channel, twitchMessageEvent.messageInfo.text)
         }
     }
 
     private fun respond(twitchMessageEvent: TwitchMessageEvent) {
         val message =
-            languageService.getMessage(twitchMessageEvent.channel, "twitch.memes.acknowledge", arrayOf(twitchMessageEvent.user))
+            languageService.getMessage(twitchMessageEvent.channel, "twitch.memes.acknowledge", arrayOf(twitchMessageEvent.userInfo))
         publisher.publishEvent(
             SendMessageEvent(twitchMessageEvent.channel, message)
         )
