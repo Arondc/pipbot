@@ -38,7 +38,12 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-test") {
+        exclude(module = "mockito-core")
+        because("We use Mockk instead")
+    }
+    testImplementation("com.ninja-squad:springmockk:4.0.2")
+
     implementation("org.springframework.modulith:spring-modulith-starter-test") {
         exclude("commons-logging", "commons-logging")
     }

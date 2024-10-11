@@ -11,19 +11,24 @@ import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 
-private const val IMGFLIP_COM = "imgflip.com"
-
 @Component
 class MemeProcessor(
-    val memeService: MemeService,
-    val languageService: LanguageService,
-    val channelService: ChannelService,
-    val streamService: StreamService,
-    val publisher: ApplicationEventPublisher
+    private val memeService: MemeService,
+    private val languageService: LanguageService,
+    private val channelService: ChannelService,
+    private val streamService: StreamService,
+    private val publisher: ApplicationEventPublisher
 ) {
     private val log = KotlinLogging.logger {}
 
-    private val memeSources: Set<String> = setOf(IMGFLIP_COM, "www.youtube.com", "clips.twitch.tv")
+    private val IMGFLIP_COM = "imgflip.com".toRegex(RegexOption.IGNORE_CASE)
+
+    private  val memeSourceExpressions : Set<Regex> = setOf(
+        IMGFLIP_COM,
+        "www.youtube.com".toRegex(RegexOption.IGNORE_CASE),
+        "clips.twitch.tv".toRegex(RegexOption.IGNORE_CASE),
+        "www.twitch.tv/.*/clip".toRegex(RegexOption.IGNORE_CASE)
+    )
 
     @ApplicationModuleListener
     fun receiveMessage(twitchMessage: TwitchMessage) {
@@ -34,9 +39,7 @@ class MemeProcessor(
                 twitchMessage.message.substringAfter("!meme ")
             )
             respond(twitchMessage)
-        } else if (memeSources.any {
-                twitchMessage.message.contains(it, true)
-            }) {
+        } else if (memeSourceExpressions.any { regEx -> regEx.containsMatchIn(twitchMessage.message) }) {
             processMemeMessage(twitchMessage.channel, twitchMessage.user, twitchMessage.message)
             respond(twitchMessage)
         }
@@ -44,7 +47,7 @@ class MemeProcessor(
 
     @ApplicationModuleListener
     fun receiveBrowserSourceMessages(twitchMessage: TwitchMessage) {
-        if(twitchMessage.message.contains(IMGFLIP_COM, true)){
+        if(IMGFLIP_COM.containsMatchIn(twitchMessage.message)){
             memeService.forwardMemeToBrowserSource(twitchMessage.channel, twitchMessage.message)
         }
     }
