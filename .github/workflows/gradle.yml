@@ -28,16 +28,13 @@ jobs:
       - name: Build with Gradle Wrapper
         run: ./gradlew build
 
-      - name: 'Upload Artifact - Authentification template'
-        uses: actions/upload-artifact@v4
-        with:
-          name: authentication_template_${{inputs.version}}
-          path: authentication_template.yml
-          compression-level: '0'
+      - name: Copy jar to root
+        run: cp ./build/libs/pipbot.jar .
 
-      - name: 'Upload Artifact - Pipbot build'
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: pipbot_${{inputs.version}}
-          path: build/libs/pipbot.jar
-          compression-level: '0'
+          path: |
+            authentication_template.yml
+            pipbot.jar
