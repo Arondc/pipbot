@@ -52,7 +52,7 @@ You need the following prerequisites:
         * Set `twitch-connector.authentication.oAuth` with the oauth token of your bot's account
 3. The bot can be started via the command line
 ```shell
-java -jar pipbot-0.0.1-SNAPSHOT.jar
+java -jar pipbot.jar
 ```
 4. As soon as the bot started you can reach the gui via [\<Link to gui>](http://localhost:8080)
 
