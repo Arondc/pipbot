@@ -31,7 +31,11 @@ jobs:
       - name: 'Upload Artifact'
         uses: actions/upload-artifact@v4
         with:
-          name: pipbot_build_with_template_${{inputs.version}}
-          path: |
-            build/libs/pipbot-0.0.1-SNAPSHOT.jar
-            authentication_template.yml
+          name: authentication_template_{{inputs.version}}.yml
+          path: authentication_template.yml
+
+      - name: 'Upload Artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipbot_${{inputs.version}}.jar
+          path: build/libs/pipbot.jar

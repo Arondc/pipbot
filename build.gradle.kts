@@ -11,6 +11,14 @@ plugins {
 group = "de.arondc"
 version = "0.0.1-SNAPSHOT"
 
+tasks.bootJar {
+    archiveFileName.set("pipbot.jar")
+}
+
+tasks.jar {
+    enabled = false
+}
+
 java {
     sourceCompatibility = JavaVersion.VERSION_21
 }
