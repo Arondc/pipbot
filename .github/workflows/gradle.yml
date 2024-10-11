@@ -31,7 +31,7 @@ jobs:
       - name: 'Upload Artifact - Authentification template'
         uses: actions/upload-artifact@v4
         with:
-          name: authentication_template_${{inputs.version}}.yml
+          name: authentication_template_${{inputs.version}}
           path: authentication_template.yml
 
       - name: 'Upload Artifact - Pipbot build'
