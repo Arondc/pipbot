@@ -33,9 +33,11 @@ jobs:
         with:
           name: authentication_template_${{inputs.version}}
           path: authentication_template.yml
+          compression-level: '0'
 
       - name: 'Upload Artifact - Pipbot build'
         uses: actions/upload-artifact@v4
         with:
           name: pipbot_${{inputs.version}}
           path: build/libs/pipbot.jar
+          compression-level: '0'
