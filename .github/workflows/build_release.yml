@@ -38,5 +38,6 @@ jobs:
             
       - uses: AButler/upload-release-assets@v3.0
         with:
-          files: "authentication_template.yml;pipbot.jar"
+          files: "./authentication_template.yml;./pipbot.jar"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+          release-tag: ${{  github.ref_name }}
