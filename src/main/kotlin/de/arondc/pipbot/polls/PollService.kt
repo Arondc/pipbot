@@ -72,6 +72,7 @@ class PollService(
                 channelName, "polls.poll.started.answers", arrayOf(poll.options.joinToString(" ") { "?$it" })
             )
         }
+        //TODO: Einmal debuggen und schauen ob wir hier pollPublisher nutzen müssen
         applicationEventPublisher.publishEvent(SendMessageEvent(channelName, startMessage))
     }
 

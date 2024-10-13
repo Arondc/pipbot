@@ -3,8 +3,10 @@ package de.arondc.pipbot.memes
 import de.arondc.pipbot.channels.ChannelEntity
 import de.arondc.pipbot.channels.ChannelService
 import de.arondc.pipbot.channels.ShoutoutOnRaidType
+import de.arondc.pipbot.events.EventMessageInfo
+import de.arondc.pipbot.events.EventUserInfo
 import de.arondc.pipbot.events.SendMessageEvent
-import de.arondc.pipbot.events.TwitchMessage
+import de.arondc.pipbot.events.TwitchMessageEvent
 import de.arondc.pipbot.services.LanguageService
 import de.arondc.pipbot.streams.StreamEntity
 import de.arondc.pipbot.streams.StreamService
@@ -28,7 +30,7 @@ import java.util.*
 class MemeProcessorTest {
 
     companion object {
-        const val RESONSE_LOCALIZATION_KEY = "twitch.memes.acknowledge"
+        const val RESPONSE_LOCALIZATION_KEY = "twitch.memes.acknowledge"
         const val CHANNEL_NAME = "dummyChannel"
         const val USER_NAME = "dummyUser"
         const val RESPONSE_MESSAGE_TEXT = "dummyResponse"
@@ -45,6 +47,11 @@ class MemeProcessorTest {
         val STREAM = StreamEntity(
             startTimes = setOf(LocalDateTime.of(2024, 1, 1, 13, 30)),
             channel = CHANNEL,
+        )
+
+        val EVENT_USER_INFO = EventUserInfo(
+            userName = USER_NAME,
+            permissions = setOf()
         )
     }
 
@@ -76,20 +83,20 @@ class MemeProcessorTest {
         every { streamService.findOrPersistCurrentStream(CHANNEL_NAME) } returns STREAM
         every { memeService.save(capture(capturedMeme)) } answers { capturedMeme.captured }
         every {
-            languageService.getMessage(CHANNEL_NAME, RESONSE_LOCALIZATION_KEY, arrayOf(USER_NAME))
+            languageService.getMessage(CHANNEL_NAME, RESPONSE_LOCALIZATION_KEY, arrayOf(EVENT_USER_INFO))
         } returns RESPONSE_MESSAGE_TEXT
         every { publisher.publishEvent(capture(capturedSendMessageEvent)) } just Runs
 
         //When
         val messageText = "dummyText"
-        val twitchMessage = buildTwitchMessage("!meme $messageText")
-        memeProcessor.receiveMessage(twitchMessage = twitchMessage)
+        val twitchMessageEvent = buildTwitchMessageEvent("!meme $messageText")
+        memeProcessor.receiveMessage(twitchMessageEvent = twitchMessageEvent)
 
         //Then
         verify { channelService.findByNameIgnoreCase(CHANNEL_NAME) }
         verify { streamService.findOrPersistCurrentStream(CHANNEL_NAME) }
         verify { memeService.save(any()) }
-        verify { languageService.getMessage(CHANNEL_NAME, RESONSE_LOCALIZATION_KEY, arrayOf(USER_NAME)) }
+        verify { languageService.getMessage(CHANNEL_NAME, RESPONSE_LOCALIZATION_KEY, arrayOf(EVENT_USER_INFO)) }
 
         checkMeme(capturedMeme.captured, messageText)
         checkSendMessageEvent(capturedSendMessageEvent.captured)
@@ -102,8 +109,8 @@ class MemeProcessorTest {
         every { memeService.forwardMemeToBrowserSource(CHANNEL_NAME, messageText) } just Runs
 
         //When
-        val twitchMessage = buildTwitchMessage(messageText)
-        memeProcessor.receiveBrowserSourceMessages(twitchMessage = twitchMessage)
+        val twitchMessageEvent = buildTwitchMessageEvent(messageText)
+        memeProcessor.receiveBrowserSourceMessages(twitchMessageEvent = twitchMessageEvent)
 
         //Then
         verify { memeService.forwardMemeToBrowserSource(CHANNEL_NAME, messageText) }
@@ -119,8 +126,8 @@ class MemeProcessorTest {
     )
     fun `meme is not forwarded to the browser source whenever the message contains a non-imgflip link`(address: String) {
         //When
-        val twitchMessage = buildTwitchMessage(address)
-        memeProcessor.receiveBrowserSourceMessages(twitchMessage = twitchMessage)
+        val twitchMessageEvent = buildTwitchMessageEvent(address)
+        memeProcessor.receiveBrowserSourceMessages(twitchMessageEvent = twitchMessageEvent)
 
         //Then
         verify { memeService wasNot Called }
@@ -146,19 +153,19 @@ class MemeProcessorTest {
         every { streamService.findOrPersistCurrentStream(CHANNEL_NAME) } returns STREAM
         every { memeService.save(capture(capturedMeme)) } answers { capturedMeme.captured }
         every {
-            languageService.getMessage(CHANNEL_NAME, RESONSE_LOCALIZATION_KEY, arrayOf(USER_NAME))
+            languageService.getMessage(CHANNEL_NAME, RESPONSE_LOCALIZATION_KEY, arrayOf(EVENT_USER_INFO))
         } returns RESPONSE_MESSAGE_TEXT
         every { publisher.publishEvent(capture(capturedSendMessageEvent)) } just Runs
 
         //When
-        val twitchMessage = buildTwitchMessage(messageText)
-        memeProcessor.receiveMessage(twitchMessage = twitchMessage)
+        val twitchMessageEvent = buildTwitchMessageEvent(messageText)
+        memeProcessor.receiveMessage(twitchMessageEvent = twitchMessageEvent)
 
         //Then
         verify { channelService.findByNameIgnoreCase(CHANNEL_NAME) }
         verify { streamService.findOrPersistCurrentStream(CHANNEL_NAME) }
         verify { memeService.save(any()) }
-        verify { languageService.getMessage(CHANNEL_NAME, RESONSE_LOCALIZATION_KEY, arrayOf(USER_NAME)) }
+        verify { languageService.getMessage(CHANNEL_NAME, RESPONSE_LOCALIZATION_KEY, arrayOf(EVENT_USER_INFO)) }
 
         checkMeme(capturedMeme.captured, messageText)
         checkSendMessageEvent(capturedSendMessageEvent.captured)
@@ -167,7 +174,7 @@ class MemeProcessorTest {
     @Test
     fun `meme is not processed whenever the message matches does not match one the meme sources`() {
         //When
-        memeProcessor.receiveMessage(twitchMessage = buildTwitchMessage("https://www.google.com"))
+        memeProcessor.receiveMessage(twitchMessageEvent = buildTwitchMessageEvent("https://www.google.com"))
 
         //Then
         verify { channelService wasNot Called }
@@ -190,11 +197,16 @@ class MemeProcessorTest {
         { assertThat(meme.stream).isEqualTo(STREAM) }
     )
 
-
-    private fun buildTwitchMessage(message: String) = TwitchMessage(
+    private fun buildTwitchMessageEvent(message: String) = TwitchMessageEvent(
         channel = CHANNEL_NAME,
-        user = USER_NAME,
-        message = message,
-        permissions = emptySet()
+        userInfo = EventUserInfo(
+            userName = USER_NAME,
+            permissions = emptySet()
+        ),
+        messageInfo = EventMessageInfo(
+            text = message,
+            normalizedText = message,
+            hasLink = false
+        ),
     )
 }
