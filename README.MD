@@ -52,7 +52,7 @@ You need the following prerequisites:
         * Set `twitch-connector.authentication.oAuth` with the oauth token of your bot's account
 3. The bot can be started via the command line
 ```shell
-java -jar pipbot-0.0.1-SNAPSHOT.jar
+java -jar pipbot.jar
 ```
 4. As soon as the bot started you can reach the gui via [\<Link to gui>](http://localhost:8080)
 
@@ -61,7 +61,7 @@ To register your channel within the bot you can open the [\<channels configurati
 Here you can see all configured channels of your bot. 
 To register a new channel just fill out the form in the lower part of the page and klick `Erstellen/Anpassen`
 
-| Feld               | Bedeutung                                                                                                                           | Hinweise                                                |
+| Field              | Description                                                                                                                         | Hints                                                   |
 |--------------------|-------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------|
 | Kanalname          | The name of the channel your bot should join                                                                                        |                                                         |
 | Sprache            | The language your bot should use within the channel (currently only "de" or "en"                                                    |                                                         |

@@ -11,19 +11,24 @@ import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 
-private const val IMGFLIP_COM = "imgflip.com"
-
 @Component
 class MemeProcessor(
-    val memeService: MemeService,
-    val languageService: LanguageService,
-    val channelService: ChannelService,
-    val streamService: StreamService,
-    val publisher: ApplicationEventPublisher
+    private val memeService: MemeService,
+    private val languageService: LanguageService,
+    private val channelService: ChannelService,
+    private val streamService: StreamService,
+    private val publisher: ApplicationEventPublisher
 ) {
     private val log = KotlinLogging.logger {}
 
-    private val memeSources: Set<String> = setOf(IMGFLIP_COM, "www.youtube.com", "clips.twitch.tv")
+    private val IMGFLIP_COM = "imgflip.com".toRegex(RegexOption.IGNORE_CASE)
+
+    private  val memeSourceExpressions : Set<Regex> = setOf(
+        IMGFLIP_COM,
+        "www.youtube.com".toRegex(RegexOption.IGNORE_CASE),
+        "clips.twitch.tv".toRegex(RegexOption.IGNORE_CASE),
+        "www.twitch.tv/.*/clip".toRegex(RegexOption.IGNORE_CASE)
+    )
 
     @ApplicationModuleListener
     fun receiveMessage(twitchMessageEvent: TwitchMessageEvent) {
@@ -34,9 +39,8 @@ class MemeProcessor(
                 twitchMessageEvent.messageInfo.text.substringAfter("!meme ")
             )
             respond(twitchMessageEvent)
-        } else if (memeSources.any {
-                twitchMessageEvent.messageInfo.text.contains(it, true)
-            }) {
+        } else if (memeSourceExpressions.any { regEx -> regEx.containsMatchIn(twitchMessageEvent.message)})
+        {
             processMemeMessage(twitchMessageEvent.channel, twitchMessageEvent.userInfo.userName, twitchMessageEvent.messageInfo.text)
             respond(twitchMessageEvent)
         }
@@ -44,7 +48,7 @@ class MemeProcessor(
 
     @ApplicationModuleListener
     fun receiveBrowserSourceMessages(twitchMessageEvent: TwitchMessageEvent) {
-        if(twitchMessageEvent.messageInfo.text.contains(IMGFLIP_COM, true)){
+        if(IMGFLIP_COM.containsMatchIn(twitchMessageEvent.message)){
             memeService.forwardMemeToBrowserSource(twitchMessageEvent.channel, twitchMessageEvent.messageInfo.text)
         }
     }

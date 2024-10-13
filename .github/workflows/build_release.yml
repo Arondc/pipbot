@@ -1,18 +1,15 @@
-name: Manual Build with Gradle
+name: Build and attach artifacts to release
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: Version number used for build artifact
-        required: true
-        type: string
+  release:
+    types:
+      - published
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -34,7 +31,13 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: pipbot_${{inputs.version}}
+          name: pipbot_${{github.ref_name}}
           path: |
             authentication_template.yml
             pipbot.jar
+            
+      - uses: AButler/upload-release-assets@v3.0
+        with:
+          files: "./authentication_template.yml;./pipbot.jar"
+          repo-token: ${{secrets.GITHUB_TOKEN}}
+          release-tag: ${{github.ref_name}}
