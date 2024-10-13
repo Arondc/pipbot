@@ -19,6 +19,12 @@ tasks.jar {
     enabled = false
 }
 
+tasks.test {
+    jvmArgs(
+        "--add-opens", "java.base/java.lang.reflect=ALL-UNNAMED"
+    )
+}
+
 java {
     sourceCompatibility = JavaVersion.VERSION_21
 }

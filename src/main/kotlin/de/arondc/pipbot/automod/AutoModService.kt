@@ -1,26 +1,22 @@
 package de.arondc.pipbot.automod
 
 import de.arondc.pipbot.channels.ChannelEntity
-import de.arondc.pipbot.events.*
-import de.arondc.pipbot.users.UserService
-import mu.KotlinLogging
+import de.arondc.pipbot.events.EventMessageInfo
+import de.arondc.pipbot.events.ModerationActionEvent
+import de.arondc.pipbot.events.NewAutoModPhraseEvent
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
-import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
 
 @Service
 class AutoModService(
-    val autoModPhraseRepository: AutoModPhraseRepository,
-    val userService: UserService,
-    val eventPublisher: ApplicationEventPublisher,
+    private val autoModPhraseRepository: AutoModPhraseRepository,
+    private val eventPublisher: ApplicationEventPublisher,
     @Value("\${automod.cache_size}") private val cacheSize: Long
 ) {
-    private val log = KotlinLogging.logger {}
+
     private final var chatMessageCache : ChatMessageCache = ChatMessageCache(cacheSize)
 
     @Transactional
@@ -67,38 +63,6 @@ class AutoModService(
 
     fun findById(autoModPhraseId: Long) = autoModPhraseRepository.findByIdOrNull(autoModPhraseId)
     fun delete(entity: AutoModPhraseEntity) = autoModPhraseRepository.delete(entity)
-
-    @ApplicationModuleListener
-    fun processModerationActionEvent(event: ModerationActionEvent) {
-        val userInformation = userService.getUserChannelInformation(event.user, event.channel)
-            ?: throw RuntimeException("Nutzer unbekannt")
-
-        if (TwitchPermission.MODERATOR.isSatisfiedBy(userInformation.highestTwitchUserLevel)) {
-            return
-        }
-
-        when {
-            userInformation.followerSince != null && ChronoUnit.MONTHS.between(
-                userInformation.followerSince, LocalDateTime.now()
-            ) >= 6 -> {
-                log.info { "Actioning on Moderation event for ${event.user} in ${event.channel}" }
-                eventPublisher.publishEvent(
-                    SendMessageEvent(
-                        channel = event.channel, message = "${event.user} war böse"
-                    )
-                )
-            }
-
-            else -> {
-                log.info { "Actioning on Moderation event for ${event.user} in ${event.channel}" }
-                eventPublisher.publishEvent(
-                    SendMessageEvent(
-                        channel = event.channel, message = "${event.user} war SEHR böse"
-                    )
-                )
-            }
-        }
-    }
 }
 
 class ChatMessageCache(private val maxCacheSize: Long){
