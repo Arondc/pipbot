@@ -39,7 +39,7 @@ class MemeProcessor(
                 twitchMessageEvent.messageInfo.text.substringAfter("!meme ")
             )
             respond(twitchMessageEvent)
-        } else if (memeSourceExpressions.any { regEx -> regEx.containsMatchIn(twitchMessageEvent.message)})
+        } else if (memeSourceExpressions.any { regEx -> regEx.containsMatchIn(twitchMessageEvent.messageInfo.text)})
         {
             processMemeMessage(twitchMessageEvent.channel, twitchMessageEvent.userInfo.userName, twitchMessageEvent.messageInfo.text)
             respond(twitchMessageEvent)
@@ -48,7 +48,7 @@ class MemeProcessor(
 
     @ApplicationModuleListener
     fun receiveBrowserSourceMessages(twitchMessageEvent: TwitchMessageEvent) {
-        if(IMGFLIP_COM.containsMatchIn(twitchMessageEvent.message)){
+        if(IMGFLIP_COM.containsMatchIn(twitchMessageEvent.messageInfo.text)){
             memeService.forwardMemeToBrowserSource(twitchMessageEvent.channel, twitchMessageEvent.messageInfo.text)
         }
     }
