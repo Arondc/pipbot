@@ -6,8 +6,8 @@ import de.arondc.pipbot.channels.ShoutoutOnRaidType
 import de.arondc.pipbot.events.ModerationActionEvent
 import de.arondc.pipbot.events.SendMessageEvent
 import de.arondc.pipbot.events.TwitchPermission
-import de.arondc.pipbot.users.UserChannelInformationEntity
 import de.arondc.pipbot.users.UserEntity
+import de.arondc.pipbot.users.UserInformation
 import de.arondc.pipbot.users.UserService
 import io.mockk.every
 import org.assertj.core.api.Assertions.assertThat
@@ -42,8 +42,10 @@ class ModerationServiceTest{
         const val CHANNEL_NAME = "channel"
         const val USER_NAME = "user"
 
+        const val BAN = "/ban $USER_NAME"
         const val HIGH_TIMEOUT = "/timeout $USER_NAME 600"
-        const val LOW_TIMEOUT = "/timeout $USER_NAME 1"
+        const val LOW_TIMEOUT = "/timeout $USER_NAME 10"
+        const val TEXT_MODERATION = "Hey, $USER_NAME bitte pass auf was du schreibst."
 
         val USER_ENTITY = UserEntity(
             name = USER_NAME,
@@ -62,13 +64,15 @@ class ModerationServiceTest{
         private val NEW_USER = buildUserWithFollowDate(null)
         private val FOLLOWER_LESS_THAN_6_MONTHS = buildUserWithFollowDate(
             LocalDateTime.now().minusMonths(6).plusMinutes(5))
-        private val FOLLOWER_MORE_THAN_6_MONTHS = buildUserWithFollowDate(LocalDateTime.now().minusMonths(6))
+        private val FOLLOWER_LESS_THAN_12_MONTHS = buildUserWithFollowDate(LocalDateTime.now().minusMonths(6))
+        private val FOLLOWER_MORE_THAN_12_MONTHS = buildUserWithFollowDate(LocalDateTime.now().minusMonths(12))
 
         @JvmStatic
         fun provideUserModerationResponses() = arrayOf(
-            arrayOf("New User", NEW_USER, HIGH_TIMEOUT),
+            arrayOf("New User", NEW_USER, BAN),
             arrayOf("Follower <6 months", FOLLOWER_LESS_THAN_6_MONTHS, HIGH_TIMEOUT),
-            arrayOf("Follower >6 months", FOLLOWER_MORE_THAN_6_MONTHS, LOW_TIMEOUT),
+            arrayOf("Follower <12 months", FOLLOWER_LESS_THAN_12_MONTHS, LOW_TIMEOUT),
+            arrayOf("Follower >12 months", FOLLOWER_MORE_THAN_12_MONTHS, TEXT_MODERATION),
         )
 
         @JvmStatic
@@ -80,7 +84,7 @@ class ModerationServiceTest{
             arrayOf("Owner", buildUserWithPermission(TwitchPermission.OWNER), 0),
         )
 
-        private fun buildUserWithPermission(highestPermission: TwitchPermission) = UserChannelInformationEntity(
+        private fun buildUserWithPermission(highestPermission: TwitchPermission) = UserInformation(
             user = USER_ENTITY,
             channel = CHANNEL_ENTITY,
             lastSeen = LocalDateTime.now(),
@@ -89,7 +93,7 @@ class ModerationServiceTest{
             followerSince = LocalDateTime.now(),
         )
 
-        private fun buildUserWithFollowDate(followDate: LocalDateTime?) = UserChannelInformationEntity(
+        private fun buildUserWithFollowDate(followDate: LocalDateTime?) = UserInformation(
             user = USER_ENTITY,
             channel = CHANNEL_ENTITY,
             lastSeen = LocalDateTime.now(),
@@ -101,7 +105,7 @@ class ModerationServiceTest{
 
     @ParameterizedTest(name = "{index}. {0} gets response \"{2}\"")
     @MethodSource("provideUserModerationResponses")
-    fun `Users are moderated differently according to their follow age`(userType: String, userChannelInformationEntity: UserChannelInformationEntity, response: String) {
+    fun `Users are moderated differently according to their follow age`(userType: String, userChannelInformationEntity: UserInformation, response: String) {
         every { userService.getUserChannelInformation(
             userName = USER_NAME,
             channelName = CHANNEL_NAME,
@@ -120,7 +124,7 @@ class ModerationServiceTest{
 
     @ParameterizedTest(name = "{index}. {0} {2,choice,0#is not|1#is} moderated")
     @MethodSource("provideUserTwitchPermissionResponses")
-    fun `Users are moderated differently according to their highest Twitch Permission`(userType:String, userChannelInformationEntity: UserChannelInformationEntity, expectedEventCount: Int) {
+    fun `Users are moderated differently according to their highest Twitch Permission`(userType:String, userChannelInformationEntity: UserInformation, expectedEventCount: Int) {
         every { userService.getUserChannelInformation(
             userName = USER_NAME,
             channelName = CHANNEL_NAME,
