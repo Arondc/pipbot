@@ -26,13 +26,13 @@ class UserService(
     val eventPublisher: ApplicationEventPublisher,
 ) {
 
-    fun getUserChannelInformation(userName: String, channelName: String): UserChannelInformationEntity? =
+    fun getUserChannelInformation(userName: String, channelName: String): UserInformation? =
         userChannelInformationStorage.findByUserNameIgnoreCaseAndChannelNameIgnoreCase(userName, channelName)
 
 
     fun updateChannelInformationForUser(channelName: String, userName: String, permissions: Set<TwitchPermission> = emptySet()) {
         fun buildNewUserChannelInformation(user: UserEntity,channel: ChannelEntity,streamIsRunning: Boolean) =
-            userChannelInformationStorage.save(UserChannelInformationEntity(user,channel,
+            userChannelInformationStorage.save(UserInformation(user,channel,
                 amountOfVisitedStreams = if (streamIsRunning) 1L else 0L))
 
         val user = userStorage.findByNameIgnoreCase(userName) ?: userStorage.save(UserEntity(userName))
@@ -51,7 +51,7 @@ class UserService(
         userChannelInformationStorage.save(info)
     }
 
-    private fun updateFollowerStatus(user: UserEntity, channel: ChannelEntity, info: UserChannelInformationEntity) {
+    private fun updateFollowerStatus(user: UserEntity, channel: ChannelEntity, info: UserInformation) {
         val followInstant = twitchStreamService.getFollowerInfoFor(channel.name, user.name)
         info.followerSince =
             if (followInstant != null) LocalDateTime.ofInstant(followInstant, ZoneOffset.systemDefault()) else null
@@ -59,7 +59,7 @@ class UserService(
 
     private fun updateHighestUserLevel(
         permissions: Set<TwitchPermission>,
-        info: UserChannelInformationEntity
+        info: UserInformation
     ) {
         val highestLevel = permissions.maxByOrNull { it.level } ?: TwitchPermission.EVERYONE
         info.highestTwitchUserLevel = highestLevel
@@ -67,7 +67,7 @@ class UserService(
 
     private fun updateLastSeenOfUser(
         stream: StreamEntity?,
-        info: UserChannelInformationEntity
+        info: UserInformation
     ) {
 
         if (stream != null && info.lastSeen.isBefore(stream.startTimes.min())) {

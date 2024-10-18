@@ -14,8 +14,8 @@ interface UserStorage : JpaRepository<UserEntity, Long>{
 }
 
 @Repository
-interface UserChannelInformationStorage : JpaRepository<UserChannelInformationEntity, Long> {
-    fun findByUserNameIgnoreCaseAndChannelNameIgnoreCase(username: String, channelName: String): UserChannelInformationEntity?
+interface UserChannelInformationStorage : JpaRepository<UserInformation, Long> {
+    fun findByUserNameIgnoreCaseAndChannelNameIgnoreCase(username: String, channelName: String): UserInformation?
 }
 
 @Entity
@@ -36,7 +36,7 @@ class UserChannelInformationEntityPK(
 
 @Entity
 @Table(name = "user_channel_information")
-class UserChannelInformationEntity(
+class UserInformation(
     @ManyToOne
     @MapsId("userId")
     @JoinColumn(name = "user_id")

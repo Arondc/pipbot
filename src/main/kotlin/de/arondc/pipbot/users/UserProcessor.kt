@@ -1,7 +1,7 @@
 package de.arondc.pipbot.users
 
 import de.arondc.pipbot.events.SendMessageEvent
-import de.arondc.pipbot.events.TwitchMessage
+import de.arondc.pipbot.events.TwitchMessageEvent
 import de.arondc.pipbot.events.UpdateChannelInformationForUserEvent
 import de.arondc.pipbot.services.LanguageService
 import org.springframework.context.ApplicationEventPublisher
@@ -21,14 +21,14 @@ class UserProcessor(
     }
 
     @ApplicationModuleListener
-    fun receiveMessage(twitchMessage: TwitchMessage) {
-        handleRequest(twitchMessage.channel, twitchMessage.message, twitchMessage.user)
+    fun receiveMessage(twitchMessageEvent: TwitchMessageEvent) {
+        handleRequest(twitchMessageEvent.channel, twitchMessageEvent.messageInfo.text, twitchMessageEvent.userInfo.userName)
 
         eventPublisher.publishEvent(
             UpdateChannelInformationForUserEvent(
-                twitchMessage.channel,
-                twitchMessage.user,
-                twitchMessage.permissions
+                twitchMessageEvent.channel,
+                twitchMessageEvent.userInfo.userName,
+                twitchMessageEvent.userInfo.permissions
             )
         )
     }
