@@ -1,8 +1,16 @@
+(The documentation is heavily WIP. As the bot supports english and german,
+ I'm working on making the documentation support both languages too - 
+ written in english but stating the german terms too.)
+
+
 **Table of contents**
 <!-- TOC -->
 * [Pipbot - A multichannel Twitch Chatbot written in Kotlin](#pipbot---a-multichannel-twitch-chatbot-written-in-kotlin)
   * [Build from sources](#build-from-sources)
   * [Setting up the bot](#setting-up-the-bot)
+  * [Obtaining oauth token](#obtaining-oauth-token)
+    * [Use the OAuth token from your user account](#use-the-oauth-token-from-your-user-account)
+    * [Register the bot as an app and use the clientId to let the bot generate an OAuth token](#register-the-bot-as-an-app-and-use-the-clientid-to-let-the-bot-generate-an-oauth-token)
   * [Configuring your channel](#configuring-your-channel)
   * [Features](#features)
     * [Stream recognition](#stream-recognition)
@@ -16,6 +24,8 @@
     * [Polls](#polls)
     * [Autoresponder](#autoresponder)
     * [Automod](#automod)
+      * [Automod - Phrases](#automod---phrases)
+      * [Moderation - Responses](#moderation---responses)
     * [Other commands](#other-commands)
 * [Developer information](#developer-information)
   * [Writing own modules](#writing-own-modules)
@@ -25,7 +35,8 @@
 <!-- TOC -->
 
 # Pipbot - A multichannel Twitch Chatbot written in Kotlin
-Disclaimer: The bots surface and command list is currently german only. An english version is already planned.
+Disclaimer: I'm working on making the bot multilanguage (at least for german and english) yet it can happen that
+            not all texts are already available in english.
 
 ## Build from sources
 
@@ -49,12 +60,33 @@ You need the following prerequisites:
     * Rename the template file to `authentication.yml`
     * Edit the following values in the file
         * Set `twitch-connector.authentication.user` to the username the bot should use
-        * Set `twitch-connector.authentication.oAuth` with the oauth token of your bot's account
+        * Set `twitch-connector.authentication.oAuth` with the oauth token of your bot's account 
+          (see section [Obtaining oauth token](#obtaining-oauth-token)  if you don't have one at hand)
 3. The bot can be started via the command line
 ```shell
 java -jar pipbot.jar
 ```
 4. As soon as the bot started you can reach the gui via [\<Link to gui>](http://localhost:8080)
+
+## Obtaining oauth token
+
+There are two methods for obtaining tokens.
+
+### Use the OAuth token from your user account
+
+Steps:
+1. Open https://twitchapps.com/tmi and connect the app to the account you want to use with the bot.
+2. The page will generate an oauth token (`oauth:...`) that you can copy directly to your `authentication.yml`
+
+### Register the bot as an app and use the clientId to let the bot generate an OAuth token
+
+The bot offers a simple method of obtaining an oAuth token if you registered the bot as an application within your developer account.
+
+1. Register yourself as a dev on https://dev.twitch.tv/console 
+2. Add the bot as an app, you should get a clientId that you can put in `authentication.yml`
+3. Configure `http://localhost:8080/authtoken` as OAuth redirect URL within your app
+4. Open http://localhost:8080/authtoken/refresh, the bot will then try to generate a token 
+5. Copy the token to your `authentication.yml`
 
 ## Configuring your channel
 To register your channel within the bot you can open the [\<channels configuration page>](http://localhost:8080/channels).
@@ -168,10 +200,30 @@ The browser source monitor supports the same URL parameters as the meme browser 
 | !zitat \<text>                    | Searches a quote with the given text (if there is more than one a random one with the text will be picked)  |
 
 ### Raid reactions
-(documentation is WIP)
+
+On the channel configuration page you can also configure how the bot should react to raids.
+The fields `Shoutout` and `Shoutout whitelist` are used to configure the bot behaviour on raids.
+
+The field `Shoutout` controls if and how the bot reacts to raiding streamers.
+
+| Option (german)         | Option (english)        | Description                                                                                                                                            |
+|-------------------------|-------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Aus                     | Off                     | The bot will not respond to raids automatically                                                                                                        |
+| Textantwort             | Respond with text       | The bot will react with a text message stating the raider's name the amount of people attending the raid and the last game the raider played on stream |
+| StreamElements shoutout | StreamElements shoutout | (Only usable if you also use StreamElements) The bot will use StreamElements' `!so` command to perform a shoutout for the raider                       |
+| Twitch shoutout         | Twitch shoutout         | (Only usable if your bot has moderation rights) The bot will use Twitch's `/shoutout` command to perform a shoutout for the raider                     |
+
+The field `Shoutout whitelist` can be used to restrict to which raiding channels the bot will react.
+If the field is empty, the bot will react to all raids.
+If you want the bot to only react to specific raiding streams you can enter a comma separated list of channel names. The bot will then only react to raids of these channels and ignores all other raids.
 
 ### Polls
-(documentation is WIP)
+
+The bot can run polls of variable complexity.
+Different options can be combined to configure the poll to your liking.
+After the poll is closed the bot will automatically count the votes and share the result in the chat.
+
+Please have a look at the table below to see what options are supported by the bot.
 
 | Command                           | Description                                                                                                 |
 |-----------------------------------|-------------------------------------------------------------------------------------------------------------|
@@ -183,11 +235,66 @@ The browser source monitor supports the same URL parameters as the meme browser 
 
 
 ### Autoresponder
-(documentation is WIP)
+
+The bot can be used to create automatic answers. These can be used to share specific information of your stream (e.g. contacts, discord links, chat etiquette, etc.).
+To configure auto responses just open the [\<Autoresponder configuration page\>](http://localhost:8080/autoresponder),
+enter the channel name the configured auto response should be used at, the command that should trigger the automatic message and the text that should be used by the bot.
+The command will be automatically prefixed with a `!`, so entering `socials` to the command textbox will result in a `!socials` command in your stream.
+
+Please be careful not to use any existing keywords (e.g. from Pipbot, StreamElements or other chatbots that you already might use), currently the bot doesn't check whether
+a configured autorespond command conflicts with an existing keyword.
+
 
 ### Automod
-(documentation is WIP)
 
+The bot can be used to perform simple automoderation tasks. It needs to have moderator rights in the chat to perform auto moderation.
+
+Currently, there are two dashboards to configure the auto moderation
+
+* "Automod - Phrases" - is used to define what chat messages the automod should react on
+* "Moderation - Responses" - is used to configure how the bot should perform moderation
+
+#### Automod - Phrases
+
+The [\<Automod phrases configuration page\>](http://localhost:8080/automodphrases) can be used to setup what texts should trigger the automod.
+Just select the channel for that the phrase should be configured and put in the phrase into the `Text` textfield.
+
+The `Text` doesn't have to match the whole message and will match parts of chat messages.
+
+e.g. the phrase `cheap viewers` will also match on a chat message like `buy cheap viewers on ...`
+
+Additionally, the matching algorithm will also try to match against a version of a chat message that is stripped from 
+all diacritics and ignoring capitalization of letters. This will help fighting spam-bots that often use diacritics and
+random capitalization to circumvent simple text matching.
+
+e.g. the phrase `cheap viewers` will also match on a chat message like `bûy chéÀp vIêwèrs on ...`
+
+#### Moderation - Responses
+
+The [\<Moderation - Responses configuration page\>](http://localhost:8080/moderationresponses) allows you to select
+how hard the bot should punish viewers if the bot recognized a situation where moderation is necessary.
+
+After chosing the channel to create the moderation response configuration for you can select the trust level of the 
+potential moderated user. This allows you to handle followers of different follow ages differently when deciding for
+a moderation response.
+
+| Option (german)         | Option (english)        | Description                                                                              |
+|-------------------------|-------------------------|------------------------------------------------------------------------------------------|
+| Zuschauer (ohne follow) | Viewer (without follow) | All viewers that are not following your channel                                          |
+| Follower (<6 Monate)    | Follower (<6 months)    | A new follower with a follow age less than 6 months                                      |
+| Follower (6-12 Monate)  | Follower (6-12 months)  | A short term follower that follows the channel for less than 12 but longer than 6 months |
+| Follower (12+ Monate)   | Follower (12+ months)   | A long term follower that follows the channel for more than 12 months                    |
+
+Please keep in mind you can configure only one moderation response for each trust level per channel currently.
+All users in the stream that are moderators (or higher status) won't be moderated at all.
+
+You have different options to chose from when deciding how a violation should be moderated.
+
+| Option (german) | Option (english) | Description                                                                                                                                                                                                                                                                                 |
+|-----------------|------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| TEXT            | TEXT             | (`Text` needs to be filled) The Bot will respond with the text from the `Text` field. You can use `%s` as a placeholder that will be filled with the user's name once                                                                                                                       |
+| TIMEOUT         | TIMEOUT          | (`Dauer`/`Duration` needs to be filled) The Bot will perform a timeout for the user with the given duration from the `Dauer`/`Duration` field (in seconds). A short duration can be used to clear the chat of messages from that user while still allowing them to participate in the chat. |
+| BAN             | BAN              | The Bot will ban the user                                                                                                                                                                                                                                                                   |
 
 ### Other commands
 

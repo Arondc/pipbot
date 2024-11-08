@@ -196,6 +196,35 @@ class ModerationServiceTest {
     }
 
     @Test
+    fun `A configured text is sending a text message for the given user in the given channel`() {
+        every {
+            userService.getUserChannelInformation(
+                userName = USER_NAME,
+                channelName = CHANNEL_NAME,
+            )
+        } returns buildUser()
+
+        every {
+            moderationResponseStorage.findByChannelAndTrustLevel(
+                CHANNEL_ENTITY,
+                UserTrustLevel.VIEWER
+            )
+        } returns ModerationResponseEntity(CHANNEL_ENTITY, UserTrustLevel.VIEWER, ModerationResponeType.TEXT, text = "you're a bad user ")
+
+        moderationService.processModerationActionEvent(
+            ModerationActionEvent(
+                channel = CHANNEL_NAME,
+                user = USER_NAME,
+            )
+        )
+
+        val sendMessageEvents = applicationEvents.stream(SendMessageEvent::class.java).toList()
+        assertThat(sendMessageEvents).hasSize(1)
+        assertThat(sendMessageEvents[0].channel).isEqualTo(CHANNEL_ENTITY.name)
+        assertThat(sendMessageEvents[0].message).isEqualTo("you're a bad user $USER_NAME")
+    }
+
+    @Test
     fun `If no moderation configuration is set for the given channel and trust level, no moderation happens`() {
         every {
             userService.getUserChannelInformation(
