@@ -83,7 +83,7 @@ Steps:
 The bot offers a simple method of obtaining an oAuth token if you registered the bot as an application within your developer account.
 
 1. Register yourself as a dev on https://dev.twitch.tv/console 
-2. Add the bot as an app, you should get a clientId that you can put in `authentication.yml`
+2. Add the bot as an app, you should get a clientId and clientSecret that you can put in `authentication.yml`
 3. Configure `http://localhost:8080/authtoken` as OAuth redirect URL within your app
 4. Open http://localhost:8080/authtoken/refresh, the bot will then try to generate a token 
 5. Copy the token to your `authentication.yml`
