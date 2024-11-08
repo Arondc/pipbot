@@ -13,7 +13,11 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 @Service
-class ModerationService(private val userService: UserService,private  val eventPublisher: ApplicationEventPublisher) {
+class ModerationService(
+    private val userService: UserService,
+    private val moderationResponseStorage: ModerationResponseStorage,
+    private val eventPublisher: ApplicationEventPublisher
+) {
     private val log = KotlinLogging.logger {}
 
     @ApplicationModuleListener
@@ -26,15 +30,15 @@ class ModerationService(private val userService: UserService,private  val eventP
         }
 
         val trustLevel = getUserTrustLevel(userInformation)
-        val moderationResponse : ModerationResponse = when (trustLevel) {
-            UserTrustLevel.VIEWER -> ModerationResponse.Ban(event.user)
-            UserTrustLevel.NEW_FOLLOWER -> ModerationResponse.Timeout(event.user, 600)
-            UserTrustLevel.SHORT_TERM_FOLLOWER -> ModerationResponse.Timeout(event.user, 10)
-            UserTrustLevel.LONG_TERM_FOLLOWER -> ModerationResponse.Text(event.user, "Hey, %s bitte pass auf was du schreibst.")
-        }
 
-        if(moderationResponse is ModerationResponse.None){
-            return
+        val moderationResponseConfiguration =
+            moderationResponseStorage.findByChannelAndTrustLevel(userInformation.channel, trustLevel)
+                ?: return
+
+        val moderationResponse = when (moderationResponseConfiguration.type) {
+            ModerationResponeType.BAN -> ModerationResponse.Ban(event.user)
+            ModerationResponeType.TIMEOUT -> ModerationResponse.Timeout(event.user, moderationResponseConfiguration.duration!!)
+            ModerationResponeType.TEXT -> ModerationResponse.Text(event.user,  moderationResponseConfiguration.text!!)
         }
 
         log.info { "Actioning on Moderation event for ${event.user} with trust level $trustLevel in ${event.channel}" }
@@ -65,14 +69,11 @@ sealed class ModerationResponse(val userName: String = ""){
     class Ban(userName: String): ModerationResponse(userName) {
         override  fun message(): String = "/ban $userName"
     }
-    class Timeout(userName: String, private val timeoutLength:Long): ModerationResponse(userName) {
-        override  fun message(): String = "/timeout $userName $timeoutLength"
+    class Timeout(userName: String, private val timeoutDuration:Long): ModerationResponse(userName) {
+        override  fun message(): String = "/timeout $userName $timeoutDuration"
     }
     class Text(userName: String, private val responseText: String): ModerationResponse(userName) {
         override fun message(): String = responseText.format(userName)
-    }
-    class None: ModerationResponse() {
-        override fun message(): String = ""
     }
     abstract fun message():String
 }
