@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 import java.util.concurrent.TimeUnit
 
 @EnableScheduling
@@ -20,6 +21,7 @@ class UserListRefreshScheduler(
 ) {
 
     @Scheduled(fixedDelay = 30, timeUnit = TimeUnit.MINUTES)
+    @Transactional
     fun startRefreshUserLists() {
         channelService
             .findAll()

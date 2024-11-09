@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home - Pipbot</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet" />
+</head>
+<body>
+
+<h1 th:text="${#messages.msg('frontend.automod.phrases.header')}"></h1>
+
+<table class="table-view">
+    <thead>
+    <tr>
+        <td th:text="${#messages.msg('frontend.automod.phrases.table.headers.channel')}"></td>
+        <td th:text="${#messages.msg('frontend.automod.phrases.table.headers.text')}"></td>
+        <td></td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="ar: ${automodphrases}">
+        <td th:text="${ar.channel}"></td>
+        <td th:text="${ar.text}"></td>
+        <td> <a th:href="@{/automodphrases/delete(auto-mod-phrase-id=${ar.id})}">delete</a></td>
+    </tr>
+    </tbody>
+</table>
+
+<div>
+<form th:action="@{/automodphrases/save}" th:object="${automodphrase}" method="post">
+    <div th:if="${#fields.hasErrors('global')}">
+        <p th:each="err : ${#fields.errors('global')}" th:text="${err}" class="error"></p>
+    </div>
+    <input type="hidden" th:field="*{id}" id="id">
+    <table>
+        <tr>
+            <td><label th:text="${#messages.msg('frontend.automod.phrases.table.headers.channel')}" th:for="channel"></label></td>
+            <td>
+                <select th:field="*{channel}">
+                    <option th:each="channel: ${channels}" th:text="${channel.name}" th:value="${channel.name}"></option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td><label th:text="${#messages.msg('frontend.automod.phrases.table.headers.text')}" th:for="text"></label></td>
+            <td><input type="text" th:field="*{text}" /></td>
+        </tr>
+        <tr><td><input type="submit" value="Erstellen/Anpassen" /></td></tr>
+    </table>
+</form>
+</div>
+
+
+</body>
+</html>

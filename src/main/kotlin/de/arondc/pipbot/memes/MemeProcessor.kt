@@ -2,7 +2,7 @@ package de.arondc.pipbot.memes
 
 import de.arondc.pipbot.channels.ChannelService
 import de.arondc.pipbot.events.SendMessageEvent
-import de.arondc.pipbot.events.TwitchMessage
+import de.arondc.pipbot.events.TwitchMessageEvent
 import de.arondc.pipbot.services.LanguageService
 import de.arondc.pipbot.streams.StreamService
 import mu.KotlinLogging
@@ -31,32 +31,33 @@ class MemeProcessor(
     )
 
     @ApplicationModuleListener
-    fun receiveMessage(twitchMessage: TwitchMessage) {
-        if (twitchMessage.message.startsWith("!meme ", true)) {
+    fun receiveMessage(twitchMessageEvent: TwitchMessageEvent) {
+        if (twitchMessageEvent.messageInfo.text.startsWith("!meme ", true)) {
             processMemeMessage(
-                twitchMessage.channel,
-                twitchMessage.user,
-                twitchMessage.message.substringAfter("!meme ")
+                twitchMessageEvent.channel,
+                twitchMessageEvent.userInfo.userName,
+                twitchMessageEvent.messageInfo.text.substringAfter("!meme ")
             )
-            respond(twitchMessage)
-        } else if (memeSourceExpressions.any { regEx -> regEx.containsMatchIn(twitchMessage.message) }) {
-            processMemeMessage(twitchMessage.channel, twitchMessage.user, twitchMessage.message)
-            respond(twitchMessage)
+            respond(twitchMessageEvent)
+        } else if (memeSourceExpressions.any { regEx -> regEx.containsMatchIn(twitchMessageEvent.messageInfo.text)})
+        {
+            processMemeMessage(twitchMessageEvent.channel, twitchMessageEvent.userInfo.userName, twitchMessageEvent.messageInfo.text)
+            respond(twitchMessageEvent)
         }
     }
 
     @ApplicationModuleListener
-    fun receiveBrowserSourceMessages(twitchMessage: TwitchMessage) {
-        if(IMGFLIP_COM.containsMatchIn(twitchMessage.message)){
-            memeService.forwardMemeToBrowserSource(twitchMessage.channel, twitchMessage.message)
+    fun receiveBrowserSourceMessages(twitchMessageEvent: TwitchMessageEvent) {
+        if(IMGFLIP_COM.containsMatchIn(twitchMessageEvent.messageInfo.text)){
+            memeService.forwardMemeToBrowserSource(twitchMessageEvent.channel, twitchMessageEvent.messageInfo.text)
         }
     }
 
-    private fun respond(twitchMessage: TwitchMessage) {
+    private fun respond(twitchMessageEvent: TwitchMessageEvent) {
         val message =
-            languageService.getMessage(twitchMessage.channel, "twitch.memes.acknowledge", arrayOf(twitchMessage.user))
+            languageService.getMessage(twitchMessageEvent.channel, "twitch.memes.acknowledge", arrayOf(twitchMessageEvent.userInfo))
         publisher.publishEvent(
-            SendMessageEvent(twitchMessage.channel, message)
+            SendMessageEvent(twitchMessageEvent.channel, message)
         )
     }
 
