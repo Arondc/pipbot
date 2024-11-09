@@ -209,7 +209,7 @@ class ModerationServiceTest {
                 CHANNEL_ENTITY,
                 UserTrustLevel.VIEWER
             )
-        } returns ModerationResponseEntity(CHANNEL_ENTITY, UserTrustLevel.VIEWER, ModerationResponeType.TEXT, text = "you're a bad user ")
+        } returns ModerationResponseEntity(CHANNEL_ENTITY, UserTrustLevel.VIEWER, ModerationResponeType.TEXT, text = "you're a bad user %s")
 
         moderationService.processModerationActionEvent(
             ModerationActionEvent(
