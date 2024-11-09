@@ -55,7 +55,7 @@ class MemeProcessor(
 
     private fun respond(twitchMessageEvent: TwitchMessageEvent) {
         val message =
-            languageService.getMessage(twitchMessageEvent.channel, "twitch.memes.acknowledge", arrayOf(twitchMessageEvent.userInfo))
+            languageService.getMessage(twitchMessageEvent.channel, "twitch.memes.acknowledge", arrayOf(twitchMessageEvent.userInfo.userName))
         publisher.publishEvent(
             SendMessageEvent(twitchMessageEvent.channel, message)
         )

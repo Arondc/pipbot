@@ -51,7 +51,7 @@ Disclaimer: I'm working on making the bot multilanguage (at least for german and
 
 ## Setting up the bot
 You need the following prerequisites:
-* JVM 21 oder newer
+* JVM 21 oder newer (from e.g. https://adoptium.net/de/temurin/releases/)
 * An oauth-Token for the account the bot will use
 
 1. Copy the release jar to a folder of your choice
