@@ -68,6 +68,20 @@ java -jar pipbot.jar
 ```
 4. As soon as the bot started you can reach the gui via [\<Link to gui>](http://localhost:8080)
 
+## Upgrading the bot
+
+If you already have running instance of the pipbot an upgrade to a newer version should be really simple.
+
+First make sure to shut the running pipbot instance down that you want to upgrade.
+
+To be safe from data loss you can copy the `data.mv.db` and `data.trace.db` (if it exists), this is the database of the
+bot and contains all settings that you made through the browser interface. If you want you can also copy the old 
+`pipbot.jar` to have the old version at hand if anything should go wrong.
+
+Afterwards, you can get the newest release version from https://github.com/Arondc/pipbot/releases/latest
+
+Just download the `pipbot.jar` file and replace with the old existing one.
+
 ## Obtaining oauth token
 
 There are two methods for obtaining tokens.
