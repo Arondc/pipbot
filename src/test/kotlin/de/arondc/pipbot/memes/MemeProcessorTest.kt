@@ -83,7 +83,7 @@ class MemeProcessorTest {
         every { streamService.findOrPersistCurrentStream(CHANNEL_NAME) } returns STREAM
         every { memeService.save(capture(capturedMeme)) } answers { capturedMeme.captured }
         every {
-            languageService.getMessage(CHANNEL_NAME, RESPONSE_LOCALIZATION_KEY, arrayOf(EVENT_USER_INFO))
+            languageService.getMessage(CHANNEL_NAME, RESPONSE_LOCALIZATION_KEY, arrayOf(EVENT_USER_INFO.userName))
         } returns RESPONSE_MESSAGE_TEXT
         every { publisher.publishEvent(capture(capturedSendMessageEvent)) } just Runs
 
@@ -96,7 +96,7 @@ class MemeProcessorTest {
         verify { channelService.findByNameIgnoreCase(CHANNEL_NAME) }
         verify { streamService.findOrPersistCurrentStream(CHANNEL_NAME) }
         verify { memeService.save(any()) }
-        verify { languageService.getMessage(CHANNEL_NAME, RESPONSE_LOCALIZATION_KEY, arrayOf(EVENT_USER_INFO)) }
+        verify { languageService.getMessage(CHANNEL_NAME, RESPONSE_LOCALIZATION_KEY, arrayOf(EVENT_USER_INFO.userName)) }
 
         checkMeme(capturedMeme.captured, messageText)
         checkSendMessageEvent(capturedSendMessageEvent.captured)
@@ -153,7 +153,7 @@ class MemeProcessorTest {
         every { streamService.findOrPersistCurrentStream(CHANNEL_NAME) } returns STREAM
         every { memeService.save(capture(capturedMeme)) } answers { capturedMeme.captured }
         every {
-            languageService.getMessage(CHANNEL_NAME, RESPONSE_LOCALIZATION_KEY, arrayOf(EVENT_USER_INFO))
+            languageService.getMessage(CHANNEL_NAME, RESPONSE_LOCALIZATION_KEY, arrayOf(EVENT_USER_INFO.userName))
         } returns RESPONSE_MESSAGE_TEXT
         every { publisher.publishEvent(capture(capturedSendMessageEvent)) } just Runs
 
@@ -165,7 +165,7 @@ class MemeProcessorTest {
         verify { channelService.findByNameIgnoreCase(CHANNEL_NAME) }
         verify { streamService.findOrPersistCurrentStream(CHANNEL_NAME) }
         verify { memeService.save(any()) }
-        verify { languageService.getMessage(CHANNEL_NAME, RESPONSE_LOCALIZATION_KEY, arrayOf(EVENT_USER_INFO)) }
+        verify { languageService.getMessage(CHANNEL_NAME, RESPONSE_LOCALIZATION_KEY, arrayOf(EVENT_USER_INFO.userName)) }
 
         checkMeme(capturedMeme.captured, messageText)
         checkSendMessageEvent(capturedSendMessageEvent.captured)
