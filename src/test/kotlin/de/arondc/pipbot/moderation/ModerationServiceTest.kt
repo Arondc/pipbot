@@ -11,6 +11,7 @@ import de.arondc.pipbot.users.UserInformation
 import de.arondc.pipbot.users.UserService
 import io.mockk.every
 import io.mockk.slot
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -299,7 +300,38 @@ class ModerationServiceTest {
                 )
             )
         }
+        verify(exactly = 5) { userService.getUserChannelInformation(USER_NAME, CHANNEL_NAME) }
         assertThat(exception).message().isEqualTo("Nutzer unbekannt")
+    }
+
+    @Test
+    fun `If the user is not found there is a retry in getting the user information`() {
+        every {
+            userService.getUserChannelInformation(
+                userName = USER_NAME,
+                channelName = CHANNEL_NAME,
+            )
+        } returns null andThen null andThen null andThen null andThen buildUser()
+
+        every {
+            moderationResponseStorage.findByChannelAndTrustLevel(
+                CHANNEL_ENTITY,
+                UserTrustLevel.VIEWER
+            )
+        } returns ModerationResponseEntity(CHANNEL_ENTITY, UserTrustLevel.VIEWER, ModerationResponeType.BAN)
+
+        moderationService.processModerationActionEvent(
+            ModerationActionEvent(
+                channel = CHANNEL_NAME,
+                user = USER_NAME,
+            )
+        )
+
+        verify(exactly = 5) { userService.getUserChannelInformation(USER_NAME, CHANNEL_NAME) }
+        val sendMessageEvents = applicationEvents.stream(SendMessageEvent::class.java).toList()
+        assertThat(sendMessageEvents).hasSize(1)
+        assertThat(sendMessageEvents[0].channel).isEqualTo(CHANNEL_ENTITY.name)
+        assertThat(sendMessageEvents[0].message).isEqualTo("/ban $USER_NAME")
     }
 
 
