@@ -1,5 +1,6 @@
 package de.arondc.pipbot.moderation
 
+import de.arondc.pipbot.core.Functions.retry
 import de.arondc.pipbot.events.ModerationActionEvent
 import de.arondc.pipbot.events.SendMessageEvent
 import de.arondc.pipbot.events.TwitchPermission
@@ -22,8 +23,12 @@ class ModerationService(
 
     @ApplicationModuleListener
     fun processModerationActionEvent(event: ModerationActionEvent) {
-        val userInformation = userService.getUserChannelInformation(event.user, event.channel)
-            ?: throw RuntimeException("Nutzer unbekannt")
+        val userInformation = retry(RuntimeException("Nutzer unbekannt")) {
+            userService.getUserChannelInformation(
+                event.user,
+                event.channel
+            )
+        }
 
         if (TwitchPermission.MODERATOR.isSatisfiedBy(userInformation.highestTwitchUserLevel)) {
             return
