@@ -15,6 +15,7 @@ class OauthTokenReceiverController(val twitchConnectorConfig: TwitchConnectorCon
             "moderator:read:followers",
             "moderator:read:chatters",
             "moderator:manage:shoutouts",
+            "moderator:manage:banned_users",
             "whispers:read",
             "whispers:edit",
             "user:manage:whispers",
