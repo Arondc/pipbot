@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pipbot - Features</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet" />
+</head>
+<body>
+
+<h1 th:text="${#messages.msg('frontend.features.header')}"></h1>
+
+<table class="table-view">
+    <thead>
+    <tr>
+        <td th:text="${#messages.msg('frontend.features.table.headers.name')}"></td>
+        <td th:text="${#messages.msg('frontend.features.table.headers.description')}"></td>
+        <td th:text="${#messages.msg('frontend.features.table.headers.state')}"></td>
+        <td></td>
+        <td></td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="feature: ${features}">
+        <td th:text="${feature.name}"></td>
+        <td th:text="${#messages.msg('features.description.'+feature.name)}"></td>
+        <td th:text="${#messages.msg('features.enabled.'+feature.enabled)}"></td>
+        <td th:if="${feature.enabled}"> <a th:href="@{/features/disable(feature=${feature.name})}" th:text="${#messages.msg('features.disable')}"></a></td>
+        <td th:if="${!feature.enabled}"> <a th:href="@{/features/enable(feature=${feature.name})}" th:text="${#messages.msg('features.enable')}"></a></td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

@@ -5,8 +5,10 @@ import de.arondc.pipbot.channels.ChannelRepository
 import de.arondc.pipbot.events.TwitchPermission
 import de.arondc.pipbot.events.UpdateChannelInformationForUserEvent
 import de.arondc.pipbot.events.UpdateUserListForChannelEvent
-import de.arondc.pipbot.streams.StreamEntity
+import de.arondc.pipbot.features.Feature
+import de.arondc.pipbot.features.FeatureService
 import de.arondc.pipbot.streams.StreamService
+import de.arondc.pipbot.twitch.TwitchException
 import de.arondc.pipbot.twitch.TwitchStreamService
 import mu.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
@@ -14,7 +16,6 @@ import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
-import java.time.ZoneOffset
 
 @Service
 class UserService(
@@ -24,53 +25,56 @@ class UserService(
     val streamService: StreamService,
     val twitchStreamService: TwitchStreamService,
     val eventPublisher: ApplicationEventPublisher,
+    val featureService: FeatureService,
 ) {
+    private val log = KotlinLogging.logger {}
 
     fun getUserChannelInformation(userName: String, channelName: String): UserInformation? =
         userChannelInformationStorage.findByUserNameIgnoreCaseAndChannelNameIgnoreCase(userName, channelName)
 
 
     fun updateChannelInformationForUser(channelName: String, userName: String, permissions: Set<TwitchPermission> = emptySet()) {
-        fun buildNewUserChannelInformation(user: UserEntity,channel: ChannelEntity,streamIsRunning: Boolean) =
-            userChannelInformationStorage.save(UserInformation(user,channel,
-                amountOfVisitedStreams = if (streamIsRunning) 1L else 0L))
-
         val user = userStorage.findByNameIgnoreCase(userName) ?: userStorage.save(UserEntity(userName))
         val channel = channelRepository.findByNameIgnoreCase(channelName)!!
-        val stream = streamService.findOrPersistCurrentStream(channelName)
 
         val info = userChannelInformationStorage.findByUserNameIgnoreCaseAndChannelNameIgnoreCase(userName, channelName)
-            ?: buildNewUserChannelInformation(user, channel, stream != null)
+            ?: userChannelInformationStorage.save(UserInformation(user,channel))
 
-        if (permissions.isNotEmpty()) {
-            updateHighestUserLevel(permissions, info)
-        }
-        updateLastSeenOfUser(stream, info)
+        updateHighestUserLevel(permissions, info)
+        updateLastSeenOfUser(channelName, info)
         updateFollowerStatus(user, channel, info)
 
         userChannelInformationStorage.save(info)
     }
 
     private fun updateFollowerStatus(user: UserEntity, channel: ChannelEntity, info: UserInformation) {
-        val followInstant = twitchStreamService.getFollowerInfoFor(channel.name, user.name)
-        info.followerSince =
-            if (followInstant != null) LocalDateTime.ofInstant(followInstant, ZoneOffset.systemDefault()) else null
+        if (featureService.isEnabled(Feature.UpdateFollowerStatus)) {
+            try {
+                info.followerSince = twitchStreamService.getFollowerSince(channel.name, user.name)
+                info.followerVerifiedOnce = true
+            } catch (e: TwitchException) {
+                log.warn(e) { "Follow age for user '${user.name}' could not be updated." }
+            }
+        }
     }
 
     private fun updateHighestUserLevel(
         permissions: Set<TwitchPermission>,
         info: UserInformation
     ) {
-        val highestLevel = permissions.maxByOrNull { it.level } ?: TwitchPermission.EVERYONE
-        info.highestTwitchUserLevel = highestLevel
+        if (permissions.isNotEmpty()) {
+            val highestLevel = permissions.maxByOrNull { it.level } ?: TwitchPermission.EVERYONE
+            info.highestTwitchUserLevel = highestLevel
+        }
     }
 
     private fun updateLastSeenOfUser(
-        stream: StreamEntity?,
+        channelName: String,
         info: UserInformation
     ) {
-
-        if (stream != null && info.lastSeen.isBefore(stream.startTimes.min())) {
+        val latestStream = streamService.findLatestStreamForChannel(channelName)
+        if (latestStream != null &&
+            info.lastSeen.isBefore(latestStream.startTimes.min()) ) {
             info.amountOfVisitedStreams += 1
         }
         info.lastSeen = LocalDateTime.now()
@@ -81,15 +85,15 @@ class UserService(
     //TODO: ^----> ggf. auch restrukturieren
     //TODO Tests Tests Tests!
 
-    fun updateUserListsForChannels(channelNames: List<String>) {
-        val currentOnlineStreams = twitchStreamService.fetchCurrentStreamsForChannels(channelNames)
-        currentOnlineStreams.streams.forEach { stream ->
-            streamService.findOrCreateMatchingStream(stream)
-            val chatterList = twitchStreamService.getChatUserList(stream.userLogin)
-            chatterList.chatters.map { user ->
-                eventPublisher.publishEvent(UpdateChannelInformationForUserEvent(stream.userName, user.userName))
-            }
+    fun updateUserListForChannel(channelName: String) {
+        val twitchStream = twitchStreamService.fetchCurrentStreamForChannel(channelName) ?: return
+
+        streamService.findOrCreateMatchingStream(twitchStream)
+        twitchStreamService.getChatUserList(twitchStream.userLogin)
+            .map { user ->
+            eventPublisher.publishEvent(UpdateChannelInformationForUserEvent(twitchStream.userName, user.userName))
         }
+
     }
 }
 
@@ -100,7 +104,7 @@ class UserServiceListener(val userService: UserService){
     @ApplicationModuleListener
     fun handleUpdateUserListForChannelEvent(event: UpdateUserListForChannelEvent) {
         log.debug { "received event to update user list for channel ${event.channel}" }
-        userService.updateUserListsForChannels(listOf(event.channel))
+        userService.updateUserListForChannel(event.channel)
     }
 
     @ApplicationModuleListener
