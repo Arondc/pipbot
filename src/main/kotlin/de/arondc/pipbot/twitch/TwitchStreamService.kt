@@ -1,11 +1,7 @@
 package de.arondc.pipbot.twitch
 
-import de.arondc.pipbot.events.EventPublishingService
 import de.arondc.pipbot.features.Feature
 import de.arondc.pipbot.features.FeatureService
-import de.arondc.pipbot.twitch.domain.TwitchChatter
-import de.arondc.pipbot.twitch.domain.TwitchScope
-import de.arondc.pipbot.twitch.domain.TwitchStream
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import java.time.Instant
@@ -18,7 +14,6 @@ class TwitchException(message: String, cause: Throwable) : RuntimeException(mess
 @Service
 class TwitchStreamService(
     val twitchConnector: TwitchConnector,
-    val eventPublisher: EventPublishingService,
     val featureService: FeatureService
 ) {
     private val log = KotlinLogging.logger {}

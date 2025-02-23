@@ -3,45 +3,45 @@ package de.arondc.pipbot.moderation
 import com.ninjasquad.springmockk.MockkBean
 import de.arondc.pipbot.channels.ChannelEntity
 import de.arondc.pipbot.channels.ShoutoutOnRaidType
+import de.arondc.pipbot.events.EventPublishingService
 import de.arondc.pipbot.events.ModerationActionEvent
 import de.arondc.pipbot.events.SendMessageEvent
 import de.arondc.pipbot.events.TwitchPermission
 import de.arondc.pipbot.users.UserEntity
 import de.arondc.pipbot.users.UserInformation
 import de.arondc.pipbot.users.UserService
-import io.mockk.every
-import io.mockk.slot
-import io.mockk.verify
+import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.ContextConfiguration
-import org.springframework.test.context.event.ApplicationEvents
 import org.springframework.test.context.event.RecordApplicationEvents
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import java.time.LocalDateTime
 import java.util.*
 
 @ExtendWith(SpringExtension::class)
-@ContextConfiguration(classes = [ModerationService::class, ModerationResponseStorage::class])
+@ContextConfiguration(classes = [ModerationService::class, ModerationResponseStorage::class, EventPublishingService::class])
 @RecordApplicationEvents
 class ModerationServiceTest {
 
     @MockkBean
     lateinit var userService: UserService
 
-    @Autowired
-    lateinit var moderationService: ModerationService
+    @MockkBean
+    lateinit var eventPublisher: EventPublishingService
 
     @MockkBean
     lateinit var moderationResponseStorage: ModerationResponseStorage
 
     @Autowired
-    lateinit var applicationEvents: ApplicationEvents
+    lateinit var moderationService: ModerationService
+
 
     companion object {
         const val CHANNEL_NAME = "channel"
@@ -93,6 +93,7 @@ class ModerationServiceTest {
             amountOfVisitedStreams = 0,
             highestTwitchUserLevel = highestPermission,
             followerSince = followDate,
+            followerVerifiedOnce = true,
         )
     }
 
@@ -101,12 +102,15 @@ class ModerationServiceTest {
     fun `Users are moderated differently according to their follow age`(
         userType: String, userChannelInformationEntity: UserInformation, expectedModerationMessage: String
     ) {
+
         every {
             userService.getUserChannelInformation(
                 userName = USER_NAME,
                 channelName = CHANNEL_NAME,
             )
         } returns userChannelInformationEntity
+
+        every { eventPublisher.publishEvent(any()) } just runs
 
         val trustLevel = slot<UserTrustLevel>()
         every { moderationResponseStorage.findByChannelAndTrustLevel(CHANNEL_ENTITY, capture(trustLevel)) } answers {
@@ -127,14 +131,22 @@ class ModerationServiceTest {
             )
         )
 
-        val sendMessageEvents = applicationEvents.stream(SendMessageEvent::class.java).toList()
-        assertThat(sendMessageEvents).hasSize(1)
-        assertThat(sendMessageEvents[0].channel).isEqualTo(CHANNEL_ENTITY.name)
-        assertThat(sendMessageEvents[0].message).isEqualTo(expectedModerationMessage)
+        verify(exactly = 1) {
+            eventPublisher.publishEvent(
+                withArg {
+                    assertAll(
+                        { assertThat(it).isExactlyInstanceOf(SendMessageEvent::class.java) },
+                        { assertThat((it as SendMessageEvent).channel).isEqualTo(CHANNEL_ENTITY.name) },
+                        { assertThat((it as SendMessageEvent).message).isEqualTo(expectedModerationMessage) },
+                    )
+                }
+            )
+        }
     }
 
     @Test
     fun `A configured ban is sending a ban message for the given user in the given channel`() {
+        every { eventPublisher.publishEvent(any()) } just runs
         every {
             userService.getUserChannelInformation(
                 userName = USER_NAME,
@@ -156,14 +168,22 @@ class ModerationServiceTest {
             )
         )
 
-        val sendMessageEvents = applicationEvents.stream(SendMessageEvent::class.java).toList()
-        assertThat(sendMessageEvents).hasSize(1)
-        assertThat(sendMessageEvents[0].channel).isEqualTo(CHANNEL_ENTITY.name)
-        assertThat(sendMessageEvents[0].message).isEqualTo("/ban $USER_NAME")
+        verify(exactly = 1) {
+            eventPublisher.publishEvent(
+                withArg {
+                    assertAll(
+                        { assertThat(it).isExactlyInstanceOf(SendMessageEvent::class.java) },
+                        { assertThat((it as SendMessageEvent).channel).isEqualTo(CHANNEL_ENTITY.name) },
+                        { assertThat((it as SendMessageEvent).message).isEqualTo("/ban $USER_NAME") },
+                    )
+                }
+            )
+        }
     }
 
     @Test
     fun `A configured timeout is sending a timeout message for the given user in the given channel`() {
+        every { eventPublisher.publishEvent(any()) } just runs
         every {
             userService.getUserChannelInformation(
                 userName = USER_NAME,
@@ -190,14 +210,22 @@ class ModerationServiceTest {
             )
         )
 
-        val sendMessageEvents = applicationEvents.stream(SendMessageEvent::class.java).toList()
-        assertThat(sendMessageEvents).hasSize(1)
-        assertThat(sendMessageEvents[0].channel).isEqualTo(CHANNEL_ENTITY.name)
-        assertThat(sendMessageEvents[0].message).isEqualTo("/timeout $USER_NAME 1234")
+        verify(exactly = 1) {
+            eventPublisher.publishEvent(
+                withArg {
+                    assertAll(
+                        { assertThat(it).isExactlyInstanceOf(SendMessageEvent::class.java) },
+                        { assertThat((it as SendMessageEvent).channel).isEqualTo(CHANNEL_ENTITY.name) },
+                        { assertThat((it as SendMessageEvent).message).isEqualTo("/timeout $USER_NAME 1234") },
+                    )
+                }
+            )
+        }
     }
 
     @Test
     fun `A configured text is sending a text message for the given user in the given channel`() {
+        every { eventPublisher.publishEvent(any()) } just runs
         every {
             userService.getUserChannelInformation(
                 userName = USER_NAME,
@@ -219,10 +247,17 @@ class ModerationServiceTest {
             )
         )
 
-        val sendMessageEvents = applicationEvents.stream(SendMessageEvent::class.java).toList()
-        assertThat(sendMessageEvents).hasSize(1)
-        assertThat(sendMessageEvents[0].channel).isEqualTo(CHANNEL_ENTITY.name)
-        assertThat(sendMessageEvents[0].message).isEqualTo("you're a bad user $USER_NAME")
+        verify(exactly = 1) {
+            eventPublisher.publishEvent(
+                withArg {
+                    assertAll(
+                        { assertThat(it).isExactlyInstanceOf(SendMessageEvent::class.java) },
+                        { assertThat((it as SendMessageEvent).channel).isEqualTo(CHANNEL_ENTITY.name) },
+                        { assertThat((it as SendMessageEvent).message).isEqualTo("you're a bad user $USER_NAME") },
+                    )
+                }
+            )
+        }
     }
 
     @Test
@@ -248,8 +283,7 @@ class ModerationServiceTest {
             )
         )
 
-        val sendMessageEvents = applicationEvents.stream(SendMessageEvent::class.java).toList()
-        assertThat(sendMessageEvents).hasSize(0)
+        verify(exactly = 0) { eventPublisher.publishEvent(any<SendMessageEvent>()) }
     }
 
     @ParameterizedTest(name = "{index}. {0} {2,choice,0#is not|1#is} moderated")
@@ -259,6 +293,7 @@ class ModerationServiceTest {
         userChannelInformationEntity: UserInformation,
         expectedEventCount: Int
     ) {
+        every { eventPublisher.publishEvent(any()) } just runs
         every {
             userService.getUserChannelInformation(
                 userName = USER_NAME,
@@ -284,9 +319,7 @@ class ModerationServiceTest {
             )
         )
 
-        val sendMessageEvents = applicationEvents.stream(SendMessageEvent::class.java).toList()
-        assertThat(sendMessageEvents).hasSize(expectedEventCount)
-
+        verify(exactly = expectedEventCount) { eventPublisher.publishEvent(any<SendMessageEvent>()) }
     }
 
     @Test
@@ -306,6 +339,7 @@ class ModerationServiceTest {
 
     @Test
     fun `If the user is not found there is a retry in getting the user information`() {
+        every { eventPublisher.publishEvent(any()) } just runs
         every {
             userService.getUserChannelInformation(
                 userName = USER_NAME,
@@ -328,11 +362,16 @@ class ModerationServiceTest {
         )
 
         verify(exactly = 5) { userService.getUserChannelInformation(USER_NAME, CHANNEL_NAME) }
-        val sendMessageEvents = applicationEvents.stream(SendMessageEvent::class.java).toList()
-        assertThat(sendMessageEvents).hasSize(1)
-        assertThat(sendMessageEvents[0].channel).isEqualTo(CHANNEL_ENTITY.name)
-        assertThat(sendMessageEvents[0].message).isEqualTo("/ban $USER_NAME")
+        verify(exactly = 1) {
+            eventPublisher.publishEvent(
+                withArg {
+                    assertAll(
+                        { assertThat(it).isExactlyInstanceOf(SendMessageEvent::class.java) },
+                        { assertThat((it as SendMessageEvent).channel).isEqualTo(CHANNEL_ENTITY.name) },
+                        { assertThat((it as SendMessageEvent).message).isEqualTo("/ban $USER_NAME") },
+                    )
+                }
+            )
+        }
     }
-
-
 }

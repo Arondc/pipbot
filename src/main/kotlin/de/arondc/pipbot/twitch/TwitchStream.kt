@@ -1,4 +1,4 @@
-package de.arondc.pipbot.twitch.domain
+package de.arondc.pipbot.twitch
 
 import java.time.LocalDateTime
 

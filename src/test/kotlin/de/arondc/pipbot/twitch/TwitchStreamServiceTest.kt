@@ -5,19 +5,20 @@ import com.github.twitch4j.helix.domain.InboundFollowers
 import com.ninjasquad.springmockk.MockkBean
 import de.arondc.pipbot.features.Feature
 import de.arondc.pipbot.features.FeatureService
-import de.arondc.pipbot.twitch.domain.TwitchScope
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 @ExtendWith(SpringExtension::class)
 @ContextConfiguration(classes = [TwitchStreamService::class])
@@ -25,9 +26,6 @@ class TwitchStreamServiceTest {
 
     @MockkBean
     lateinit var twitchConnector: TwitchConnector
-
-    @MockkBean
-    lateinit var publisher: ApplicationEventPublisher
 
     @MockkBean
     lateinit var featureService: FeatureService
@@ -42,9 +40,7 @@ class TwitchStreamServiceTest {
         every { twitchConnector.getChannelFollowers(any(), any()) } throws TwitchConnector.MissingScopeException(
             TwitchScope.MODERATOR_READ_FOLLOWERS)
 
-        val actual = twitchStreamService.getFollowerSince(channelName = "twitchChannel", userName = "user")
-
-        Assertions.assertNull(actual)
+        assertThrows<TwitchException> { twitchStreamService.getFollowerSince(channelName = "twitchChannel", userName = "user") }
         verify { featureService.disable(Feature.UpdateFollowerStatus) }
     }
 
@@ -81,8 +77,8 @@ class TwitchStreamServiceTest {
         every { featureService.isEnabled(Feature.UpdateFollowerStatus) } returns true
 
         val inboundFollow1 = mockk<InboundFollow>()
-        val expectedFollowAt = Instant.parse("2020-04-02T00:00:00.000Z")
-        every { inboundFollow1.followedAt } returns expectedFollowAt
+        val expectedInstant = Instant.parse("2020-04-02T00:00:00.000Z")
+        every { inboundFollow1.followedAt } returns expectedInstant
         val inboundFollow2 = mockk<InboundFollow>()
         every { inboundFollow2.followedAt } returns null
 
@@ -92,7 +88,8 @@ class TwitchStreamServiceTest {
 
         val actual = twitchStreamService.getFollowerSince(channelName = "twitchChannel", userName = "user")
 
-        Assertions.assertEquals(expectedFollowAt, actual)
+        val expectedLocalDateTime = LocalDateTime.ofInstant(expectedInstant, ZoneOffset.systemDefault())
+        Assertions.assertEquals(expectedLocalDateTime, actual)
         verify(exactly = 0) { featureService.disable(Feature.UpdateFollowerStatus) }
     }
 }
