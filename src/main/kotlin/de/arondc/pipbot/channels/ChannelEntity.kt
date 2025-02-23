@@ -5,12 +5,15 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 interface ChannelRepository : JpaRepository<ChannelEntity, Long> {
-    fun findByNameIgnoreCase(name: String): ChannelEntity?
+    fun findByNameIgnoreCase(name: String): ChannelEntity
     fun findAllByActiveIsTrue(): List<ChannelEntity>
+    fun existsByNameIgnoreCase(name: String): Boolean
 
+    @Transactional
     @Modifying
     @Query("update ChannelEntity channel set channel.active = :active where channel.id = :id")
     fun setActiveById(@Param("id") id: Long, @Param("active") active: Boolean)
@@ -35,7 +38,6 @@ class ChannelEntity(
         allocationSize = 1
     ) @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "channels_sequence") var id: Long? = null
 )
-
 
 enum class ShoutoutOnRaidType {
     NONE, TEXT, STREAM_ELEMENTS_SHOUTOUT, TWITCH_SHOUTOUT

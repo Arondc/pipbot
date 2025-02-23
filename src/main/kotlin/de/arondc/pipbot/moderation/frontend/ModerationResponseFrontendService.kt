@@ -66,7 +66,7 @@ class ModerationResponseDTOToEntityConverter(val channelService: ChannelService)
     Converter<ModerationResponseDTO, ModerationResponseEntity> {
     override fun convert(source: ModerationResponseDTO): ModerationResponseEntity {
         return ModerationResponseEntity(
-            channel = channelService.findByNameIgnoreCase(source.channel)!!,
+            channel = channelService.findByNameIgnoreCase(source.channel),
             text = source.text,
             trustLevel = UserTrustLevel.valueOf(source.trustLevel),
             type = ModerationResponeType.valueOf(source.type),

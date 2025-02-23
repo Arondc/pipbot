@@ -8,6 +8,7 @@
 * [Pipbot - A multichannel Twitch Chatbot written in Kotlin](#pipbot---a-multichannel-twitch-chatbot-written-in-kotlin)
   * [Build from sources](#build-from-sources)
   * [Setting up the bot](#setting-up-the-bot)
+  * [Upgrading the bot](#upgrading-the-bot)
   * [Obtaining oauth token](#obtaining-oauth-token)
     * [Use the OAuth token from your user account](#use-the-oauth-token-from-your-user-account)
     * [Register the bot as an app and use the clientId to let the bot generate an OAuth token](#register-the-bot-as-an-app-and-use-the-clientid-to-let-the-bot-generate-an-oauth-token)
