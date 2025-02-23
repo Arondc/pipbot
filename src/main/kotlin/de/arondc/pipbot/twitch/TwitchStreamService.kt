@@ -1,16 +1,13 @@
 package de.arondc.pipbot.twitch
 
-import de.arondc.pipbot.events.JoinTwitchChannelEvent
-import de.arondc.pipbot.events.LeaveTwitchChannelEvent
+import de.arondc.pipbot.events.EventPublishingService
 import de.arondc.pipbot.features.Feature
 import de.arondc.pipbot.features.FeatureService
 import de.arondc.pipbot.twitch.domain.TwitchChatter
 import de.arondc.pipbot.twitch.domain.TwitchScope
 import de.arondc.pipbot.twitch.domain.TwitchStream
 import mu.KotlinLogging
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -21,7 +18,7 @@ class TwitchException(message: String, cause: Throwable) : RuntimeException(mess
 @Service
 class TwitchStreamService(
     val twitchConnector: TwitchConnector,
-    val publisher: ApplicationEventPublisher,
+    val eventPublisher: EventPublishingService,
     val featureService: FeatureService
 ) {
     private val log = KotlinLogging.logger {}
@@ -89,18 +86,5 @@ class TwitchStreamService(
                 userName = it.userName,
             )
         }
-    }
-
-    //TODO: Publishing vereinheitlichen auslagern?
-    @Transactional
-    fun joinChannel(channel: String) {
-        log.debug { "Sending event to join twitch channel $channel" }
-        publisher.publishEvent(JoinTwitchChannelEvent(channel))
-    }
-
-    @Transactional
-    fun leaveChannel(channel: String) {
-        log.debug { "Sending event to leave twitch channel $channel" }
-        publisher.publishEvent(LeaveTwitchChannelEvent(channel))
     }
 }

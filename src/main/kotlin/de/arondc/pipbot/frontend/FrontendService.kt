@@ -6,17 +6,17 @@ import de.arondc.pipbot.autoresponder.AutoResponseEntity
 import de.arondc.pipbot.autoresponder.AutoResponseService
 import de.arondc.pipbot.channels.ChannelEntity
 import de.arondc.pipbot.channels.ChannelService
+import de.arondc.pipbot.events.EventPublishingService
+import de.arondc.pipbot.events.JoinTwitchChannelEvent
+import de.arondc.pipbot.events.LeaveTwitchChannelEvent
 import de.arondc.pipbot.events.UpdateUserListForChannelEvent
 import de.arondc.pipbot.frontend.dtos.*
 import de.arondc.pipbot.memes.MemeService
 import de.arondc.pipbot.streams.StreamService
 import de.arondc.pipbot.streams_merge.MergeService
-import de.arondc.pipbot.twitch.TwitchStreamService
 import mu.KotlinLogging
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.core.convert.ConversionService
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 
 @Service
 class FrontendService(
@@ -24,11 +24,10 @@ class FrontendService(
     val channelService: ChannelService,
     val streamService: StreamService,
     val conversionService: ConversionService,
-    val twitchStreamService: TwitchStreamService,
     val mergeService: MergeService,
     val autoResponseService: AutoResponseService,
     val autoModService: AutoModService,
-    val eventPublisher: ApplicationEventPublisher
+    val eventPublisher: EventPublishingService
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -48,13 +47,11 @@ class FrontendService(
         return channels.mapNotNull { conversionService.convert(it, ChannelDTO::class.java) }
     }
 
-    @Transactional
     fun createNewChannel(newChannel: ChannelDTO) {
-        val existingChannel = channelService.findByNameIgnoreCase(newChannel.name)
-        if (existingChannel == null) {
+        if (!channelService.channelExists(newChannel.name)) {
             val channelEntity = conversionService.convert(newChannel, ChannelEntity::class.java)!!
             channelService.save(channelEntity)
-            twitchStreamService.joinChannel(channelEntity.name)
+            eventPublisher.publishEvent(JoinTwitchChannelEvent(channelEntity.name))
             eventPublisher.publishEvent(UpdateUserListForChannelEvent(channelEntity.name))
         } else {
             log.info { "Channel ${newChannel.name} exists already" }
@@ -68,8 +65,8 @@ class FrontendService(
             val channelEntity = conversionService.convert(newChannelInformation, ChannelEntity::class.java)!!
             channelService.save(channelEntity)
             if (existingChannel.name != channelEntity.name) {
-                twitchStreamService.leaveChannel(existingChannel.name)
-                twitchStreamService.joinChannel(channelEntity.name)
+                eventPublisher.publishEvent(LeaveTwitchChannelEvent(existingChannel.name))
+                eventPublisher.publishEvent(JoinTwitchChannelEvent(channelEntity.name))
             }
         } else {
             log.info { "Channel with id ${newChannelInformation.id} does not exist" }
@@ -98,17 +95,16 @@ class FrontendService(
         if (channel != null) {
             channelService.deleteChannel(channel)
             if (channel.active) {
-                twitchStreamService.leaveChannel(channel.name)
+                eventPublisher.publishEvent(LeaveTwitchChannelEvent(channel.name))
             }
         }
     }
 
-    @Transactional
     fun activateChannel(channelId: Long) {
         val channel = channelService.findById(channelId)
         if (channel != null) {
             channelService.setActiveById(channelId, true)
-            twitchStreamService.joinChannel(channel.name)
+            eventPublisher.publishEvent(JoinTwitchChannelEvent(channel.name))
         }
     }
 
@@ -116,7 +112,7 @@ class FrontendService(
         val channel = channelService.findById(channelId)
         if (channel != null) {
             channelService.setActiveById(channelId, false)
-            twitchStreamService.leaveChannel(channel.name)
+            eventPublisher.publishEvent(LeaveTwitchChannelEvent(channel.name))
         }
     }
 

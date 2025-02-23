@@ -1,46 +1,41 @@
 package de.arondc.pipbot.automod
 
-import de.arondc.pipbot.channels.ChannelEntity
-import de.arondc.pipbot.events.EventMessageInfo
+import de.arondc.pipbot.events.EventPublishingService
 import de.arondc.pipbot.events.ModerationActionEvent
 import de.arondc.pipbot.events.NewAutoModPhraseEvent
+import de.arondc.pipbot.events.TwitchMessageEvent.MessageInfo
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 
 @Service
 class AutoModService(
     private val autoModPhraseRepository: AutoModPhraseRepository,
-    private val eventPublisher: ApplicationEventPublisher,
+    private val eventPublisher: EventPublishingService,
     @Value("\${automod.cache_size}") private val cacheSize: Long
 ) {
 
     private final var chatMessageCache : ChatMessageCache = ChatMessageCache(cacheSize)
 
-    @Transactional
-    fun processChat(channel: ChannelEntity, userName: String, messageInfo: EventMessageInfo) {
-        chatMessageCache.store(userName, channel.name, messageInfo)
-
-        val badPhrases = autoModPhraseRepository.findByChannelName(channel = channel.name)
+    fun processChat(channelName: String, userName: String, messageInfo: MessageInfo) {
+        chatMessageCache.store(userName, channelName, messageInfo)
+        val badPhrases = autoModPhraseRepository.findByChannelName(channel = channelName)
         val moderationDecision = decideIfModerationIsNecessary(badPhrases, messageInfo)
         if(moderationDecision) {
-            eventPublisher.publishEvent(ModerationActionEvent(channel.name, userName))
+            eventPublisher.publishEvent(ModerationActionEvent(channelName, userName))
         }
     }
 
     private fun decideIfModerationIsNecessary(
         badPhrases: List<AutoModPhraseEntity>,
-        messageInfo: EventMessageInfo
+        messageInfo: MessageInfo
     ) = badPhrases.any { phrase ->
         messageInfo.text.contains(phrase.text,true) ||
                 messageInfo.normalizedText.contains(phrase.text, true)
     }
 
-    @Transactional
-    fun processNewPhrase(channel: ChannelEntity, newPhrase: String) {
-        val userChatRecords = chatMessageCache.getChatRecordsOfChannel(channel.name)
+    fun processNewPhrase(channelName: String, newPhrase: String) {
+        val userChatRecords = chatMessageCache.getChatRecordsOfChannel(channelName)
         userChatRecords
             .filter { (_, messageInfos) ->
                 messageInfos.any { messageInfo ->
@@ -50,12 +45,11 @@ class AutoModService(
             }
             .map { (userName, _) -> userName }
             .forEach { user ->
-                eventPublisher.publishEvent(ModerationActionEvent(channel.name, user))
+                eventPublisher.publishEvent(ModerationActionEvent(channelName, user))
         }
     }
 
     fun findAll(): List<AutoModPhraseEntity> = autoModPhraseRepository.findAll()
-    @Transactional
     fun save(newEntity: AutoModPhraseEntity) {
         autoModPhraseRepository.save(newEntity)
         eventPublisher.publishEvent(NewAutoModPhraseEvent(newEntity.channel!!.name, newEntity.text))
@@ -68,9 +62,9 @@ class AutoModService(
 class ChatMessageCache(private val maxCacheSize: Long){
     data class UserInChannel(val userName: String, val channelName: String)
 
-    private val messagesOfUsers = mutableMapOf<UserInChannel, MutableList<EventMessageInfo>>()
+    private val messagesOfUsers = mutableMapOf<UserInChannel, MutableList<MessageInfo>>()
 
-    fun store(userName: String, channelName: String, messageInfo: EventMessageInfo) {
+    fun store(userName: String, channelName: String, messageInfo: MessageInfo) {
         messagesOfUsers.compute(UserInChannel(userName, channelName)) { _,messageList ->
             if(messageList == null) {
                 mutableListOf(messageInfo)
@@ -84,7 +78,7 @@ class ChatMessageCache(private val maxCacheSize: Long){
         }
     }
 
-    fun getChatRecordsOfChannel(channel: String): Map<String, List<EventMessageInfo>> {
+    fun getChatRecordsOfChannel(channel: String): Map<String, List<MessageInfo>> {
         return messagesOfUsers
             .filter { (userInChannel, _) -> userInChannel.channelName == channel }
             .map { it.key.userName to it.value }.toMap()

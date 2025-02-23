@@ -2,20 +2,20 @@ package de.arondc.pipbot.users
 
 import de.arondc.pipbot.channels.ChannelEntity
 import de.arondc.pipbot.channels.ChannelRepository
+import de.arondc.pipbot.events.EventPublishingService
+import de.arondc.pipbot.events.SendMessageEvent
 import de.arondc.pipbot.events.TwitchPermission
 import de.arondc.pipbot.events.UpdateChannelInformationForUserEvent
-import de.arondc.pipbot.events.UpdateUserListForChannelEvent
 import de.arondc.pipbot.features.Feature
 import de.arondc.pipbot.features.FeatureService
+import de.arondc.pipbot.services.LanguageService
 import de.arondc.pipbot.streams.StreamService
 import de.arondc.pipbot.twitch.TwitchException
 import de.arondc.pipbot.twitch.TwitchStreamService
 import mu.KotlinLogging
-import org.springframework.context.ApplicationEventPublisher
-import org.springframework.modulith.events.ApplicationModuleListener
-import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @Service
 class UserService(
@@ -24,8 +24,9 @@ class UserService(
     val userChannelInformationStorage: UserChannelInformationStorage,
     val streamService: StreamService,
     val twitchStreamService: TwitchStreamService,
-    val eventPublisher: ApplicationEventPublisher,
+    val eventPublisher: EventPublishingService,
     val featureService: FeatureService,
+    val languageService: LanguageService,
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -35,7 +36,7 @@ class UserService(
 
     fun updateChannelInformationForUser(channelName: String, userName: String, permissions: Set<TwitchPermission> = emptySet()) {
         val user = userStorage.findByNameIgnoreCase(userName) ?: userStorage.save(UserEntity(userName))
-        val channel = channelRepository.findByNameIgnoreCase(channelName)!!
+        val channel = channelRepository.findByNameIgnoreCase(channelName)
 
         val info = userChannelInformationStorage.findByUserNameIgnoreCaseAndChannelNameIgnoreCase(userName, channelName)
             ?: userChannelInformationStorage.save(UserInformation(user,channel))
@@ -95,22 +96,27 @@ class UserService(
         }
 
     }
-}
 
-@Component
-class UserServiceListener(val userService: UserService){
-    private val log = KotlinLogging.logger {}
+    fun handleLastSeen(userName: String, channel: String) {
+        val responseMessage = when (val info = getUserChannelInformation(userName, channel)) {
+            null -> languageService.getMessage(
+                channel, "users.lastseen.notFound", arrayOf(userName)
+            )
+            else -> languageService.getMessage(
+                channel, "users.lastseen.found", arrayOf(
+                    userName,
+                    info.amountOfVisitedStreams,
+                    info.lastSeen.format(DATE_FORMAT),
+                    info.lastSeen.format(TIME_FORMAT)
+                )
+            )
+        }
 
-    @ApplicationModuleListener
-    fun handleUpdateUserListForChannelEvent(event: UpdateUserListForChannelEvent) {
-        log.debug { "received event to update user list for channel ${event.channel}" }
-        userService.updateUserListForChannel(event.channel)
+        eventPublisher.publishEvent(SendMessageEvent(channel, responseMessage))
     }
 
-    @ApplicationModuleListener
-    fun handleUpdateChannelInformationForUserEvent(event: UpdateChannelInformationForUserEvent) {
-        log.debug { "received event to update user channel information ${event.channel} - ${event.user} - ${event.permissions} " }
-        userService.updateChannelInformationForUser(event.channel, event.user, event.permissions)
+    companion object{
+        private val DATE_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+        private val TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss")
     }
 }
-

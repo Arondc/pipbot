@@ -17,7 +17,7 @@ class StreamService(
     }
 
     fun findOrCreateMatchingStream(twitchStream: TwitchStream): StreamEntity {
-        val channel = channelService.findByNameIgnoreCase(twitchStream.userName)!!
+        val channel = channelService.findByNameIgnoreCase(twitchStream.userName)
         return streamRepository.findByChannelAndStartTimesContains(
             channel, twitchStream.startingTime
         ) ?: streamRepository.save(

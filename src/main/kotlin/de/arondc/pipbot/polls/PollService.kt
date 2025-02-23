@@ -1,10 +1,9 @@
 package de.arondc.pipbot.polls
 
+import de.arondc.pipbot.events.EventPublishingService
 import de.arondc.pipbot.events.SendMessageEvent
 import de.arondc.pipbot.services.LanguageService
-import jakarta.transaction.Transactional
 import mu.KotlinLogging
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import java.time.Duration
 import java.time.LocalDateTime
@@ -18,9 +17,8 @@ import kotlin.concurrent.schedule
 
 @Service
 class PollService(
-    val pollPublisher: PollPublisher,
     val languageService: LanguageService,
-    val applicationEventPublisher: ApplicationEventPublisher
+    val eventPublisher: EventPublishingService
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -50,7 +48,7 @@ class PollService(
 
             runStopTimerForPoll(poll, channelName)
         } catch (ex: PollCreationException) {
-            pollPublisher.publishEvent(
+            eventPublisher.publishEvent(
                 SendMessageEvent(
                     channelName, ex.msg
                 )
@@ -59,7 +57,7 @@ class PollService(
             val errMsg = languageService.getMessage(
                 channelName, "polls.error.parameter.time", arrayOf(pollParameters.getValue("time"))
             )
-            pollPublisher.publishEvent(
+            eventPublisher.publishEvent(
                 SendMessageEvent(channelName, errMsg)
             )
         }
@@ -73,7 +71,7 @@ class PollService(
             )
         }
         //TODO: Einmal debuggen und schauen ob wir hier pollPublisher nutzen müssen
-        applicationEventPublisher.publishEvent(SendMessageEvent(channelName, startMessage))
+        eventPublisher.publishEvent(SendMessageEvent(channelName, startMessage))
     }
 
     fun acceptAnswer(message: String, channelName: String, userName: String) {
@@ -89,7 +87,7 @@ class PollService(
 
         countAnswer(foundPoll, userName, message)
         val response = languageService.getMessage(channelName, "polls.poll.countedAnswer", arrayOf(userName))
-        pollPublisher.publishEvent(SendMessageEvent(channelName, response))
+        eventPublisher.publishEvent(SendMessageEvent(channelName, response))
     }
 
     fun closePoll(poll: Poll, channelName: String) {
@@ -100,7 +98,7 @@ class PollService(
         val title = poll.text.ifBlank { "" }
         val message = languageService.getMessage(channelName, "polls.poll.result", arrayOf(title, results))
         val sendMessageEvent = SendMessageEvent(channelName, message)
-        pollPublisher.publishEvent(sendMessageEvent)
+        eventPublisher.publishEvent(sendMessageEvent)
         polls[channelName]!!.remove(poll)
     }
 
@@ -155,14 +153,6 @@ class PollService(
         }
     }
 
-}
-
-@Service
-class PollPublisher(val applicationEventPublisher: ApplicationEventPublisher) {
-    @Transactional
-    fun publishEvent(event: SendMessageEvent) {
-        applicationEventPublisher.publishEvent(event)
-    }
 }
 
 data class Poll(

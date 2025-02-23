@@ -3,10 +3,10 @@ package de.arondc.pipbot.memes
 import de.arondc.pipbot.channels.ChannelEntity
 import de.arondc.pipbot.channels.ChannelService
 import de.arondc.pipbot.channels.ShoutoutOnRaidType
-import de.arondc.pipbot.events.EventMessageInfo
-import de.arondc.pipbot.events.EventUserInfo
 import de.arondc.pipbot.events.SendMessageEvent
 import de.arondc.pipbot.events.TwitchMessageEvent
+import de.arondc.pipbot.events.TwitchMessageEvent.MessageInfo
+import de.arondc.pipbot.events.TwitchMessageEvent.UserInfo
 import de.arondc.pipbot.services.LanguageService
 import de.arondc.pipbot.streams.StreamEntity
 import de.arondc.pipbot.streams.StreamService
@@ -27,7 +27,7 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 
 @ExtendWith(MockKExtension::class)
-class MemeProcessorTest {
+class MemeListenersTest {
 
     companion object {
         const val RESPONSE_LOCALIZATION_KEY = "twitch.memes.acknowledge"
@@ -49,9 +49,11 @@ class MemeProcessorTest {
             channel = CHANNEL,
         )
 
-        val EVENT_USER_INFO = EventUserInfo(
+        val EVENT_USER_INFO = UserInfo(
             userName = USER_NAME,
-            permissions = setOf()
+            permissions = setOf(),
+            subscriberMonths = 0,
+            subscriptionTier = 0
         )
     }
 
@@ -71,7 +73,7 @@ class MemeProcessorTest {
     lateinit var publisher: ApplicationEventPublisher
 
     @InjectMockKs
-    lateinit var memeProcessor: MemeProcessor
+    lateinit var memeListeners: MemeListeners
 
     @Test
     fun `meme is processed successfully whenever the message starts with !meme`() {
@@ -90,7 +92,7 @@ class MemeProcessorTest {
         //When
         val messageText = "dummyText"
         val twitchMessageEvent = buildTwitchMessageEvent("!meme $messageText")
-        memeProcessor.receiveMessage(twitchMessageEvent = twitchMessageEvent)
+        memeListeners.receiveMessage(twitchMessageEvent = twitchMessageEvent)
 
         //Then
         verify { channelService.findByNameIgnoreCase(CHANNEL_NAME) }
@@ -110,7 +112,7 @@ class MemeProcessorTest {
 
         //When
         val twitchMessageEvent = buildTwitchMessageEvent(messageText)
-        memeProcessor.receiveBrowserSourceMessages(twitchMessageEvent = twitchMessageEvent)
+        memeListeners.receiveBrowserSourceMessages(twitchMessageEvent = twitchMessageEvent)
 
         //Then
         verify { memeService.forwardMemeToBrowserSource(CHANNEL_NAME, messageText) }
@@ -127,7 +129,7 @@ class MemeProcessorTest {
     fun `meme is not forwarded to the browser source whenever the message contains a non-imgflip link`(address: String) {
         //When
         val twitchMessageEvent = buildTwitchMessageEvent(address)
-        memeProcessor.receiveBrowserSourceMessages(twitchMessageEvent = twitchMessageEvent)
+        memeListeners.receiveBrowserSourceMessages(twitchMessageEvent = twitchMessageEvent)
 
         //Then
         verify { memeService wasNot Called }
@@ -159,7 +161,7 @@ class MemeProcessorTest {
 
         //When
         val twitchMessageEvent = buildTwitchMessageEvent(messageText)
-        memeProcessor.receiveMessage(twitchMessageEvent = twitchMessageEvent)
+        memeListeners.receiveMessage(twitchMessageEvent = twitchMessageEvent)
 
         //Then
         verify { channelService.findByNameIgnoreCase(CHANNEL_NAME) }
@@ -174,7 +176,7 @@ class MemeProcessorTest {
     @Test
     fun `meme is not processed whenever the message matches does not match one the meme sources`() {
         //When
-        memeProcessor.receiveMessage(twitchMessageEvent = buildTwitchMessageEvent("https://www.google.com"))
+        memeListeners.receiveMessage(twitchMessageEvent = buildTwitchMessageEvent("https://www.google.com"))
 
         //Then
         verify { channelService wasNot Called }
@@ -199,11 +201,13 @@ class MemeProcessorTest {
 
     private fun buildTwitchMessageEvent(message: String) = TwitchMessageEvent(
         channel = CHANNEL_NAME,
-        userInfo = EventUserInfo(
+        userInfo = UserInfo(
             userName = USER_NAME,
-            permissions = emptySet()
+            permissions = emptySet(),
+            subscriberMonths = 0,
+            subscriptionTier = 0
         ),
-        messageInfo = EventMessageInfo(
+        messageInfo = MessageInfo(
             text = message,
             normalizedText = message,
             hasLink = false

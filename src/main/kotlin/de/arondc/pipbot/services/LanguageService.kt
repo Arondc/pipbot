@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Configuration
 class MessageConfig {
@@ -22,7 +21,7 @@ class MessageConfig {
 @Service
 class LanguageService(val channelService: ChannelService, val messageSource: MessageSource) {
     fun getMessage(channelName: String, messageKey: String, args: Array<Any>? = null): String {
-        val locale = channelService.findByNameIgnoreCase(channelName)?.language ?: Locale.getDefault()
+        val locale = channelService.findByNameIgnoreCase(channelName).language
         return messageSource.getMessage(messageKey, args, locale)
     }
 }
