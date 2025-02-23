@@ -12,7 +12,6 @@ import de.arondc.pipbot.channels.ChannelService
 import de.arondc.pipbot.events.EventPublishingService
 import de.arondc.pipbot.events.JoinTwitchChannelEvent
 import de.arondc.pipbot.events.TwitchRaidEvent
-import de.arondc.pipbot.twitch.domain.TwitchScope
 import jakarta.annotation.PostConstruct
 import mu.KotlinLogging
 import org.springframework.boot.context.event.ApplicationReadyEvent

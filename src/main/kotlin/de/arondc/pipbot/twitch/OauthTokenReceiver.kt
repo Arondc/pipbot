@@ -1,6 +1,5 @@
 package de.arondc.pipbot.twitch
 
-import de.arondc.pipbot.twitch.domain.TwitchScope
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ResponseBody

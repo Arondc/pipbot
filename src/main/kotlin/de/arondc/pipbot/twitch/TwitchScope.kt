@@ -1,4 +1,4 @@
-package de.arondc.pipbot.twitch.domain
+package de.arondc.pipbot.twitch
 
 enum class TwitchScope(val scopeName: String) {
     USER_BOT("user:bot"),
