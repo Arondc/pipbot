@@ -1,16 +1,15 @@
 package de.arondc.pipbot.streams_merge
 
-import de.arondc.pipbot.events.SendMessageEvent
-import de.arondc.pipbot.events.TwitchMessageEvent
-import de.arondc.pipbot.events.TwitchPermission
-import de.arondc.pipbot.events.satisfies
+import de.arondc.pipbot.events.*
 import de.arondc.pipbot.streams.StreamServiceException
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.stereotype.Component
 
 @Component
-class MergeProcessor(val mergeService: MergeService, val applicationEventPublisher: ApplicationEventPublisher) {
+class MergeListeners(
+    val mergeService: MergeService,
+    val eventPublisher: EventPublishingService
+) {
 
     @ApplicationModuleListener
     fun receiveMessage(twitchMessageEvent: TwitchMessageEvent) {
@@ -18,7 +17,7 @@ class MergeProcessor(val mergeService: MergeService, val applicationEventPublish
             try {
                 mergeService.mergeStream(twitchMessageEvent.channel)
             } catch (e: StreamServiceException) {
-                applicationEventPublisher.publishEvent(
+                eventPublisher.publishEvent(
                     SendMessageEvent(twitchMessageEvent.channel, e.message ?: "Fehler")
                 )
             }

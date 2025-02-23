@@ -47,7 +47,7 @@ class ModerationServiceTest {
         const val CHANNEL_NAME = "channel"
         const val USER_NAME = "user"
 
-        val USER_ENTITY = UserEntity(
+        private val USER_ENTITY = UserEntity(
             name = USER_NAME, id = 1
         )
 
@@ -120,7 +120,7 @@ class ModerationServiceTest {
             )
         }
 
-        moderationService.processModerationActionEvent(
+        moderationService.moderate(
             ModerationActionEvent(
                 channel = CHANNEL_NAME,
                 user = USER_NAME,
@@ -149,7 +149,7 @@ class ModerationServiceTest {
             )
         } returns ModerationResponseEntity(CHANNEL_ENTITY, UserTrustLevel.VIEWER, ModerationResponeType.BAN)
 
-        moderationService.processModerationActionEvent(
+        moderationService.moderate(
             ModerationActionEvent(
                 channel = CHANNEL_NAME,
                 user = USER_NAME,
@@ -183,7 +183,7 @@ class ModerationServiceTest {
             duration = 1234
         )
 
-        moderationService.processModerationActionEvent(
+        moderationService.moderate(
             ModerationActionEvent(
                 channel = CHANNEL_NAME,
                 user = USER_NAME,
@@ -212,7 +212,7 @@ class ModerationServiceTest {
             )
         } returns ModerationResponseEntity(CHANNEL_ENTITY, UserTrustLevel.VIEWER, ModerationResponeType.TEXT, text = "you're a bad user %s")
 
-        moderationService.processModerationActionEvent(
+        moderationService.moderate(
             ModerationActionEvent(
                 channel = CHANNEL_NAME,
                 user = USER_NAME,
@@ -241,7 +241,7 @@ class ModerationServiceTest {
             )
         } returns null
 
-        moderationService.processModerationActionEvent(
+        moderationService.moderate(
             ModerationActionEvent(
                 channel = CHANNEL_NAME,
                 user = USER_NAME,
@@ -277,7 +277,7 @@ class ModerationServiceTest {
             )
         }
 
-        moderationService.processModerationActionEvent(
+        moderationService.moderate(
             ModerationActionEvent(
                 channel = CHANNEL_NAME,
                 user = USER_NAME,
@@ -294,7 +294,7 @@ class ModerationServiceTest {
         every { userService.getUserChannelInformation(any(), any()) } returns null
 
         val exception = assertThrows<RuntimeException> {
-            moderationService.processModerationActionEvent(
+            moderationService.moderate(
                 ModerationActionEvent(
                     channel = CHANNEL_NAME, user = USER_NAME
                 )
@@ -320,7 +320,7 @@ class ModerationServiceTest {
             )
         } returns ModerationResponseEntity(CHANNEL_ENTITY, UserTrustLevel.VIEWER, ModerationResponeType.BAN)
 
-        moderationService.processModerationActionEvent(
+        moderationService.moderate(
             ModerationActionEvent(
                 channel = CHANNEL_NAME,
                 user = USER_NAME,
