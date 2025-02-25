@@ -2,14 +2,16 @@ package de.arondc.pipbot.channels
 
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 
 @Service
 class ChannelService(val channelRepository: ChannelRepository) {
 
-    fun findByNameIgnoreCase(channelName: String): ChannelEntity? {
+    fun findByNameIgnoreCase(channelName: String): ChannelEntity {
         return channelRepository.findByNameIgnoreCase(channelName)
+    }
+
+    fun channelExists(channelName: String): Boolean {
+        return channelRepository.existsByNameIgnoreCase(channelName)
     }
 
     fun findAll(): List<ChannelEntity> {
@@ -28,7 +30,6 @@ class ChannelService(val channelRepository: ChannelRepository) {
         return channelRepository.findByIdOrNull(channelId)
     }
 
-    @Transactional(propagation = Propagation.REQUIRED)
     fun setActiveById(channelId: Long, active: Boolean) {
         channelRepository.setActiveById(channelId, active)
     }

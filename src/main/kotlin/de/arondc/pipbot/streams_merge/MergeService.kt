@@ -5,13 +5,12 @@ import de.arondc.pipbot.streams.StreamEntity
 import de.arondc.pipbot.streams.StreamService
 import de.arondc.pipbot.streams.StreamServiceException
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 
 @Service
 class MergeService(val streamService: StreamService, val memeService: MemeService) {
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     fun mergeStream(channelName: String) {
         val sourceStream = streamService.findOrPersistCurrentStream(channelName)
             ?: throw StreamServiceException("No currently running stream found")

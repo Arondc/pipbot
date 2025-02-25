@@ -1,6 +1,5 @@
 package de.arondc.pipbot.twitch
 
-import de.arondc.pipbot.twitch.domain.TwitchScope
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ResponseBody
@@ -12,7 +11,7 @@ class OauthTokenReceiverController(val twitchConnectorConfig: TwitchConnectorCon
         private val scopes =
             TwitchScope.entries.map { it.scopeName }.toList()
 
-        const val baseUrl = "https://id.twitch.tv/oauth2/authorize"
+        const val BASE_URL = "https://id.twitch.tv/oauth2/authorize"
 
         val requestParamMap =
             mapOf("response_type" to "token", "redirect_uri" to "http://localhost:8080/authtoken")
@@ -33,7 +32,7 @@ class OauthTokenReceiverController(val twitchConnectorConfig: TwitchConnectorCon
     fun refreshAuthTokenRedirect() =
         RestClient.builder().build()
             .get()
-            .uri("$baseUrl?response_type={response_type}&client_id={client_id}&redirect_uri={redirect_uri}&scope={scopes}",
+            .uri("$BASE_URL?response_type={response_type}&client_id={client_id}&redirect_uri={redirect_uri}&scope={scopes}",
                 requestParamMap["response_type"],
                 twitchConnectorConfig.clientId,
                 requestParamMap["redirect_uri"],

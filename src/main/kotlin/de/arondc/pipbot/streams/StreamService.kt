@@ -1,8 +1,8 @@
 package de.arondc.pipbot.streams
 
 import de.arondc.pipbot.channels.ChannelService
+import de.arondc.pipbot.twitch.TwitchStream
 import de.arondc.pipbot.twitch.TwitchStreamService
-import de.arondc.pipbot.twitch.domain.TwitchStream
 import org.springframework.stereotype.Service
 
 @Service
@@ -17,7 +17,7 @@ class StreamService(
     }
 
     fun findOrCreateMatchingStream(twitchStream: TwitchStream): StreamEntity {
-        val channel = channelService.findByNameIgnoreCase(twitchStream.userName)!!
+        val channel = channelService.findByNameIgnoreCase(twitchStream.userName)
         return streamRepository.findByChannelAndStartTimesContains(
             channel, twitchStream.startingTime
         ) ?: streamRepository.save(

@@ -1,25 +1,23 @@
 package de.arondc.pipbot.moderation
 
 import de.arondc.pipbot.core.Functions.retry
+import de.arondc.pipbot.events.EventPublishingService
 import de.arondc.pipbot.events.ModerationActionEvent
 import de.arondc.pipbot.events.SendMessageEvent
 import de.arondc.pipbot.events.TwitchPermission
 import de.arondc.pipbot.users.UserService
 import mu.KotlinLogging
-import org.springframework.context.ApplicationEventPublisher
-import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.stereotype.Service
 
 @Service
 class ModerationService(
     private val userService: UserService,
     private val moderationResponseStorage: ModerationResponseStorage,
-    private val eventPublisher: ApplicationEventPublisher
+    private val eventPublisher: EventPublishingService
 ) {
     private val log = KotlinLogging.logger {}
 
-    @ApplicationModuleListener
-    fun processModerationActionEvent(event: ModerationActionEvent) {
+    fun moderate(event: ModerationActionEvent) {
         val userInformation = retry(RuntimeException("Nutzer unbekannt")) {
             userService.getUserChannelInformation(
                 event.user,

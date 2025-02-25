@@ -7,7 +7,7 @@ import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.stereotype.Component
 
 @Component
-class PollProcessor(
+class PollListeners(
     val channelService: ChannelService,
     val pollService: PollService,
 ) {
@@ -39,11 +39,11 @@ class PollProcessor(
     }
 
     private fun buildPollParameters(arguments: String = ""): Map<String, String> {
-        val pollParameters = mutableMapOf("time" to "3m", "options" to "1,2", "text" to "", "open" to "false")
+        val pollParameters = defaultPollParameters.toMutableMap()
         var remainingArguments = arguments
-        remainingArguments = parseArgument(remainingArguments, "time", pollParameters)
-        remainingArguments = parseArgument(remainingArguments, "options", pollParameters)
-        remainingArguments = parseArgument(remainingArguments, "open", pollParameters)
+        parameters.forEach {
+            remainingArguments = parseArgument(remainingArguments, it, pollParameters)
+        }
 
         val text = remainingArguments.trim()
         pollParameters["text"] = text
@@ -59,9 +59,15 @@ class PollProcessor(
         return pollParameters
     }
 
-    fun parseArgument(message: String, argumentName: String, pollParameters: MutableMap<String, String>): String {
+    private fun parseArgument(message: String, argumentName: String, pollParameters: MutableMap<String, String>): String {
+        val value = extractArgumentValue(message,argumentName) ?: return message
+        pollParameters[argumentName] = value
+        return message.replace("$argumentName=$value", "")
+    }
+
+    private fun extractArgumentValue(message: String, argumentName: String): String? {
         val argumentStartIndex = message.indexOf("$argumentName=")
-        if (argumentStartIndex == -1) return message
+        if (argumentStartIndex == -1) return null
 
         val argumentEndIndex = message.indexOf(string = " ", startIndex = argumentStartIndex)
         val value = if (argumentEndIndex < 0) {
@@ -69,7 +75,11 @@ class PollProcessor(
         } else {
             message.substring(argumentStartIndex + "$argumentName=".length..<argumentEndIndex)
         }
-        pollParameters[argumentName] = value
-        return message.replace("$argumentName=$value", "")
+        return value
+    }
+
+    companion object {
+        val defaultPollParameters = mapOf("time" to "3m", "options" to "1,2", "text" to "", "open" to "false")
+        val parameters = setOf("time", "options", "open")
     }
 }
