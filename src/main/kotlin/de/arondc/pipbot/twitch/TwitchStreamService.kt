@@ -1,110 +1,97 @@
 package de.arondc.pipbot.twitch
 
-import com.github.philippheuer.credentialmanager.domain.OAuth2Credential
-import com.github.twitch4j.TwitchClient
-import com.github.twitch4j.helix.domain.ChattersList
-import com.github.twitch4j.helix.domain.StreamList
-import com.github.twitch4j.helix.domain.User
 import de.arondc.pipbot.events.JoinTwitchChannelEvent
 import de.arondc.pipbot.events.LeaveTwitchChannelEvent
+import de.arondc.pipbot.features.Feature
+import de.arondc.pipbot.features.FeatureService
+import de.arondc.pipbot.twitch.domain.TwitchChatter
+import de.arondc.pipbot.twitch.domain.TwitchScope
+import de.arondc.pipbot.twitch.domain.TwitchStream
 import mu.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
 
+class TwitchException(message: String, cause: Throwable) : RuntimeException(message, cause)
 
 @Service
 class TwitchStreamService(
-    val twitchClient: TwitchClient,
-    val twitchConnectorConfig: OAuth2Credential,
-    val publisher: ApplicationEventPublisher
+    val twitchConnector: TwitchConnector,
+    val publisher: ApplicationEventPublisher,
+    val featureService: FeatureService
 ) {
     private val log = KotlinLogging.logger {}
 
-    fun fetchCurrentStreamsForChannels(channelNames: List<String>): StreamList {
-        return fetchStreamsFromTwitch(channelNames)
-    }
+    fun fetchCurrentStreamForChannel(channelName: String) : TwitchStream? =
+        fetchCurrentStreamsForChannels(listOf(channelName)).firstOrNull()
 
-    private fun fetchStreamsFromTwitch(channelNames: List<String>): StreamList {
-        val token: String = twitchConnectorConfig.accessToken
-        val numbersOfStreamsToFetch = channelNames.size
-        val execute = twitchClient.helix.getStreams(
-                token,
-                null,
-                null,
-                numbersOfStreamsToFetch,
-                null,
-                null,
-                null,
-                channelNames
+
+    fun fetchCurrentStreamsForChannels(channelNames: List<String>): List<TwitchStream> {
+        val streamList = twitchConnector.getStreams(channelNames)
+        log.debug { "Found streams for $channelNames - $streamList" }
+
+        return streamList.streams.map {
+            TwitchStream(
+                userName = it.userName,
+                userLogin = it.userLogin,
+                startingTime = LocalDateTime.ofInstant(it.startedAtInstant, ZoneId.systemDefault())
             )
-            .execute()
-        log.debug { "Found streams for $channelNames - $execute" }
-        return execute
+        }.toList()
     }
 
     fun findLastGameFor(channelName: String): String {
-        val channelBroadcasterId = getUserInformation(channelName).id
-        val channelInformation = twitchClient.helix
-            .getChannelInformation(twitchConnectorConfig.accessToken, listOf(channelBroadcasterId))
-            .execute()
-        return channelInformation.channels[0].gameName
-    }
-
-    private fun getUserInformation(userName: String): User {
-        val userList = twitchClient.helix
-            .getUsers(twitchConnectorConfig.accessToken, null, listOf(userName)).execute()
-        return userList.users[0]
+        return twitchConnector.getChannelInformation(channelName).channels[0].gameName
     }
 
     fun shoutout(raidedChannel: String, incomingRaid: String) {
         if (incomingRaid.isNotEmpty()) {
-            val raidedChannelUserId = getUserInformation(raidedChannel).id
-            val incomingRaiderUserId = getUserInformation(incomingRaid).id
-            val moderatorId = getUserInformation(twitchConnectorConfig.userName).id
-            twitchClient.helix.sendShoutout(
-                twitchConnectorConfig.accessToken,
-                raidedChannelUserId,
-                incomingRaiderUserId,
-                moderatorId
-            ).execute()
+            twitchConnector.sendShoutout(raidedChannel, incomingRaid)
         }
     }
 
-    fun getFollowerInfoFor(channelName: String, userName: String): Instant? {
-        val channelBroadcasterId = getUserInformation(channelName).id
-        val userId = getUserInformation(userName).id
-        val channelInfo = twitchClient.helix.getChannelFollowers(
-            twitchConnectorConfig.accessToken,
-            channelBroadcasterId,
-            userId,
-            null,
-            null
-        ).execute()
+    fun getFollowerSince(channelName: String, userName: String): LocalDateTime? {
+        val followedAt: Instant? = try {
+            twitchConnector.getChannelFollowers(channelName, userName).follows?.getOrNull(0)?.followedAt
+        } catch (e: Exception) {
+            when (e) {
+                is TwitchConnector.MissingScopeException -> handleMissingAuthorizationForMissingScope(e.scope)
+                else -> log.error { e.message }
+            }
+            throw TwitchException("Could not fetch follow information for user $userName in channel $channelName", e)
+        }
 
         return when {
-            channelInfo.follows == null -> null
-            channelInfo.follows!!.isEmpty() -> null
-            else -> channelInfo.follows!![0].followedAt
+            followedAt == null -> null
+            else -> LocalDateTime.ofInstant(followedAt,ZoneOffset.systemDefault())
         }
     }
 
-    fun getChatUserList(channelName: String): ChattersList {
-        val channelBroadcasterId = getUserInformation(channelName).id
-        val moderatorId = getUserInformation(twitchConnectorConfig.userName).id
-        val chatList = twitchClient.helix.getChatters(
-            twitchConnectorConfig.accessToken,
-            channelBroadcasterId,
-            moderatorId,
-            null,
-            null
-        )
-            .execute()
-        log.debug {chatList}
-        return chatList
+    fun handleMissingAuthorizationForMissingScope(missingScope: TwitchScope) {
+        log.warn { "Missing scope `${missingScope.scopeName}`"}
+        when(missingScope) {
+            TwitchScope.MODERATOR_READ_FOLLOWERS -> {
+                featureService.disable(Feature.UpdateFollowerStatus)
+                //TODO: Feature zu Scope mapping (wenn ein scope fehlt, deaktiviere alle zugehörigen features)
+            }
+            else -> log.warn { "We dont know what to do yet if ${missingScope.scopeName} is missing" }
+        }
     }
 
+    fun getChatUserList(channelName: String): List<TwitchChatter> {
+        val chatList = twitchConnector.getChatters(channelName)
+        log.debug {chatList}
+        return chatList.chatters.map {
+            TwitchChatter(
+                userName = it.userName,
+            )
+        }
+    }
+
+    //TODO: Publishing vereinheitlichen auslagern?
     @Transactional
     fun joinChannel(channel: String) {
         log.debug { "Sending event to join twitch channel $channel" }

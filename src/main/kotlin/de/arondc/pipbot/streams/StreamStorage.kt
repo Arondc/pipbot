@@ -10,7 +10,6 @@ import java.time.LocalDateTime
 interface StreamRepository : JpaRepository<StreamEntity, Long> {
     fun findByChannelAndStartTimesContains(channel: ChannelEntity, startTime: LocalDateTime): StreamEntity?
     fun findAllByChannelName(channelName: String): List<StreamEntity>
-
 }
 
 @Entity

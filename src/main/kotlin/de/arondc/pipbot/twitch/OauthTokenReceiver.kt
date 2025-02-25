@@ -1,5 +1,6 @@
 package de.arondc.pipbot.twitch
 
+import de.arondc.pipbot.twitch.domain.TwitchScope
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ResponseBody
@@ -8,21 +9,10 @@ import org.springframework.web.client.RestClient
 @Controller
 class OauthTokenReceiverController(val twitchConnectorConfig: TwitchConnectorConfig) {
     companion object{
-        val scopes = listOf(
-            "user:bot",
-            "chat:read",
-            "chat:edit",
-            "moderator:read:followers",
-            "moderator:read:chatters",
-            "moderator:manage:shoutouts",
-            "moderator:manage:banned_users",
-            "whispers:read",
-            "whispers:edit",
-            "user:manage:whispers",
-            "user:read:follows"
-        )
+        private val scopes =
+            TwitchScope.entries.map { it.scopeName }.toList()
 
-        val baseUrl = "https://id.twitch.tv/oauth2/authorize"
+        const val baseUrl = "https://id.twitch.tv/oauth2/authorize"
 
         val requestParamMap =
             mapOf("response_type" to "token", "redirect_uri" to "http://localhost:8080/authtoken")

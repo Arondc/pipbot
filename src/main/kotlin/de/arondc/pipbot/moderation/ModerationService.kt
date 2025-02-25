@@ -4,14 +4,11 @@ import de.arondc.pipbot.core.Functions.retry
 import de.arondc.pipbot.events.ModerationActionEvent
 import de.arondc.pipbot.events.SendMessageEvent
 import de.arondc.pipbot.events.TwitchPermission
-import de.arondc.pipbot.users.UserInformation
 import de.arondc.pipbot.users.UserService
 import mu.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.stereotype.Service
-import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
 
 @Service
 class ModerationService(
@@ -34,7 +31,10 @@ class ModerationService(
             return
         }
 
-        val trustLevel = getUserTrustLevel(userInformation)
+        val trustLevel = when(userInformation.followerVerifiedOnce){
+            true -> ModerationByFollowAge
+            false -> ModerationByAttendance
+        }.calculateUserTrustLevel(userInformation)
 
         val moderationResponseConfiguration =
             moderationResponseStorage.findByChannelAndTrustLevel(userInformation.channel, trustLevel)
@@ -53,21 +53,6 @@ class ModerationService(
             )
         )
     }
-
-    fun getUserTrustLevel(userInformation: UserInformation) : UserTrustLevel {
-        fun isFollower():Boolean = userInformation.followerSince != null
-        fun followAgeInMonths(): Long = ChronoUnit.MONTHS.between(userInformation.followerSince, LocalDateTime.now())
-        return when {
-            isFollower() && followAgeInMonths() < 6 -> UserTrustLevel.NEW_FOLLOWER
-            isFollower() && followAgeInMonths() < 12 -> UserTrustLevel.SHORT_TERM_FOLLOWER
-            isFollower() && followAgeInMonths() >= 12 -> UserTrustLevel.LONG_TERM_FOLLOWER
-            else -> UserTrustLevel.VIEWER
-        }
-    }
-}
-
-enum class UserTrustLevel{
-    VIEWER,NEW_FOLLOWER,SHORT_TERM_FOLLOWER,LONG_TERM_FOLLOWER
 }
 
 sealed class ModerationResponse(val userName: String = ""){

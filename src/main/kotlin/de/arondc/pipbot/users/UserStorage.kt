@@ -55,6 +55,7 @@ class UserInformation(
     var highestTwitchUserLevel: TwitchPermission = TwitchPermission.EVERYONE,
 
     var followerSince: LocalDateTime? = null,
+    var followerVerifiedOnce: Boolean = false,
 
     @EmbeddedId
     val id: UserChannelInformationEntityPK = UserChannelInformationEntityPK(user.id!!, channel.id!!)
