@@ -13,6 +13,7 @@ interface UserStorage : JpaRepository<UserEntity, Long>{
     fun findByNameIgnoreCase(username: String): UserEntity?
 }
 
+//TODO GGf. als eignenen Service/Struktur aufbauen
 @Repository
 interface UserChannelInformationStorage : JpaRepository<UserInformation, Long> {
     fun findByUserNameIgnoreCaseAndChannelNameIgnoreCase(username: String, channelName: String): UserInformation?

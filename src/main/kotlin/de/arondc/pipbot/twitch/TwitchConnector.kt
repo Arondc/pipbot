@@ -12,6 +12,8 @@ import de.arondc.pipbot.channels.ChannelService
 import de.arondc.pipbot.events.EventPublishingService
 import de.arondc.pipbot.events.JoinTwitchChannelEvent
 import de.arondc.pipbot.events.TwitchRaidEvent
+import de.arondc.pipbot.twitch.user.TwitchUser
+import de.arondc.pipbot.twitch.user.TwitchUserService
 import jakarta.annotation.PostConstruct
 import mu.KotlinLogging
 import org.springframework.boot.context.event.ApplicationReadyEvent
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Component
 class TwitchConnector(
     val twitchClient: TwitchClient,
     val channelService: ChannelService,
+    val twitchUserService: TwitchUserService,
     val twitchConnectorConfig: OAuth2Credential,
     val eventPublisher: EventPublishingService,
 ) {
@@ -38,6 +41,7 @@ class TwitchConnector(
             .onEvent(RaidEvent::class.java, ::raidEventReceived)
     }
 
+    //TODO In Channel Service verschieben
     @EventListener
     fun runAfterApplicationStarted(event: ApplicationReadyEvent) {
         val channels = channelService.findActive().map { it.name }
@@ -77,10 +81,23 @@ class TwitchConnector(
 
     fun getChannelInformation(channelName: String): ChannelInformationList {
         log.info { "TwitchClient - Fetching ChannelInformation for channel: $channelName" }
-        val channelBroadcasterId = getUserInformation(channelName).users[0].id
+        val channelBroadcasterId = getUserId(channelName)
+        log.info { "TwitchClient - Channel broadcasterId: $channelBroadcasterId" }
         return twitchClient.helix
             .getChannelInformation(token, listOf(channelBroadcasterId))
             .execute()
+    }
+
+    fun getUserId(userName: String): String {
+        val twitchUser = twitchUserService.getUser(userName)
+        return when {
+            twitchUser == null -> {
+                val userId = getUserInformation(userName).users[0].id
+                twitchUserService.saveUser(TwitchUser(userName, userId))
+                userId
+            }
+            else -> twitchUser.id
+        }
     }
 
     fun getUserInformation(userName: String): UserList {
@@ -91,9 +108,9 @@ class TwitchConnector(
 
     fun sendShoutout(fromChannel: String, toChannel: String) {
         log.info { "TwitchClient - Sending shoutout from $fromChannel to $toChannel" }
-        val fromChannelId = getUserInformation(fromChannel).users[0].id
-        val toChannelId = getUserInformation(toChannel).users[0].id
-        val moderatorId = getUserInformation(twitchConnectorConfig.userName).users[0].id
+        val fromChannelId = getUserId(fromChannel)
+        val toChannelId = getUserId(toChannel)
+        val moderatorId = getUserId(twitchConnectorConfig.userName)
         twitchClient.helix.sendShoutout(
             token,
             fromChannelId,
@@ -104,8 +121,8 @@ class TwitchConnector(
 
     fun getChannelFollowers(channelName: String, userName: String): InboundFollowers {
         log.info { "TwitchClient - Fetching followers of $channelName for $userName" }
-        val channelBroadcasterId = getUserInformation(channelName).users[0].id
-        val moderatorId = getUserInformation(userName).users[0].id
+        val channelBroadcasterId = getUserId(channelName)
+        val moderatorId = getUserId(userName)
 
         return try {
             twitchClient.helix.getChannelFollowers(
@@ -126,8 +143,8 @@ class TwitchConnector(
 
     fun getChatters(channelName: String): ChattersList {
         log.info { "TwitchClient - Fetching chatters for $channelName" }
-        val channelBroadcasterId = getUserInformation(channelName).users[0].id
-        val moderatorId = getUserInformation(twitchConnectorConfig.userName).users[0].id
+        val channelBroadcasterId = getUserId(channelName)
+        val moderatorId = getUserId(twitchConnectorConfig.userName)
 
         return twitchClient.helix.getChatters(
             twitchConnectorConfig.accessToken,
