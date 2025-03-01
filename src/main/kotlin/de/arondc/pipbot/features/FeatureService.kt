@@ -4,7 +4,7 @@ import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 @Service
-class FeatureService(val featureStorage: FeatureStorage) {
+class FeatureService(private val featureStorage: FeatureStorage) {
     private val log = KotlinLogging.logger {}
 
     fun disable(feature: Feature) {

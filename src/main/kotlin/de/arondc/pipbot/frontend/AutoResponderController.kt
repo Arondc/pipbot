@@ -10,7 +10,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 
 @Controller
 @RequestMapping("/autoresponder")
-class AutoResponderController(val frontendService: FrontendService) {
+class AutoResponderController(private val frontendService: FrontendService) {
 
     @ModelAttribute("autoresponses")
     fun initAutoResponseList(): List<AutoResponseDTO> {

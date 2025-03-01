@@ -5,7 +5,7 @@ import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.stereotype.Component
 
 @Component
-class ModerationListeners(val moderationService: ModerationService) {
+class ModerationListeners(private val moderationService: ModerationService) {
 
     @ApplicationModuleListener
     fun processModerationActionEvent(event: ModerationActionEvent) {

@@ -10,7 +10,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 
 @Controller
 @RequestMapping("/channels")
-class ChannelsController(val frontendService: FrontendService) {
+class ChannelsController(private val frontendService: FrontendService) {
 
     @ModelAttribute("channels")
     fun initChannelsList(): List<ChannelDTO> {

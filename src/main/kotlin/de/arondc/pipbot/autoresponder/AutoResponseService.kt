@@ -4,7 +4,7 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
 @Service
-class AutoResponseService(val autoResponseRepository: AutoResponseRepository) {
+class AutoResponseService(private val autoResponseRepository: AutoResponseRepository) {
     fun findAll(): List<AutoResponseEntity> {
         return autoResponseRepository.findAll()
     }

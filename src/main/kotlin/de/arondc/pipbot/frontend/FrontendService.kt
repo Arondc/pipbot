@@ -9,25 +9,26 @@ import de.arondc.pipbot.channels.ChannelService
 import de.arondc.pipbot.events.EventPublishingService
 import de.arondc.pipbot.events.JoinTwitchChannelEvent
 import de.arondc.pipbot.events.LeaveTwitchChannelEvent
-import de.arondc.pipbot.events.UpdateUserListForChannelEvent
 import de.arondc.pipbot.frontend.dtos.*
 import de.arondc.pipbot.memes.MemeService
 import de.arondc.pipbot.streams.StreamService
 import de.arondc.pipbot.streams_merge.MergeService
+import de.arondc.pipbot.userchannelinformation.UserChannelInformationService
 import mu.KotlinLogging
 import org.springframework.core.convert.ConversionService
 import org.springframework.stereotype.Service
 
 @Service
 class FrontendService(
-    val memeService: MemeService,
-    val channelService: ChannelService,
-    val streamService: StreamService,
-    val conversionService: ConversionService,
-    val mergeService: MergeService,
-    val autoResponseService: AutoResponseService,
-    val autoModService: AutoModService,
-    val eventPublisher: EventPublishingService
+    private val memeService: MemeService,
+    private val channelService: ChannelService,
+    private val streamService: StreamService,
+    private val conversionService: ConversionService,
+    private val mergeService: MergeService,
+    private val autoResponseService: AutoResponseService,
+    private val autoModService: AutoModService,
+    private val eventPublisher: EventPublishingService,
+    private val userChannelInformationService: UserChannelInformationService
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -52,7 +53,7 @@ class FrontendService(
             val channelEntity = conversionService.convert(newChannel, ChannelEntity::class.java)!!
             channelService.save(channelEntity)
             eventPublisher.publishEvent(JoinTwitchChannelEvent(channelEntity.name))
-            eventPublisher.publishEvent(UpdateUserListForChannelEvent(channelEntity.name))
+            userChannelInformationService.updateUserListForChannel(channelEntity.name)
         } else {
             log.info { "Channel ${newChannel.name} exists already" }
             throw FrontendException("Channel ${newChannel.name} exists already")

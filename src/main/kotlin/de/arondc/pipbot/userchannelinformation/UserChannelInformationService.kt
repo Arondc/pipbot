@@ -1,4 +1,4 @@
-package de.arondc.pipbot.users
+package de.arondc.pipbot.userchannelinformation
 
 import de.arondc.pipbot.channels.ChannelEntity
 import de.arondc.pipbot.channels.ChannelRepository
@@ -18,43 +18,41 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @Service
-class UserService(
-    val userStorage: UserStorage,
-    val channelRepository: ChannelRepository,
-    val userChannelInformationStorage: UserChannelInformationStorage,
-    val streamService: StreamService,
-    val twitchStreamService: TwitchStreamService,
-    val eventPublisher: EventPublishingService,
-    val featureService: FeatureService,
-    val languageService: LanguageService,
+class UserChannelInformationService(
+    private val channelRepository: ChannelRepository,
+    private val storage: UserChannelInformationStorage,
+    private val streamService: StreamService,
+    private val twitchStreamService: TwitchStreamService,
+    private val eventPublisher: EventPublishingService,
+    private val featureService: FeatureService,
+    private val languageService: LanguageService,
 ) {
     private val log = KotlinLogging.logger {}
 
     fun getUserChannelInformation(userName: String, channelName: String): UserInformation? =
-        userChannelInformationStorage.findByUserNameIgnoreCaseAndChannelNameIgnoreCase(userName, channelName)
+        storage.findByUserNameIgnoreCaseAndChannelNameIgnoreCase(userName, channelName)
 
 
     fun updateChannelInformationForUser(channelName: String, userName: String, permissions: Set<TwitchPermission> = emptySet()) {
-        val user = userStorage.findByNameIgnoreCase(userName) ?: userStorage.save(UserEntity(userName))
         val channel = channelRepository.findByNameIgnoreCase(channelName)
 
-        val info = userChannelInformationStorage.findByUserNameIgnoreCaseAndChannelNameIgnoreCase(userName, channelName)
-            ?: userChannelInformationStorage.save(UserInformation(user,channel))
+        val info = storage.findByUserNameIgnoreCaseAndChannelNameIgnoreCase(userName, channelName)
+            ?: storage.save(UserInformation(channel, userName))
 
         updateHighestUserLevel(permissions, info)
         updateLastSeenOfUser(channelName, info)
-        updateFollowerStatus(user, channel, info)
+        updateFollowerStatus(channel, info)
 
-        userChannelInformationStorage.save(info)
+        storage.save(info)
     }
 
-    private fun updateFollowerStatus(user: UserEntity, channel: ChannelEntity, info: UserInformation) {
+    private fun updateFollowerStatus(channel: ChannelEntity, info: UserInformation) {
         if (featureService.isEnabled(Feature.UpdateFollowerStatus)) {
             try {
-                info.followerSince = twitchStreamService.getFollowerSince(channel.name, user.name)
+                info.followerSince = twitchStreamService.getFollowerSince(channel.name, info.userName)
                 info.followerVerifiedOnce = true
             } catch (e: TwitchException) {
-                log.warn(e) { "Follow age for user '${user.name}' could not be updated." }
+                log.warn(e) { "Follow age for user '${info.userName}' could not be updated." }
             }
         }
     }
@@ -94,7 +92,6 @@ class UserService(
             .map { user ->
             eventPublisher.publishEvent(UpdateChannelInformationForUserEvent(twitchStream.userName, user.userName))
         }
-
     }
 
     fun handleLastSeen(userName: String, channel: String) {

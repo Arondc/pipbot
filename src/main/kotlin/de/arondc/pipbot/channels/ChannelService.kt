@@ -4,7 +4,7 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
 @Service
-class ChannelService(val channelRepository: ChannelRepository) {
+class ChannelService(private val channelRepository: ChannelRepository) {
 
     fun findByNameIgnoreCase(channelName: String): ChannelEntity {
         return channelRepository.findByNameIgnoreCase(channelName)

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 
 @Controller
 @RequestMapping("/streams")
-class StreamsController(val frontendService: FrontendService) {
+class StreamsController(private val frontendService: FrontendService) {
     private val log = KotlinLogging.logger {}
 
     @ModelAttribute("streams")

@@ -17,8 +17,8 @@ import kotlin.concurrent.schedule
 
 @Service
 class PollService(
-    val languageService: LanguageService,
-    val eventPublisher: EventPublishingService
+    private val languageService: LanguageService,
+    private val eventPublisher: EventPublishingService
 ) {
     private val log = KotlinLogging.logger {}
 

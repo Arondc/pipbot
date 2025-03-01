@@ -10,11 +10,12 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Service
-class QuoteService(val quoteRepository: QuoteRepository,
-val channelService: ChannelService,
-    val twitchStreamService: TwitchStreamService,
-    val languageService: LanguageService,
-    val eventPublisher: EventPublishingService
+class QuoteService(
+    private val quoteRepository: QuoteRepository,
+    private val channelService: ChannelService,
+    private val twitchStreamService: TwitchStreamService,
+    private val languageService: LanguageService,
+    private val eventPublisher: EventPublishingService
 ) {
 
     private fun save(text: String, channelEntity: ChannelEntity): QuoteEntity {

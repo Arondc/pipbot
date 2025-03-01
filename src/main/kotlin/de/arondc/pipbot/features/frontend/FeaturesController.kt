@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam
 
 @Controller
 @RequestMapping("/features")
-class FeaturesController(val featureFrontendService: FeatureFrontendService) {
+class FeaturesController(private val featureFrontendService: FeatureFrontendService) {
 
     @ModelAttribute("features")
     fun initFeaturesList(): List<FeatureDTO> {
@@ -38,7 +38,10 @@ class FeaturesController(val featureFrontendService: FeatureFrontendService) {
 }
 
 @Service
-class FeatureFrontendService(val featureService: FeatureService, val conversionService: ConversionService) {
+class FeatureFrontendService(
+    private val featureService: FeatureService,
+    private val conversionService: ConversionService
+) {
 
     fun getAll(): List<FeatureDTO> {
         val features = featureService.getFeatures()

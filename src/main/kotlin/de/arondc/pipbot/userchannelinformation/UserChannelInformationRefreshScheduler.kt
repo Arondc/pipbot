@@ -1,8 +1,6 @@
-package de.arondc.pipbot.users
+package de.arondc.pipbot.userchannelinformation
 
 import de.arondc.pipbot.channels.ChannelService
-import de.arondc.pipbot.events.EventPublishingService
-import de.arondc.pipbot.events.UpdateUserListForChannelEvent
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
@@ -14,17 +12,16 @@ import java.util.concurrent.TimeUnit
 class SchedulerConfiguration
 
 @Component
-class UserListRefreshScheduler(
+class UserChannelInformationRefreshScheduler(
     private val channelService: ChannelService,
-    private val eventPublisher: EventPublishingService
+    private val userChannelInformationService: UserChannelInformationService,
 ) {
 
     @Scheduled(fixedDelay = 30, timeUnit = TimeUnit.MINUTES)
     fun startRefreshUserLists() {
         channelService
             .findAll()
-            .map { channel -> UpdateUserListForChannelEvent(channel.name)}
-            .forEach { event -> eventPublisher.publishEvent(event) }
+            .forEach { channel -> userChannelInformationService.updateUserListForChannel(channel.name) }
     }
 }
 

@@ -17,7 +17,8 @@ class AutoResponseEntityToDTOConverter : Converter<AutoResponseEntity, AutoRespo
     }
 }
 
-class AutoResponseDTOToEntityConverter(val channelService: ChannelService) : Converter<AutoResponseDTO, AutoResponseEntity> {
+class AutoResponseDTOToEntityConverter(private val channelService: ChannelService)
+    : Converter<AutoResponseDTO, AutoResponseEntity> {
     override fun convert(source: AutoResponseDTO): AutoResponseEntity {
         return AutoResponseEntity(
             channel = channelService.findByNameIgnoreCase(source.channel),

@@ -22,7 +22,6 @@ data class SendMessageEvent(val channel: String, val message: String) : PipBotEv
 data class TwitchRaidEvent(val raidedChannel: String, val incomingRaider: String, val size: Int) : PipBotEvent
 data class JoinTwitchChannelEvent(val channel: String) : PipBotEvent
 data class LeaveTwitchChannelEvent(val channel: String) : PipBotEvent
-data class UpdateUserListForChannelEvent(val channel: String) : PipBotEvent
 data class UpdateChannelInformationForUserEvent(
     val channel: String, val user: String, val permissions: Set<TwitchPermission> = emptySet()
 ) : PipBotEvent

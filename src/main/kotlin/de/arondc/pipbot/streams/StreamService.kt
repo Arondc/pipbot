@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service
 
 @Service
 class StreamService(
-    val streamRepository: StreamRepository,
-    val twitchStreamService: TwitchStreamService,
-    val channelService: ChannelService
+    private val streamRepository: StreamRepository,
+    private val twitchStreamService: TwitchStreamService,
+    private val channelService: ChannelService
 ) {
     fun findOrPersistCurrentStream(channelName: String): StreamEntity? {
         val twitchStream = twitchStreamService.fetchCurrentStreamForChannel(channelName) ?: return null

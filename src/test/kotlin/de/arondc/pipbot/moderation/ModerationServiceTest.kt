@@ -7,9 +7,8 @@ import de.arondc.pipbot.events.EventPublishingService
 import de.arondc.pipbot.events.ModerationActionEvent
 import de.arondc.pipbot.events.SendMessageEvent
 import de.arondc.pipbot.events.TwitchPermission
-import de.arondc.pipbot.users.UserEntity
-import de.arondc.pipbot.users.UserInformation
-import de.arondc.pipbot.users.UserService
+import de.arondc.pipbot.userchannelinformation.UserChannelInformationService
+import de.arondc.pipbot.userchannelinformation.UserInformation
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -31,7 +30,7 @@ import java.util.*
 class ModerationServiceTest {
 
     @MockkBean
-    lateinit var userService: UserService
+    lateinit var userChannelInformationService: UserChannelInformationService
 
     @MockkBean
     lateinit var eventPublisher: EventPublishingService
@@ -46,10 +45,6 @@ class ModerationServiceTest {
     companion object {
         const val CHANNEL_NAME = "channel"
         const val USER_NAME = "user"
-
-        private val USER_ENTITY = UserEntity(
-            name = USER_NAME, id = 1
-        )
 
         val CHANNEL_ENTITY = ChannelEntity(
             name = CHANNEL_NAME,
@@ -87,7 +82,7 @@ class ModerationServiceTest {
         private fun buildUser(
             highestPermission: TwitchPermission = TwitchPermission.EVERYONE, followDate: LocalDateTime? = null
         ) = UserInformation(
-            user = USER_ENTITY,
+            userName = USER_NAME,
             channel = CHANNEL_ENTITY,
             lastSeen = LocalDateTime.now(),
             amountOfVisitedStreams = 0,
@@ -104,7 +99,7 @@ class ModerationServiceTest {
     ) {
 
         every {
-            userService.getUserChannelInformation(
+            userChannelInformationService.getUserChannelInformation(
                 userName = USER_NAME,
                 channelName = CHANNEL_NAME,
             )
@@ -148,7 +143,7 @@ class ModerationServiceTest {
     fun `A configured ban is sending a ban message for the given user in the given channel`() {
         every { eventPublisher.publishEvent(any()) } just runs
         every {
-            userService.getUserChannelInformation(
+            userChannelInformationService.getUserChannelInformation(
                 userName = USER_NAME,
                 channelName = CHANNEL_NAME,
             )
@@ -185,7 +180,7 @@ class ModerationServiceTest {
     fun `A configured timeout is sending a timeout message for the given user in the given channel`() {
         every { eventPublisher.publishEvent(any()) } just runs
         every {
-            userService.getUserChannelInformation(
+            userChannelInformationService.getUserChannelInformation(
                 userName = USER_NAME,
                 channelName = CHANNEL_NAME,
             )
@@ -227,7 +222,7 @@ class ModerationServiceTest {
     fun `A configured text is sending a text message for the given user in the given channel`() {
         every { eventPublisher.publishEvent(any()) } just runs
         every {
-            userService.getUserChannelInformation(
+            userChannelInformationService.getUserChannelInformation(
                 userName = USER_NAME,
                 channelName = CHANNEL_NAME,
             )
@@ -263,7 +258,7 @@ class ModerationServiceTest {
     @Test
     fun `If no moderation configuration is set for the given channel and trust level, no moderation happens`() {
         every {
-            userService.getUserChannelInformation(
+            userChannelInformationService.getUserChannelInformation(
                 userName = USER_NAME,
                 channelName = CHANNEL_NAME,
             )
@@ -295,7 +290,7 @@ class ModerationServiceTest {
     ) {
         every { eventPublisher.publishEvent(any()) } just runs
         every {
-            userService.getUserChannelInformation(
+            userChannelInformationService.getUserChannelInformation(
                 userName = USER_NAME,
                 channelName = CHANNEL_NAME,
             )
@@ -324,7 +319,7 @@ class ModerationServiceTest {
 
     @Test
     fun `If the user is not found an exception is thrown`() {
-        every { userService.getUserChannelInformation(any(), any()) } returns null
+        every { userChannelInformationService.getUserChannelInformation(any(), any()) } returns null
 
         val exception = assertThrows<RuntimeException> {
             moderationService.moderate(
@@ -333,7 +328,7 @@ class ModerationServiceTest {
                 )
             )
         }
-        verify(exactly = 5) { userService.getUserChannelInformation(USER_NAME, CHANNEL_NAME) }
+        verify(exactly = 5) { userChannelInformationService.getUserChannelInformation(USER_NAME, CHANNEL_NAME) }
         assertThat(exception).message().isEqualTo("Nutzer unbekannt")
     }
 
@@ -341,7 +336,7 @@ class ModerationServiceTest {
     fun `If the user is not found there is a retry in getting the user information`() {
         every { eventPublisher.publishEvent(any()) } just runs
         every {
-            userService.getUserChannelInformation(
+            userChannelInformationService.getUserChannelInformation(
                 userName = USER_NAME,
                 channelName = CHANNEL_NAME,
             )
@@ -361,7 +356,7 @@ class ModerationServiceTest {
             )
         )
 
-        verify(exactly = 5) { userService.getUserChannelInformation(USER_NAME, CHANNEL_NAME) }
+        verify(exactly = 5) { userChannelInformationService.getUserChannelInformation(USER_NAME, CHANNEL_NAME) }
         verify(exactly = 1) {
             eventPublisher.publishEvent(
                 withArg {
