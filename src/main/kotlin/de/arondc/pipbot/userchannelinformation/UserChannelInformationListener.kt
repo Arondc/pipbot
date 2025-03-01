@@ -8,7 +8,7 @@ import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.stereotype.Component
 
 @Component
-class UserListener(
+class UserChannelInformationListener(
     val userChannelInformationService: UserChannelInformationService,
     val eventPublisher: EventPublishingService,
 ) {
