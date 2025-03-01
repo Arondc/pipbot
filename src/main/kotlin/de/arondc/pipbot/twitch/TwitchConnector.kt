@@ -88,18 +88,6 @@ class TwitchConnector(
             .execute()
     }
 
-    fun getUserId(userName: String): String {
-        val twitchUser = twitchUserService.getUser(userName)
-        return when {
-            twitchUser == null -> {
-                val userId = getUserInformation(userName).users[0].id
-                twitchUserService.saveUser(TwitchUser(userName, userId))
-                userId
-            }
-            else -> twitchUser.id
-        }
-    }
-
     fun getUserInformation(userName: String): UserList {
         log.info { "TwitchClient - Fetching UserInformation for user: $userName" }
         return twitchClient.helix
@@ -154,6 +142,18 @@ class TwitchConnector(
             null
         )
             .execute()
+    }
+
+    private fun getUserId(userName: String): String {
+        val twitchUser = twitchUserService.getUser(userName)
+        return when {
+            twitchUser == null -> {
+                val userId = getUserInformation(userName).users[0].id
+                twitchUserService.saveUser(TwitchUser(userName, userId))
+                userId
+            }
+            else -> twitchUser.id
+        }
     }
 
     class MissingScopeException(val scope: TwitchScope) : RuntimeException()
