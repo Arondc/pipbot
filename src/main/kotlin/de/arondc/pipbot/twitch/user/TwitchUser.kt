@@ -5,7 +5,6 @@ import jakarta.persistence.Id
 import jakarta.persistence.Table
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
-import org.springframework.stereotype.Service
 
 @Repository
 interface TwitchUserRepository : JpaRepository<TwitchUser, String> {
@@ -19,14 +18,3 @@ class TwitchUser(
     val username: String,
     val id: String
 )
-
-@Service
-class TwitchUserService(private val twitchUserRepository: TwitchUserRepository) {
-    fun saveUser(user: TwitchUser) {
-        twitchUserRepository.save(user)
-    }
-
-    fun getUser(username: String): TwitchUser? {
-        return twitchUserRepository.findByUsernameIgnoreCase(username)
-    }
-}
