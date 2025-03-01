@@ -8,7 +8,7 @@ import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.stereotype.Component
 
 @Component
-class ChatListeners(val eventPublisher: EventPublishingService) {
+class ChatListeners(private val eventPublisher: EventPublishingService) {
     private val log = KotlinLogging.logger {}
 
     @ApplicationModuleListener

@@ -12,7 +12,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 
 @Controller
 @RequestMapping("/moderationresponses")
-class ModerationFrontendController(val frontendService: ModerationResponseFrontendService) {
+class ModerationFrontendController(private val frontendService: ModerationResponseFrontendService) {
 
     private val log = KotlinLogging.logger {}
 

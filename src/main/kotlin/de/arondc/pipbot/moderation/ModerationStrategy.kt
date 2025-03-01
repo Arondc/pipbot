@@ -1,6 +1,6 @@
 package de.arondc.pipbot.moderation
 
-import de.arondc.pipbot.users.UserInformation
+import de.arondc.pipbot.userchannelinformation.UserInformation
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 

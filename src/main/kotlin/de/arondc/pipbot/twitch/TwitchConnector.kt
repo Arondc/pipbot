@@ -10,14 +10,11 @@ import com.github.twitch4j.helix.domain.*
 import com.netflix.hystrix.exception.HystrixRuntimeException
 import de.arondc.pipbot.channels.ChannelService
 import de.arondc.pipbot.events.EventPublishingService
-import de.arondc.pipbot.events.JoinTwitchChannelEvent
 import de.arondc.pipbot.events.TwitchRaidEvent
 import de.arondc.pipbot.twitch.user.TwitchUser
 import de.arondc.pipbot.twitch.user.TwitchUserService
 import jakarta.annotation.PostConstruct
 import mu.KotlinLogging
-import org.springframework.boot.context.event.ApplicationReadyEvent
-import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 
 @Component
@@ -39,16 +36,6 @@ class TwitchConnector(
             .onEvent(ChannelMessageEvent::class.java, ::messageReceived)
         twitchClient.eventManager.getEventHandler(SimpleEventHandler::class.java)
             .onEvent(RaidEvent::class.java, ::raidEventReceived)
-    }
-
-    //TODO In Channel Service verschieben
-    @EventListener
-    fun runAfterApplicationStarted(event: ApplicationReadyEvent) {
-        val channels = channelService.findActive().map { it.name }
-        log.info { "joining twitch channels: $channels" }
-        channels.forEach {
-            eventPublisher.publishEvent(JoinTwitchChannelEvent(it))
-        }
     }
 
     fun messageReceived(channelMessageEvent: ChannelMessageEvent) =

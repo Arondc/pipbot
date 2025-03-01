@@ -16,7 +16,8 @@ class AutoModPhraseEntityToDTOConverter : Converter<AutoModPhraseEntity, AutoMod
     }
 }
 
-class AutoModPhraseDTOToEntityConverter(val channelService: ChannelService) : Converter<AutoModPhraseDTO, AutoModPhraseEntity> {
+class AutoModPhraseDTOToEntityConverter(private val channelService: ChannelService)
+    : Converter<AutoModPhraseDTO, AutoModPhraseEntity> {
     override fun convert(source: AutoModPhraseDTO): AutoModPhraseEntity {
         return AutoModPhraseEntity(
             channel = channelService.findByNameIgnoreCase(source.channel),

@@ -1,53 +1,28 @@
-package de.arondc.pipbot.users
+package de.arondc.pipbot.userchannelinformation
 
 import de.arondc.pipbot.channels.ChannelEntity
 import de.arondc.pipbot.events.TwitchPermission
 import jakarta.persistence.*
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
-import java.io.Serializable
 import java.time.LocalDateTime
 
-@Repository
-interface UserStorage : JpaRepository<UserEntity, Long>{
-    fun findByNameIgnoreCase(username: String): UserEntity?
-}
-
-//TODO GGf. als eignenen Service/Struktur aufbauen
 @Repository
 interface UserChannelInformationStorage : JpaRepository<UserInformation, Long> {
     fun findByUserNameIgnoreCaseAndChannelNameIgnoreCase(username: String, channelName: String): UserInformation?
 }
 
 @Entity
-@Table(name = "users")
-class UserEntity(
-    val name: String,
-    @Id @SequenceGenerator(name = "users_sequence", sequenceName = "USERS_SEQ", allocationSize = 1) @GeneratedValue(
-        strategy = GenerationType.SEQUENCE,
-        generator = "users_sequence"
-    ) var id: Long? = null
-)
-
-@Embeddable
-class UserChannelInformationEntityPK(
-    val userId : Long,
-    val channelId: Long,
-) : Serializable
-
-@Entity
+@IdClass(UserChannelInformationEntityPK::class)
 @Table(name = "user_channel_information")
 class UserInformation(
+    @Id
     @ManyToOne
-    @MapsId("userId")
-    @JoinColumn(name = "user_id")
-    val user: UserEntity,
-
-    @ManyToOne
-    @MapsId("channelId")
     @JoinColumn(name = "channel_id")
     val channel: ChannelEntity,
 
+    @Id
+    val userName : String,
     var lastSeen: LocalDateTime = LocalDateTime.now(),
 
     var amountOfVisitedStreams: Long = 0,
@@ -57,7 +32,10 @@ class UserInformation(
 
     var followerSince: LocalDateTime? = null,
     var followerVerifiedOnce: Boolean = false,
+)
 
-    @EmbeddedId
-    val id: UserChannelInformationEntityPK = UserChannelInformationEntityPK(user.id!!, channel.id!!)
+@Embeddable
+class UserChannelInformationEntityPK(
+    val userName : String,
+    val channel: Long,
 )

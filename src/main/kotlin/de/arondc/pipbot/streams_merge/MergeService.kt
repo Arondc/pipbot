@@ -8,7 +8,10 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-class MergeService(val streamService: StreamService, val memeService: MemeService) {
+class MergeService(
+    private val streamService: StreamService,
+    private val memeService: MemeService
+) {
 
     @Transactional
     fun mergeStream(channelName: String) {

@@ -16,9 +16,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 @Service
 class ModerationResponseFrontendService(
-    val moderationResponseStorage: ModerationResponseStorage,
-    val channelService: ChannelService,
-    val conversionService: ConversionService
+    private val moderationResponseStorage: ModerationResponseStorage,
+    private val channelService: ChannelService,
+    private val conversionService: ConversionService
 ) {
     fun getModerationResponses(): List<ModerationResponseDTO> {
         return moderationResponseStorage.findAll()
@@ -62,7 +62,7 @@ class ModerationResponseEntityToDTOConverter : Converter<ModerationResponseEntit
     }
 }
 
-class ModerationResponseDTOToEntityConverter(val channelService: ChannelService) :
+class ModerationResponseDTOToEntityConverter(private val channelService: ChannelService) :
     Converter<ModerationResponseDTO, ModerationResponseEntity> {
     override fun convert(source: ModerationResponseDTO): ModerationResponseEntity {
         return ModerationResponseEntity(
@@ -77,7 +77,7 @@ class ModerationResponseDTOToEntityConverter(val channelService: ChannelService)
 }
 
 @Configuration
-class ModerationResponseWebConfig(val channelService: ChannelService) : WebMvcConfigurer {
+class ModerationResponseWebConfig(private val channelService: ChannelService) : WebMvcConfigurer {
     override fun addFormatters(registry: FormatterRegistry) {
         registry.addConverter(ModerationResponseEntityToDTOConverter())
         registry.addConverter(ModerationResponseDTOToEntityConverter(channelService))

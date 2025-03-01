@@ -13,8 +13,8 @@ class TwitchException(message: String, cause: Throwable) : RuntimeException(mess
 
 @Service
 class TwitchStreamService(
-    val twitchConnector: TwitchConnector,
-    val featureService: FeatureService
+    private val twitchConnector: TwitchConnector,
+    private val featureService: FeatureService
 ) {
     private val log = KotlinLogging.logger {}
 

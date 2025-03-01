@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-class EventPublishingService(val applicationEventPublisher: ApplicationEventPublisher) {
+class EventPublishingService(private val applicationEventPublisher: ApplicationEventPublisher) {
     private val log = KotlinLogging.logger {}
 
     @Transactional

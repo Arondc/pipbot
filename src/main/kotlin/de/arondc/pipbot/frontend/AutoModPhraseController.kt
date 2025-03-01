@@ -11,7 +11,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 
 @Controller
 @RequestMapping("/automodphrases")
-class AutoModPhraseController(val frontendService: FrontendService) {
+class AutoModPhraseController(private val frontendService: FrontendService) {
 
     @ModelAttribute("automodphrases")
     fun initAutoModPhraseList(): List<AutoModPhraseDTO> {

@@ -7,7 +7,7 @@ import org.springframework.format.FormatterRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 @Configuration
-class WebConfig(val channelService: ChannelService) : WebMvcConfigurer {
+class WebConfig(private val channelService: ChannelService) : WebMvcConfigurer {
     override fun addFormatters(registry: FormatterRegistry) {
         registry.addConverter(MemeEntityToDTOConverter())
         registry.addConverter(ChannelEntityToDTOConverter())

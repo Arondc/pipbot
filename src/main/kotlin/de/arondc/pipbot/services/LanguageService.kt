@@ -19,7 +19,10 @@ class MessageConfig {
 }
 
 @Service
-class LanguageService(val channelService: ChannelService, val messageSource: MessageSource) {
+class LanguageService(
+    private val channelService: ChannelService,
+    private val messageSource: MessageSource
+) {
     fun getMessage(channelName: String, messageKey: String, args: Array<Any>? = null): String {
         val locale = channelService.findByNameIgnoreCase(channelName).language
         return messageSource.getMessage(messageKey, args, locale)

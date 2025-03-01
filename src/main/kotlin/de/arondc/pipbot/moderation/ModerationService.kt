@@ -5,13 +5,13 @@ import de.arondc.pipbot.events.EventPublishingService
 import de.arondc.pipbot.events.ModerationActionEvent
 import de.arondc.pipbot.events.SendMessageEvent
 import de.arondc.pipbot.events.TwitchPermission
-import de.arondc.pipbot.users.UserService
+import de.arondc.pipbot.userchannelinformation.UserChannelInformationService
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 @Service
 class ModerationService(
-    private val userService: UserService,
+    private val userChannelInformationService: UserChannelInformationService,
     private val moderationResponseStorage: ModerationResponseStorage,
     private val eventPublisher: EventPublishingService
 ) {
@@ -19,7 +19,7 @@ class ModerationService(
 
     fun moderate(event: ModerationActionEvent) {
         val userInformation = retry(RuntimeException("Nutzer unbekannt")) {
-            userService.getUserChannelInformation(
+            userChannelInformationService.getUserChannelInformation(
                 event.user,
                 event.channel
             )
