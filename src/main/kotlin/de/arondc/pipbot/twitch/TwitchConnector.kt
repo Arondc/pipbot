@@ -82,7 +82,6 @@ class TwitchConnector(
     fun getChannelInformation(channelName: String): ChannelInformationList {
         log.info { "TwitchClient - Fetching ChannelInformation for channel: $channelName" }
         val channelBroadcasterId = getUserId(channelName)
-        log.info { "TwitchClient - Channel broadcasterId: $channelBroadcasterId" }
         return twitchClient.helix
             .getChannelInformation(token, listOf(channelBroadcasterId))
             .execute()
