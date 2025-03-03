@@ -1,8 +1,10 @@
 package de.arondc.pipbot.twitch
 
+import com.netflix.hystrix.exception.HystrixRuntimeException
 import de.arondc.pipbot.features.Feature
 import de.arondc.pipbot.features.FeatureService
 import mu.KotlinLogging
+import org.apache.commons.lang3.exception.ContextedRuntimeException
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.LocalDateTime
@@ -82,4 +84,27 @@ class TwitchStreamService(
             )
         }
     }
+
+    fun banUser(channelName: String, userName: String) {
+        log.info {"Banning `$userName` in channel $channelName"}
+        try {
+            twitchConnector.banUser(channelName, userName)
+        } catch (e: HystrixRuntimeException) {
+            when(e.cause) {
+                is ContextedRuntimeException -> {
+                    if(e.cause!!.message!!.contains("The user specified in the user_id field is already banned."))
+                    {
+                        log.info {"User `$userName` already banned in channel $channelName."}
+                    }
+                    else throw e
+                }
+                else -> throw e
+            }
+        }
+    }
+
+    fun banUsers(channelName: String, userNames: Set<String>) {
+        userNames.forEach {banUser(channelName, it) }
+    }
+
 }

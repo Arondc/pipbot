@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home - Pipbot</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet"/>
+</head>
+<body>
+
+<h1 th:text="#{'frontend.quickban.header'}"></h1>
+<div>
+    <form th:action="@{/quickban/ban}" th:object="${quickBanRequest}" method="post">
+        <table>
+            <tr>
+                <td>Channel</td>
+                <td><select th:field="*{channelName}">
+                    <option th:each="channel: ${channels}" th:text="${channel.name}"
+                            th:value="${channel.name}"></option>
+                </select></td>
+            </tr>
+            <tr>
+                <td>List of Names</td>
+                <td><textarea th:field="*{userNames}"></textarea></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><input type="submit" value="Ban"/></td>
+            </tr>
+        </table>
+    </form>
+
+</div>
+</body>
+</html>

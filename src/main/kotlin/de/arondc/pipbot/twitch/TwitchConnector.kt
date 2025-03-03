@@ -15,6 +15,7 @@ import de.arondc.pipbot.twitch.user.TwitchUser
 import de.arondc.pipbot.twitch.user.TwitchUserService
 import jakarta.annotation.PostConstruct
 import mu.KotlinLogging
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Component
 
 @Component
@@ -24,6 +25,7 @@ class TwitchConnector(
     val twitchUserService: TwitchUserService,
     val twitchConnectorConfig: OAuth2Credential,
     val eventPublisher: EventPublishingService,
+    private val namedParameterJdbcTemplate: NamedParameterJdbcTemplate,
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -80,6 +82,12 @@ class TwitchConnector(
             .getUsers(token, null, listOf(userName)).execute()
     }
 
+    fun getUserInformation(userNames: List<String>): UserList {
+        log.info { "TwitchClient - Fetching UserInformation for users: $userNames" }
+        return twitchClient.helix
+            .getUsers(token, null, userNames).execute()
+    }
+
     fun sendShoutout(fromChannel: String, toChannel: String) {
         log.info { "TwitchClient - Sending shoutout from $fromChannel to $toChannel" }
         val fromChannelId = getUserId(fromChannel)
@@ -128,6 +136,16 @@ class TwitchConnector(
             null
         )
             .execute()
+    }
+
+    fun banUser(channelName: String ,userName: String) {
+        twitchClient.helix.banUser(
+            token,
+            getUserId(channelName),
+            getUserId(twitchConnectorConfig.userName),
+            BanUserInput.builder().userId(getUserId(userName)).reason("").build()
+        )
+        .execute()
     }
 
     private fun getUserId(userName: String): String {
