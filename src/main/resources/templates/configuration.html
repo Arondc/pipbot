@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Configuration - Pipbot</title>
+</head>
+<body>
+<h1 th:text="${#messages.msg('frontend.configuration.header')}"></h1>
+<form th:action="@{/configuration/save}" th:object="${configuration}" method="post">
+    <table>
+        <tr>
+            <td>
+                <label th:for="username" th:text="${#messages.msg('frontend.configuration.username')}"></label>
+                <input type="text" id="username" name="username" th:field="*{username}">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label th:for="oauthtoken" th:text="${#messages.msg('frontend.configuration.oauthtoken')}"></label>
+                <input type="password" id="oauthtoken" name="oauthtoken" th:field="*{oAuthToken}">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label th:for="clientid" th:text="${#messages.msg('frontend.configuration.clientid')}"></label>
+                <input type="password" id="clientid" name="clientid" th:field="*{clientId}">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label th:for="clientsecret" th:text="${#messages.msg('frontend.configuration.clientsecret')}"></label>
+                <input type="password" id="clientsecret" name="clientsecret" th:field="*{clientSecret}">
+            </td>
+        </tr>
+    </table>
+    <input type="submit" th:value="${#messages.msg('frontend.configuration.save')}" />
+</form>
+</body>
+</html>

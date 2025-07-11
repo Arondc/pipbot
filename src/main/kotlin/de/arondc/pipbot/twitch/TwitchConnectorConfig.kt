@@ -16,8 +16,10 @@ data class TwitchConnectorConfig(
     var user: String = "",
     var oAuth: String = "",
     var clientSecret: String = "",
-    var clientId: String = ""
-)
+    var clientId: String = "",
+){
+    fun isNotBlank() : Boolean = user.isNotBlank() || oAuth.isNotBlank() || clientId.isNotBlank() || clientSecret.isNotBlank()
+}
 
 /**
  * Factory that can be used as factory in a PropertiesSource to allow loading yml files as properties
