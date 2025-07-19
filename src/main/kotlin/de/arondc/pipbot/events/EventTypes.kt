@@ -2,6 +2,8 @@ package de.arondc.pipbot.events
 
 sealed interface PipBotEvent
 
+//Incoming
+
 data class TwitchMessageEvent(
     val channel: String,
     val userInfo: UserInfo,
@@ -18,13 +20,20 @@ data class TwitchMessageEvent(
     data class MessageInfo(val text: String, val normalizedText: String, val hasLink: Boolean)
 }
 
-data class SendMessageEvent(val channel: String, val message: String) : PipBotEvent
-data class TwitchRaidEvent(val raidedChannel: String, val incomingRaider: String, val size: Int) : PipBotEvent
-data class JoinTwitchChannelEvent(val channel: String) : PipBotEvent
-data class LeaveTwitchChannelEvent(val channel: String) : PipBotEvent
-data class UpdateChannelInformationForUserEvent(
-    val channel: String, val user: String, val permissions: Set<TwitchPermission> = emptySet()
+//Processing
+data class ProcessingEvent(
+    val channel: String,
+    val messageInfo: TwitchMessageEvent.MessageInfo,
+    val userInfo: TwitchMessageEvent.UserInfo
 ) : PipBotEvent
+
+//ExternalCall
+
+
+data class TwitchRaidEvent(val raidedChannel: String, val incomingRaider: String, val size: Int) : PipBotEvent
+
+data class TwitchCallEvent(val callType: CallType, val channel: String, val message : String = "") : PipBotEvent
+enum class CallType {SEND_MESSAGE,JOIN_CHANNEL,LEAVE_CHANNEL}
 
 data class NewAutoModPhraseEvent(val channel: String, val newPhrase: String) : PipBotEvent
 data class ModerationActionEvent(val channel: String, val user: String) : PipBotEvent

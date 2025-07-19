@@ -1,7 +1,7 @@
 package de.arondc.pipbot.memes
 
 import de.arondc.pipbot.events.EventPublishingService
-import de.arondc.pipbot.events.TwitchMessageEvent
+import de.arondc.pipbot.events.ProcessingEvent
 import de.arondc.pipbot.events.TwitchMessageEvent.MessageInfo
 import de.arondc.pipbot.events.TwitchMessageEvent.UserInfo
 import de.arondc.pipbot.services.LanguageService
@@ -54,8 +54,8 @@ class MemeListenersTest {
 
         //When
         val messageText = "dummyText"
-        val twitchMessageEvent = buildTwitchMessageEvent("!meme $messageText")
-        memeListeners.receiveMessage(twitchMessageEvent = twitchMessageEvent)
+        val twitchMessageEvent = buildProcessingEvent("!meme $messageText")
+        memeListeners.receiveMessage(processingEvent = twitchMessageEvent)
 
         //Then
         verify { memeService.processMemeMessage(any(), any(), any()) }
@@ -69,8 +69,8 @@ class MemeListenersTest {
         every { memeService.forwardMemeToBrowserSource(CHANNEL_NAME, messageText) } just Runs
 
         //When
-        val twitchMessageEvent = buildTwitchMessageEvent(messageText)
-        memeListeners.receiveBrowserSourceMessages(twitchMessageEvent = twitchMessageEvent)
+        val twitchMessageEvent = buildProcessingEvent(messageText)
+        memeListeners.receiveBrowserSourceMessages(processingEvent = twitchMessageEvent)
 
         //Then
         verify { memeService.forwardMemeToBrowserSource(CHANNEL_NAME, messageText) }
@@ -86,8 +86,8 @@ class MemeListenersTest {
     )
     fun `meme is not forwarded to the browser source whenever the message contains a non-imgflip link`(address: String) {
         //When
-        val twitchMessageEvent = buildTwitchMessageEvent(address)
-        memeListeners.receiveBrowserSourceMessages(twitchMessageEvent = twitchMessageEvent)
+        val twitchMessageEvent = buildProcessingEvent(address)
+        memeListeners.receiveBrowserSourceMessages(processingEvent = twitchMessageEvent)
 
         //Then
         verify { memeService wasNot Called }
@@ -114,8 +114,8 @@ class MemeListenersTest {
         every { publisher.publishEvent(any()) } just Runs
 
         //When
-        val twitchMessageEvent = buildTwitchMessageEvent(messageText)
-        memeListeners.receiveMessage(twitchMessageEvent = twitchMessageEvent)
+        val twitchMessageEvent = buildProcessingEvent(messageText)
+        memeListeners.receiveMessage(processingEvent = twitchMessageEvent)
 
         //Then
         verify { memeService.processMemeMessage(any(), any(), any()) }
@@ -126,14 +126,14 @@ class MemeListenersTest {
     @Test
     fun `meme is not processed whenever the message matches does not match one the meme sources`() {
         //When
-        memeListeners.receiveMessage(twitchMessageEvent = buildTwitchMessageEvent("https://www.google.com"))
+        memeListeners.receiveMessage(processingEvent = buildProcessingEvent("https://www.google.com"))
 
         //Then
         verify { memeService wasNot Called }
         verify { languageService wasNot Called }
     }
 
-    private fun buildTwitchMessageEvent(message: String) = TwitchMessageEvent(
+    private fun buildProcessingEvent(message: String) = ProcessingEvent(
         channel = CHANNEL_NAME,
         userInfo = UserInfo(
             userName = USER_NAME,

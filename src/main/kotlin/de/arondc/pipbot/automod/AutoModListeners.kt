@@ -1,7 +1,7 @@
 package de.arondc.pipbot.automod
 
 import de.arondc.pipbot.events.NewAutoModPhraseEvent
-import de.arondc.pipbot.events.TwitchMessageEvent
+import de.arondc.pipbot.events.ProcessingEvent
 import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.stereotype.Component
 
@@ -11,11 +11,11 @@ class AutoModListeners(
 ) {
 
     @ApplicationModuleListener
-    fun receiveChatMessage(twitchMessageEvent: TwitchMessageEvent) {
+    fun receiveChatMessage(processingEvent: ProcessingEvent) {
         autoModService.processChat(
-            twitchMessageEvent.channel,
-            twitchMessageEvent.userInfo.userName,
-            twitchMessageEvent.messageInfo
+            processingEvent.channel,
+            processingEvent.userInfo.userName,
+            processingEvent.messageInfo
         )
     }
 

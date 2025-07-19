@@ -1,10 +1,6 @@
 package de.arondc.pipbot.moderation
 
-import de.arondc.pipbot.core.Functions.retry
-import de.arondc.pipbot.events.EventPublishingService
-import de.arondc.pipbot.events.ModerationActionEvent
-import de.arondc.pipbot.events.SendMessageEvent
-import de.arondc.pipbot.events.TwitchPermission
+import de.arondc.pipbot.events.*
 import de.arondc.pipbot.userchannelinformation.UserChannelInformationService
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
@@ -18,11 +14,14 @@ class ModerationService(
     private val log = KotlinLogging.logger {}
 
     fun moderate(event: ModerationActionEvent) {
-        val userInformation = retry(RuntimeException("Nutzer unbekannt")) {
-            userChannelInformationService.getUserChannelInformation(
-                event.user,
-                event.channel
-            )
+        val userInformation = userChannelInformationService.getUserChannelInformation(
+            event.user,
+            event.channel
+        )
+
+        if (userInformation == null) {
+            log.error("User channel information not found for ${event.user} in ${event.channel}")
+            return
         }
 
         if (TwitchPermission.MODERATOR.isSatisfiedBy(userInformation.highestTwitchUserLevel)) {
@@ -46,7 +45,8 @@ class ModerationService(
 
         log.info { "Actioning on Moderation event for ${event.user} with trust level $trustLevel in ${event.channel}" }
         eventPublisher.publishEvent(
-            SendMessageEvent(
+            TwitchCallEvent(
+                CallType.SEND_MESSAGE,
                 channel = event.channel, message = moderationResponse.message()
             )
         )
