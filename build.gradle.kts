@@ -33,7 +33,7 @@ repositories {
     mavenCentral()
 }
 
-extra["springModulithVersion"] = "1.2.3"
+extra["springModulithVersion"] = "1.4.1"
 
 dependencies {
     //Kotlin dependencies

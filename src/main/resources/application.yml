@@ -8,6 +8,10 @@ spring:
     #database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: validate
+  modulith:
+    events:
+      completion-mode: DELETE
 
 automod:
   cache_size: 100
+
