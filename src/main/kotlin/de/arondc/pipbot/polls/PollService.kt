@@ -1,7 +1,8 @@
 package de.arondc.pipbot.polls
 
+import de.arondc.pipbot.events.CallType
 import de.arondc.pipbot.events.EventPublishingService
-import de.arondc.pipbot.events.SendMessageEvent
+import de.arondc.pipbot.events.TwitchCallEvent
 import de.arondc.pipbot.services.LanguageService
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
@@ -49,16 +50,17 @@ class PollService(
             runStopTimerForPoll(poll, channelName)
         } catch (ex: PollCreationException) {
             eventPublisher.publishEvent(
-                SendMessageEvent(
+                TwitchCallEvent(
+                    CallType.SEND_MESSAGE,
                     channelName, ex.msg
                 )
             )
-        } catch (ex: DateTimeParseException) {
+        } catch (_: DateTimeParseException) {
             val errMsg = languageService.getMessage(
                 channelName, "polls.error.parameter.time", arrayOf(pollParameters.getValue("time"))
             )
             eventPublisher.publishEvent(
-                SendMessageEvent(channelName, errMsg)
+                TwitchCallEvent(CallType.SEND_MESSAGE, channelName, errMsg)
             )
         }
     }
@@ -71,7 +73,7 @@ class PollService(
             )
         }
         //TODO: Einmal debuggen und schauen ob wir hier pollPublisher nutzen müssen
-        eventPublisher.publishEvent(SendMessageEvent(channelName, startMessage))
+        eventPublisher.publishEvent(TwitchCallEvent(CallType.SEND_MESSAGE, channelName, startMessage))
     }
 
     fun acceptAnswer(message: String, channelName: String, userName: String) {
@@ -87,7 +89,7 @@ class PollService(
 
         countAnswer(foundPoll, userName, message)
         val response = languageService.getMessage(channelName, "polls.poll.countedAnswer", arrayOf(userName))
-        eventPublisher.publishEvent(SendMessageEvent(channelName, response))
+        eventPublisher.publishEvent(TwitchCallEvent(CallType.SEND_MESSAGE, channelName, response))
     }
 
     fun closePoll(poll: Poll, channelName: String) {
@@ -97,8 +99,8 @@ class PollService(
         }
         val title = poll.text.ifBlank { "" }
         val message = languageService.getMessage(channelName, "polls.poll.result", arrayOf(title, results))
-        val sendMessageEvent = SendMessageEvent(channelName, message)
-        eventPublisher.publishEvent(sendMessageEvent)
+        val twitchCallEvent = TwitchCallEvent(CallType.SEND_MESSAGE, channelName, message)
+        eventPublisher.publishEvent(twitchCallEvent)
         polls[channelName]!!.remove(poll)
     }
 

@@ -4,16 +4,13 @@ import com.ninjasquad.springmockk.MockkBean
 import de.arondc.pipbot.channels.ChannelEntity
 import de.arondc.pipbot.channels.ShoutoutOnRaidType
 import de.arondc.pipbot.events.EventPublishingService
-import de.arondc.pipbot.events.ModerationActionEvent
-import de.arondc.pipbot.events.NewAutoModPhraseEvent
-import de.arondc.pipbot.events.TwitchMessageEvent.MessageInfo
+import de.arondc.pipbot.events.MessageInfo
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -81,24 +78,13 @@ class AutoModServiceTest {
 
         every { eventPublisher.publishEvent(any()) } just Runs
 
-        autoModService.processChat(
+        val result = autoModService.needsModeration(
             channelName = CHANNEL_ENTITY.name,
             userName = USER_NAME,
             messageInfo = eventMessageInfo
         )
 
-        verify(exactly = 1) {
-            eventPublisher.publishEvent(
-                withArg {
-                    assertAll(
-                        "ModerationActionEvent",
-                        { assertThat(it).isExactlyInstanceOf(ModerationActionEvent::class.java) },
-                        { assertThat((it as ModerationActionEvent).user).isEqualTo(USER_NAME) },
-                        { assertThat((it as ModerationActionEvent).channel).isEqualTo(CHANNEL_NAME) },
-                    )
-                }
-            )
-        }
+        assertThat(result).isTrue()
     }
 
     @Test
@@ -112,7 +98,7 @@ class AutoModServiceTest {
             )
         )
 
-        autoModService.processChat(
+        autoModService.needsModeration(
             channelName = CHANNEL_ENTITY.name,
             userName = USER_NAME,
             messageInfo = eventMessageInfo
@@ -127,33 +113,22 @@ class AutoModServiceTest {
         //GIVEN
         every { eventPublisher.publishEvent(any()) } just Runs
         every { autoModPhraseRepository.findByChannelName("dummyChannel") } returns listOf()
-        autoModService.processChat(
+        autoModService.needsModeration(
             channelName = CHANNEL_ENTITY.name,
             userName = USER_NAME,
             messageInfo = buildEventMessageInfo("Something nice")
         )
-        autoModService.processChat(
+        autoModService.needsModeration(
             channelName = CHANNEL_ENTITY.name,
             userName = USER_NAME,
             messageInfo = buildEventMessageInfo(BAD_PHRASE)
         )
 
         //WHEN
-        autoModService.processNewPhrase(CHANNEL_ENTITY.name, BAD_PHRASE)
+        val result = autoModService.processNewPhrase(CHANNEL_ENTITY.name, BAD_PHRASE)
 
         //THEN
-        verify(exactly = 1) {
-            eventPublisher.publishEvent(
-                withArg {
-                    assertAll(
-                        "ModerationActionEvent",
-                        { assertThat(it).isExactlyInstanceOf(ModerationActionEvent::class.java) },
-                        { assertThat((it as ModerationActionEvent).user).isEqualTo(USER_NAME) },
-                        { assertThat((it as ModerationActionEvent).channel).isEqualTo(CHANNEL_NAME) },
-                    )
-                }
-            )
-        }
+        assertThat(result).containsOnly(USER_NAME)
     }
 
     @Test
@@ -165,22 +140,9 @@ class AutoModServiceTest {
 
     @Test
     fun save() {
-        every { eventPublisher.publishEvent(any()) } just Runs
         every { autoModPhraseRepository.save(any()) } returns AutoModPhraseEntity(text = BAD_PHRASE)
         autoModService.save(AutoModPhraseEntity(BAD_PHRASE, CHANNEL_ENTITY))
-
-        verify(exactly = 1) {
-            eventPublisher.publishEvent(
-                withArg {
-                    assertAll(
-                        "NewAutoModPhraseEvent",
-                        { assertThat(it).isExactlyInstanceOf(NewAutoModPhraseEvent::class.java) },
-                        { assertThat((it as NewAutoModPhraseEvent).newPhrase).isEqualTo(BAD_PHRASE) },
-                        { assertThat((it as NewAutoModPhraseEvent).channel).isEqualTo(CHANNEL_NAME) },
-                    )
-                }
-            )
-        }
+        verify{ autoModPhraseRepository.save(any()) }
     }
 
     @Test

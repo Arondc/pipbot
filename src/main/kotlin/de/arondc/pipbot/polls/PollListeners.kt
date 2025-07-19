@@ -1,7 +1,7 @@
 package de.arondc.pipbot.polls
 
 import de.arondc.pipbot.channels.ChannelService
-import de.arondc.pipbot.events.TwitchMessageEvent
+import de.arondc.pipbot.events.ProcessingEvent
 import mu.KotlinLogging
 import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.stereotype.Component
@@ -15,7 +15,7 @@ class PollListeners(
     private val log = KotlinLogging.logger {}
 
     @ApplicationModuleListener
-    fun receiveMessage(twitchMessageEvent: TwitchMessageEvent) {
+    fun receiveMessage(processingEvent: ProcessingEvent) {
         when {
             //!poll "text"                                           -> Poll mit Standardwerten    (time = 3m, options = 1/2)
             //!poll [options=Option1,Option2,Option3,....] "text"    -> Poll mit Antwortoptionen   (options = 1/2)
@@ -24,16 +24,16 @@ class PollListeners(
             //!poll options=1,2 time=5m "1=Dings 2=Bumms"
 
             //TODO !poll help
-            twitchMessageEvent.messageInfo.text.equals("!poll", ignoreCase = true) -> {
+            processingEvent.messageInfo.text.equals("!poll", ignoreCase = true) -> {
                 val pollParameters = buildPollParameters()
-                pollService.createAndStartPoll(pollParameters, twitchMessageEvent.channel)
+                pollService.createAndStartPoll(pollParameters, processingEvent.channel)
             }
-            twitchMessageEvent.messageInfo.text.startsWith("!poll ") -> {
-                val pollParameters = buildPollParameters(twitchMessageEvent.messageInfo.text.substringAfter("!poll "))
-                pollService.createAndStartPoll(pollParameters, twitchMessageEvent.channel)
+            processingEvent.messageInfo.text.startsWith("!poll ") -> {
+                val pollParameters = buildPollParameters(processingEvent.messageInfo.text.substringAfter("!poll "))
+                pollService.createAndStartPoll(pollParameters, processingEvent.channel)
             }
-            twitchMessageEvent.messageInfo.text.startsWith("?") -> {
-                pollService.acceptAnswer(twitchMessageEvent.messageInfo.text.trimStart('?'), twitchMessageEvent.channel, twitchMessageEvent.userInfo.userName)
+            processingEvent.messageInfo.text.startsWith("?") -> {
+                pollService.acceptAnswer(processingEvent.messageInfo.text.trimStart('?'), processingEvent.channel, processingEvent.userInfo.userName)
             }
         }
     }

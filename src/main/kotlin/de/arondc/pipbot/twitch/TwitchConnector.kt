@@ -39,7 +39,7 @@ class TwitchConnector(
     }
 
     fun messageReceived(channelMessageEvent: ChannelMessageEvent) =
-        eventPublisher.publishEvent(channelMessageEvent.toTwitchMessageEvent())
+        eventPublisher.publishEvent(channelMessageEvent.toMessageEvent())
 
     fun raidEventReceived(raidEvent: RaidEvent) =
         eventPublisher.publishEvent(
@@ -94,7 +94,7 @@ class TwitchConnector(
     }
 
     fun getChannelFollowers(channelName: String, userName: String): InboundFollowers {
-        log.info { "TwitchClient - Fetching followers of $channelName for $userName" }
+        log.info { "TwitchClient - Fetching followers of $channelName for $userName" } //TODO Das sieht komisch aus mit moderatorId
         val channelBroadcasterId = getUserId(channelName)
         val moderatorId = getUserId(userName)
 

@@ -1,7 +1,8 @@
 package de.arondc.pipbot.channels
 
+import de.arondc.pipbot.events.CallType
 import de.arondc.pipbot.events.EventPublishingService
-import de.arondc.pipbot.events.JoinTwitchChannelEvent
+import de.arondc.pipbot.events.TwitchCallEvent
 import mu.KotlinLogging
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
@@ -19,7 +20,7 @@ class ChannelListener(
         val channels = channelService.findActive().map { it.name }
         log.info { "joining twitch channels: $channels" }
         channels.forEach {
-            eventPublishingService.publishEvent(JoinTwitchChannelEvent(it))
+            eventPublishingService.publishEvent(TwitchCallEvent(CallType.JOIN_CHANNEL,it))
         }
     }
 }

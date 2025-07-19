@@ -1,8 +1,9 @@
 package de.arondc.pipbot.autoresponder
 
+import de.arondc.pipbot.events.CallType
 import de.arondc.pipbot.events.EventPublishingService
-import de.arondc.pipbot.events.SendMessageEvent
-import de.arondc.pipbot.events.TwitchMessageEvent
+import de.arondc.pipbot.events.ProcessingEvent
+import de.arondc.pipbot.events.TwitchCallEvent
 import mu.KotlinLogging
 import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.stereotype.Component
@@ -14,16 +15,17 @@ class AutoResponseListeners(
     private val log = KotlinLogging.logger {}
 
     @ApplicationModuleListener
-    fun respond(twitchMessageEvent: TwitchMessageEvent) {
-        if (twitchMessageEvent.messageInfo.text.startsWith("!")) {
+    fun respond(processingEvent: ProcessingEvent) {
+        if (processingEvent.messageInfo.text.startsWith("!")) {
             val response = autoResponseService.getAutoResponse(
-                twitchMessageEvent.channel, twitchMessageEvent.messageInfo.text.substringAfter("!")
+                processingEvent.channel, processingEvent.messageInfo.text.substringAfter("!")
             )
             log.debug { "Autoresponder response: $response" }
             if (response != null) {
                 eventPublisher.publishEvent(
-                    SendMessageEvent(
-                        twitchMessageEvent.channel, response
+                    TwitchCallEvent(
+                        CallType.SEND_MESSAGE,
+                        processingEvent.channel, response
                     )
                 )
             }

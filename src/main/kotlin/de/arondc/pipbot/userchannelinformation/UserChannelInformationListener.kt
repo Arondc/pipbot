@@ -1,9 +1,7 @@
 package de.arondc.pipbot.userchannelinformation
 
 import de.arondc.pipbot.events.EventPublishingService
-import de.arondc.pipbot.events.TwitchMessageEvent
-import de.arondc.pipbot.events.UpdateChannelInformationForUserEvent
-import mu.KotlinLogging
+import de.arondc.pipbot.events.ProcessingEvent
 import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.stereotype.Component
 
@@ -12,29 +10,13 @@ class UserChannelInformationListener(
     val userChannelInformationService: UserChannelInformationService,
     val eventPublisher: EventPublishingService,
 ) {
-    private val log = KotlinLogging.logger {}
-
     @ApplicationModuleListener
-    fun receiveMessage(twitchMessageEvent: TwitchMessageEvent) {
-        val message = twitchMessageEvent.messageInfo.text
+    fun receiveMessage(processingEvent: ProcessingEvent) {
+        val message = processingEvent.messageInfo.text
         if (message.startsWith("!lastseen")) {
             val userName = message.substringAfter("!lastseen").trim()
-                .ifEmpty { twitchMessageEvent.userInfo.userName }
-            userChannelInformationService.handleLastSeen(userName, twitchMessageEvent.channel)
+                .ifEmpty { processingEvent.userInfo.userName }
+            userChannelInformationService.handleLastSeen(userName, processingEvent.channel)
         }
-
-        eventPublisher.publishEvent(
-            UpdateChannelInformationForUserEvent(
-                twitchMessageEvent.channel,
-                twitchMessageEvent.userInfo.userName,
-                twitchMessageEvent.userInfo.permissions
-            )
-        )
-    }
-
-    @ApplicationModuleListener
-    fun handleUpdateChannelInformationForUserEvent(event: UpdateChannelInformationForUserEvent) {
-        log.debug { "received event to update user channel information ${event.channel} - ${event.user} - ${event.permissions} " }
-        userChannelInformationService.updateChannelInformationForUser(event.channel, event.user, event.permissions)
     }
 }

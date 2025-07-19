@@ -3,8 +3,9 @@ package de.arondc.pipbot.raids
 import de.arondc.pipbot.channels.ChannelEntity
 import de.arondc.pipbot.channels.ChannelService
 import de.arondc.pipbot.channels.ShoutoutOnRaidType
+import de.arondc.pipbot.events.CallType
 import de.arondc.pipbot.events.EventPublishingService
-import de.arondc.pipbot.events.SendMessageEvent
+import de.arondc.pipbot.events.TwitchCallEvent
 import de.arondc.pipbot.events.TwitchRaidEvent
 import de.arondc.pipbot.services.LanguageService
 import de.arondc.pipbot.twitch.TwitchStreamService
@@ -52,7 +53,7 @@ class TwitchRaidService(
             "twitch.raid.message",
             arrayOf(twitchRaidEvent.incomingRaider, twitchRaidEvent.size, lastGame)
         )
-        eventPublisher.publishEvent(SendMessageEvent(twitchRaidEvent.raidedChannel, message))
+        eventPublisher.publishEvent(TwitchCallEvent(CallType.SEND_MESSAGE, twitchRaidEvent.raidedChannel, message))
     }
 
     private fun reactByTwitchShoutout(twitchRaidEvent: TwitchRaidEvent) {
@@ -61,7 +62,8 @@ class TwitchRaidService(
 
     private fun reactByStreamElementsShoutout(twitchRaidEvent: TwitchRaidEvent) {
         eventPublisher.publishEvent(
-            SendMessageEvent(
+            TwitchCallEvent(
+                CallType.SEND_MESSAGE,
                 twitchRaidEvent.raidedChannel,
                 "!so ${twitchRaidEvent.incomingRaider}"
             )

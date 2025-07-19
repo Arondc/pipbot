@@ -1,6 +1,6 @@
 package de.arondc.pipbot.quotes
 
-import de.arondc.pipbot.events.TwitchMessageEvent
+import de.arondc.pipbot.events.ProcessingEvent
 import org.springframework.modulith.events.ApplicationModuleListener
 import org.springframework.stereotype.Component
 
@@ -9,28 +9,26 @@ class QuoteListeners(
     private val quoteService: QuoteService,
 ) {
     @ApplicationModuleListener
-    fun receiveMessage(twitchMessageEvent: TwitchMessageEvent) {
+    fun receiveMessage(processingEvent: ProcessingEvent) {
         when {
-            twitchMessageEvent.messageInfo.text.startsWith("!zitat add ") -> {
+            processingEvent.messageInfo.text.startsWith("!zitat add ") -> {
                 quoteService.processAdd(
-                    twitchMessageEvent,
-                    twitchMessageEvent.messageInfo.text.substringAfter("!zitat add "),
-                    twitchMessageEvent.channel
+                    processingEvent,
+                    processingEvent.messageInfo.text.substringAfter("!zitat add "),
                 )
             }
 
-            twitchMessageEvent.messageInfo.text.startsWith("!zitat delete ") -> {
+            processingEvent.messageInfo.text.startsWith("!zitat delete ") -> {
                 quoteService.processDelete(
-                    twitchMessageEvent,
-                    twitchMessageEvent.messageInfo.text.substringAfter("!zitat delete "),
-                    twitchMessageEvent.channel
+                    processingEvent,
+                    processingEvent.messageInfo.text.substringAfter("!zitat delete "),
                 )
             }
 
-            twitchMessageEvent.messageInfo.text.startsWith("!zitat ") -> {
+            processingEvent.messageInfo.text.startsWith("!zitat ") -> {
                 quoteService.processFind(
-                    twitchMessageEvent.messageInfo.text.substringAfter("!zitat ").trim(),
-                    twitchMessageEvent.channel
+                    processingEvent.messageInfo.text.substringAfter("!zitat ").trim(),
+                    processingEvent.channel
                 )
             }
         }

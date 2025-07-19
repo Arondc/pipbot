@@ -3,17 +3,14 @@ package de.arondc.pipbot.moderation
 import com.ninjasquad.springmockk.MockkBean
 import de.arondc.pipbot.channels.ChannelEntity
 import de.arondc.pipbot.channels.ShoutoutOnRaidType
-import de.arondc.pipbot.events.EventPublishingService
-import de.arondc.pipbot.events.ModerationActionEvent
-import de.arondc.pipbot.events.SendMessageEvent
-import de.arondc.pipbot.events.TwitchPermission
+import de.arondc.pipbot.events.*
 import de.arondc.pipbot.userchannelinformation.UserChannelInformationService
 import de.arondc.pipbot.userchannelinformation.UserInformation
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -130,9 +127,10 @@ class ModerationServiceTest {
             eventPublisher.publishEvent(
                 withArg {
                     assertAll(
-                        { assertThat(it).isExactlyInstanceOf(SendMessageEvent::class.java) },
-                        { assertThat((it as SendMessageEvent).channel).isEqualTo(CHANNEL_ENTITY.name) },
-                        { assertThat((it as SendMessageEvent).message).isEqualTo(expectedModerationMessage) },
+                        { assertThat(it).isExactlyInstanceOf(TwitchCallEvent::class.java) },
+                        { assertThat((it as TwitchCallEvent).channel).isEqualTo(CHANNEL_ENTITY.name) },
+                        { assertThat((it as TwitchCallEvent).message).isEqualTo(expectedModerationMessage) },
+                        { assertThat((it as TwitchCallEvent).callType).isEqualTo(CallType.SEND_MESSAGE) },
                     )
                 }
             )
@@ -167,9 +165,10 @@ class ModerationServiceTest {
             eventPublisher.publishEvent(
                 withArg {
                     assertAll(
-                        { assertThat(it).isExactlyInstanceOf(SendMessageEvent::class.java) },
-                        { assertThat((it as SendMessageEvent).channel).isEqualTo(CHANNEL_ENTITY.name) },
-                        { assertThat((it as SendMessageEvent).message).isEqualTo("/ban $USER_NAME") },
+                        { assertThat(it).isExactlyInstanceOf(TwitchCallEvent::class.java) },
+                        { assertThat((it as TwitchCallEvent).channel).isEqualTo(CHANNEL_ENTITY.name) },
+                        { assertThat((it as TwitchCallEvent).message).isEqualTo("/ban $USER_NAME") },
+                        { assertThat((it as TwitchCallEvent).callType).isEqualTo(CallType.SEND_MESSAGE) },
                     )
                 }
             )
@@ -209,9 +208,10 @@ class ModerationServiceTest {
             eventPublisher.publishEvent(
                 withArg {
                     assertAll(
-                        { assertThat(it).isExactlyInstanceOf(SendMessageEvent::class.java) },
-                        { assertThat((it as SendMessageEvent).channel).isEqualTo(CHANNEL_ENTITY.name) },
-                        { assertThat((it as SendMessageEvent).message).isEqualTo("/timeout $USER_NAME 1234") },
+                        { assertThat(it).isExactlyInstanceOf(TwitchCallEvent::class.java) },
+                        { assertThat((it as TwitchCallEvent).channel).isEqualTo(CHANNEL_ENTITY.name) },
+                        { assertThat((it as TwitchCallEvent).message).isEqualTo("/timeout $USER_NAME 1234") },
+                        { assertThat((it as TwitchCallEvent).callType).isEqualTo(CallType.SEND_MESSAGE) },
                     )
                 }
             )
@@ -246,9 +246,10 @@ class ModerationServiceTest {
             eventPublisher.publishEvent(
                 withArg {
                     assertAll(
-                        { assertThat(it).isExactlyInstanceOf(SendMessageEvent::class.java) },
-                        { assertThat((it as SendMessageEvent).channel).isEqualTo(CHANNEL_ENTITY.name) },
-                        { assertThat((it as SendMessageEvent).message).isEqualTo("you're a bad user $USER_NAME") },
+                        { assertThat(it).isExactlyInstanceOf(TwitchCallEvent::class.java) },
+                        { assertThat((it as TwitchCallEvent).channel).isEqualTo(CHANNEL_ENTITY.name) },
+                        { assertThat((it as TwitchCallEvent).message).isEqualTo("you're a bad user $USER_NAME") },
+                        { assertThat((it as TwitchCallEvent).callType).isEqualTo(CallType.SEND_MESSAGE) },
                     )
                 }
             )
@@ -278,7 +279,7 @@ class ModerationServiceTest {
             )
         )
 
-        verify(exactly = 0) { eventPublisher.publishEvent(any<SendMessageEvent>()) }
+        verify(exactly = 0) { eventPublisher.publishEvent(any<TwitchCallEvent>()) }
     }
 
     @ParameterizedTest(name = "{index}. {0} {2,choice,0#is not|1#is} moderated")
@@ -314,59 +315,21 @@ class ModerationServiceTest {
             )
         )
 
-        verify(exactly = expectedEventCount) { eventPublisher.publishEvent(any<SendMessageEvent>()) }
+        verify(exactly = expectedEventCount) { eventPublisher.publishEvent(any<TwitchCallEvent>()) }
     }
 
     @Test
-    fun `If the user is not found an exception is thrown`() {
+    fun `If the user is not found nothing is done`() {
         every { userChannelInformationService.getUserChannelInformation(any(), any()) } returns null
 
-        val exception = assertThrows<RuntimeException> {
-            moderationService.moderate(
+        assertDoesNotThrow {
+                    moderationService.moderate(
                 ModerationActionEvent(
                     channel = CHANNEL_NAME, user = USER_NAME
                 )
             )
         }
-        verify(exactly = 5) { userChannelInformationService.getUserChannelInformation(USER_NAME, CHANNEL_NAME) }
-        assertThat(exception).message().isEqualTo("Nutzer unbekannt")
-    }
 
-    @Test
-    fun `If the user is not found there is a retry in getting the user information`() {
-        every { eventPublisher.publishEvent(any()) } just runs
-        every {
-            userChannelInformationService.getUserChannelInformation(
-                userName = USER_NAME,
-                channelName = CHANNEL_NAME,
-            )
-        } returns null andThen null andThen null andThen null andThen buildUser()
-
-        every {
-            moderationResponseStorage.findByChannelAndTrustLevel(
-                CHANNEL_ENTITY,
-                UserTrustLevel.VIEWER
-            )
-        } returns ModerationResponseEntity(CHANNEL_ENTITY, UserTrustLevel.VIEWER, ModerationResponeType.BAN)
-
-        moderationService.moderate(
-            ModerationActionEvent(
-                channel = CHANNEL_NAME,
-                user = USER_NAME,
-            )
-        )
-
-        verify(exactly = 5) { userChannelInformationService.getUserChannelInformation(USER_NAME, CHANNEL_NAME) }
-        verify(exactly = 1) {
-            eventPublisher.publishEvent(
-                withArg {
-                    assertAll(
-                        { assertThat(it).isExactlyInstanceOf(SendMessageEvent::class.java) },
-                        { assertThat((it as SendMessageEvent).channel).isEqualTo(CHANNEL_ENTITY.name) },
-                        { assertThat((it as SendMessageEvent).message).isEqualTo("/ban $USER_NAME") },
-                    )
-                }
-            )
-        }
+        verify(exactly = 1) { userChannelInformationService.getUserChannelInformation(USER_NAME, CHANNEL_NAME) }
     }
 }
