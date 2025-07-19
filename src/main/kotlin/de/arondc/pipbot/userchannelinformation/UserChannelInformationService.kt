@@ -90,7 +90,10 @@ class UserChannelInformationService(
         streamService.findOrCreateMatchingStream(twitchStream)
         twitchStreamService.getChatUserList(twitchStream.userLogin)
             .map { user ->
-                handleLastSeen(user.userName, channelName)
+                updateChannelInformationForUser(
+                    channelName = channelName,
+                    user.userName,
+                )
         }
     }
 
