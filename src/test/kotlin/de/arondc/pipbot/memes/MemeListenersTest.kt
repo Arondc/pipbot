@@ -1,9 +1,9 @@
 package de.arondc.pipbot.memes
 
 import de.arondc.pipbot.events.EventPublishingService
+import de.arondc.pipbot.events.MessageInfo
 import de.arondc.pipbot.events.ProcessingEvent
-import de.arondc.pipbot.events.TwitchMessageEvent.MessageInfo
-import de.arondc.pipbot.events.TwitchMessageEvent.UserInfo
+import de.arondc.pipbot.events.TwitchUserInfo
 import de.arondc.pipbot.services.LanguageService
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
@@ -23,7 +23,7 @@ class MemeListenersTest {
         const val USER_NAME = "dummyUser"
         const val RESPONSE_MESSAGE_TEXT = "dummyResponse"
 
-        val EVENT_USER_INFO = UserInfo(
+        val EVENT_USER_INFO = TwitchUserInfo(
             userName = USER_NAME,
             permissions = setOf(),
             subscriberMonths = 0,
@@ -135,7 +135,7 @@ class MemeListenersTest {
 
     private fun buildProcessingEvent(message: String) = ProcessingEvent(
         channel = CHANNEL_NAME,
-        userInfo = UserInfo(
+        userInfo = TwitchUserInfo(
             userName = USER_NAME,
             permissions = emptySet(),
             subscriberMonths = 0,

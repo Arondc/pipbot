@@ -8,6 +8,7 @@ import de.arondc.pipbot.channels.ChannelEntity
 import de.arondc.pipbot.channels.ChannelService
 import de.arondc.pipbot.events.CallType
 import de.arondc.pipbot.events.EventPublishingService
+import de.arondc.pipbot.events.NewAutoModPhraseEvent
 import de.arondc.pipbot.events.TwitchCallEvent
 import de.arondc.pipbot.frontend.dtos.*
 import de.arondc.pipbot.memes.MemeService
@@ -165,7 +166,8 @@ class FrontendService(
 
     fun createAutoModPhrase(autoResponseInformation: AutoModPhraseDTO) {
         val newEntity = conversionService.convert(autoResponseInformation, AutoModPhraseEntity::class.java)!!
-        autoModService.save(newEntity)
+        val savedEntity = autoModService.save(newEntity)
+        eventPublisher.publishEvent(NewAutoModPhraseEvent(savedEntity.channel!!.name, savedEntity.text))
     }
 
     fun deleteAutoModPhrase(autoModPhraseId: Long) {

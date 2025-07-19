@@ -39,7 +39,7 @@ class TwitchConnector(
     }
 
     fun messageReceived(channelMessageEvent: ChannelMessageEvent) =
-        eventPublisher.publishEvent(channelMessageEvent.toTwitchMessageEvent())
+        eventPublisher.publishEvent(channelMessageEvent.toMessageEvent())
 
     fun raidEventReceived(raidEvent: RaidEvent) =
         eventPublisher.publishEvent(
