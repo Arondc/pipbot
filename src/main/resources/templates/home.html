@@ -6,6 +6,7 @@
 </head>
 <body>
 <ul>
+  <li><a th:text="${#messages.msg('frontend.home.links.configuration')}" th:href="@{/configuration}"></a></li>
   <li><a th:text="${#messages.msg('frontend.home.links.channels')}" th:href="@{/channels}"></a></li>
   <li><a th:text="${#messages.msg('frontend.home.links.memes')}" th:href="@{/memes}"></a></li>
   <li><a th:text="${#messages.msg('frontend.home.links.streams')}" th:href="@{/streams}"></a></li>

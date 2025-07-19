@@ -1,12 +1,13 @@
 package de.arondc.pipbot.twitch
 
+import de.arondc.pipbot.core.ConfigurationService
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.client.RestClient
 
 @Controller
-class OauthTokenReceiverController(val twitchConnectorConfig: TwitchConnectorConfig) {
+class OauthTokenReceiverController(val configurationService: ConfigurationService) {
     companion object{
         private val scopes =
             TwitchScope.entries.map { it.scopeName }.toList()
@@ -34,7 +35,7 @@ class OauthTokenReceiverController(val twitchConnectorConfig: TwitchConnectorCon
             .get()
             .uri("$BASE_URL?response_type={response_type}&client_id={client_id}&redirect_uri={redirect_uri}&scope={scopes}",
                 requestParamMap["response_type"],
-                twitchConnectorConfig.clientId,
+                configurationService.getClientId(),
                 requestParamMap["redirect_uri"],
                 buildScopeQueryParam())
             .retrieve()
