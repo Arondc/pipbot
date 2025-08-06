@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service
 @Service
 class AutoModService(
     private val autoModPhraseRepository: AutoModPhraseRepository,
-    @Value("\${automod.cache_size}") private val cacheSize: Long
+    @param:Value("\${automod.cache_size}") private val cacheSize: Long
 ) {
 
     private final var chatMessageCache : ChatMessageCache = ChatMessageCache(cacheSize)

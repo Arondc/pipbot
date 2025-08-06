@@ -23,12 +23,12 @@ class TwitchListeners(val twitchClient: TwitchClient) {
     }
 
     fun joinChannel(channelName : String) {
-        log.info { "Joining twitch chat ${channelName}" }
+        log.info { "Joining twitch chat $channelName" }
         twitchClient.chat.joinChannel(channelName)
     }
 
     fun leaveChannel(channelName : String) {
-        log.info { "Leaving twitch chat ${channelName}" }
+        log.info { "Leaving twitch chat $channelName" }
         twitchClient.chat.leaveChannel(channelName)
     }
 
