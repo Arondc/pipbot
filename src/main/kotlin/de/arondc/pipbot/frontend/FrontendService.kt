@@ -6,9 +6,10 @@ import de.arondc.pipbot.autoresponder.AutoResponseEntity
 import de.arondc.pipbot.autoresponder.AutoResponseService
 import de.arondc.pipbot.channels.ChannelEntity
 import de.arondc.pipbot.channels.ChannelService
+import de.arondc.pipbot.events.CallType
 import de.arondc.pipbot.events.EventPublishingService
-import de.arondc.pipbot.events.JoinTwitchChannelEvent
-import de.arondc.pipbot.events.LeaveTwitchChannelEvent
+import de.arondc.pipbot.events.NewAutoModPhraseEvent
+import de.arondc.pipbot.events.TwitchCallEvent
 import de.arondc.pipbot.frontend.dtos.*
 import de.arondc.pipbot.memes.MemeService
 import de.arondc.pipbot.streams.StreamService
@@ -52,7 +53,7 @@ class FrontendService(
         if (!channelService.channelExists(newChannel.name)) {
             val channelEntity = conversionService.convert(newChannel, ChannelEntity::class.java)!!
             channelService.save(channelEntity)
-            eventPublisher.publishEvent(JoinTwitchChannelEvent(channelEntity.name))
+            eventPublisher.publishEvent(TwitchCallEvent(CallType.JOIN_CHANNEL, channelEntity.name))
             userChannelInformationService.updateUserListForChannel(channelEntity.name)
         } else {
             log.info { "Channel ${newChannel.name} exists already" }
@@ -66,8 +67,8 @@ class FrontendService(
             val channelEntity = conversionService.convert(newChannelInformation, ChannelEntity::class.java)!!
             channelService.save(channelEntity)
             if (existingChannel.name != channelEntity.name) {
-                eventPublisher.publishEvent(LeaveTwitchChannelEvent(existingChannel.name))
-                eventPublisher.publishEvent(JoinTwitchChannelEvent(channelEntity.name))
+                eventPublisher.publishEvent(TwitchCallEvent(CallType.LEAVE_CHANNEL, existingChannel.name))
+                eventPublisher.publishEvent(TwitchCallEvent(CallType.JOIN_CHANNEL,channelEntity.name))
             }
         } else {
             log.info { "Channel with id ${newChannelInformation.id} does not exist" }
@@ -96,7 +97,7 @@ class FrontendService(
         if (channel != null) {
             channelService.deleteChannel(channel)
             if (channel.active) {
-                eventPublisher.publishEvent(LeaveTwitchChannelEvent(channel.name))
+                eventPublisher.publishEvent(TwitchCallEvent(CallType.LEAVE_CHANNEL, channel.name))
             }
         }
     }
@@ -105,7 +106,7 @@ class FrontendService(
         val channel = channelService.findById(channelId)
         if (channel != null) {
             channelService.setActiveById(channelId, true)
-            eventPublisher.publishEvent(JoinTwitchChannelEvent(channel.name))
+            eventPublisher.publishEvent(TwitchCallEvent(CallType.JOIN_CHANNEL, channel.name))
         }
     }
 
@@ -113,7 +114,7 @@ class FrontendService(
         val channel = channelService.findById(channelId)
         if (channel != null) {
             channelService.setActiveById(channelId, false)
-            eventPublisher.publishEvent(LeaveTwitchChannelEvent(channel.name))
+            eventPublisher.publishEvent(TwitchCallEvent(CallType.LEAVE_CHANNEL, channel.name))
         }
     }
 
@@ -165,7 +166,8 @@ class FrontendService(
 
     fun createAutoModPhrase(autoResponseInformation: AutoModPhraseDTO) {
         val newEntity = conversionService.convert(autoResponseInformation, AutoModPhraseEntity::class.java)!!
-        autoModService.save(newEntity)
+        val savedEntity = autoModService.save(newEntity)
+        eventPublisher.publishEvent(NewAutoModPhraseEvent(savedEntity.channel!!.name, savedEntity.text))
     }
 
     fun deleteAutoModPhrase(autoModPhraseId: Long) {

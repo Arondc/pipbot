@@ -12,13 +12,13 @@ class MergeListeners(
 ) {
 
     @ApplicationModuleListener
-    fun receiveMessage(twitchMessageEvent: TwitchMessageEvent) {
-        if (twitchMessageEvent.messageInfo.text.startsWith("!merge") && twitchMessageEvent.userInfo.permissions.satisfies(TwitchPermission.MODERATOR)) {
+    fun receiveMessage(processingEvent: ProcessingEvent) {
+        if (processingEvent.messageInfo.text.startsWith("!merge") && processingEvent.userInfo.permissions.satisfies(TwitchPermission.MODERATOR)) {
             try {
-                mergeService.mergeStream(twitchMessageEvent.channel)
+                mergeService.mergeStream(processingEvent.channel)
             } catch (e: StreamServiceException) {
                 eventPublisher.publishEvent(
-                    SendMessageEvent(twitchMessageEvent.channel, e.message ?: "Fehler")
+                    TwitchCallEvent(CallType.SEND_MESSAGE,processingEvent.channel, e.message ?: "Fehler")
                 )
             }
         }

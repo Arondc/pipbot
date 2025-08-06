@@ -1,13 +1,13 @@
 package de.arondc.pipbot.twitch
 
 import com.github.twitch4j.chat.events.channel.ChannelMessageEvent
-import de.arondc.pipbot.events.TwitchMessageEvent
-import de.arondc.pipbot.events.TwitchMessageEvent.MessageInfo
-import de.arondc.pipbot.events.TwitchMessageEvent.UserInfo
+import de.arondc.pipbot.events.MessageEvent
+import de.arondc.pipbot.events.MessageInfo
 import de.arondc.pipbot.events.TwitchPermission
+import de.arondc.pipbot.events.TwitchUserInfo
 import java.text.Normalizer
 
-fun ChannelMessageEvent.toTwitchMessageEvent() : TwitchMessageEvent {
+fun ChannelMessageEvent.toMessageEvent() : MessageEvent {
     fun normalizeMessage(message: String) =
         Normalizer.normalize(message, Normalizer.Form.NFD)
             .replace("\\p{InCombiningDiacriticalMarks}+".toRegex(), "")
@@ -18,9 +18,9 @@ fun ChannelMessageEvent.toTwitchMessageEvent() : TwitchMessageEvent {
                 message.contains(couldBeATopLevelDomainEnding.toRegex())
     }
 
-    return TwitchMessageEvent(
+    return MessageEvent(
         channel = this.channel.name,
-        userInfo = UserInfo(
+        userInfo = TwitchUserInfo(
             userName = this.user.name,
             permissions = this.permissions.map { TwitchPermission.valueOf(it.name) }.toSet(),
             subscriberMonths = this.subscriberMonths,

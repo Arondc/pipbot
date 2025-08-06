@@ -2,10 +2,10 @@ package de.arondc.pipbot.userchannelinformation
 
 import de.arondc.pipbot.channels.ChannelEntity
 import de.arondc.pipbot.channels.ChannelRepository
+import de.arondc.pipbot.events.CallType
 import de.arondc.pipbot.events.EventPublishingService
-import de.arondc.pipbot.events.SendMessageEvent
+import de.arondc.pipbot.events.TwitchCallEvent
 import de.arondc.pipbot.events.TwitchPermission
-import de.arondc.pipbot.events.UpdateChannelInformationForUserEvent
 import de.arondc.pipbot.features.Feature
 import de.arondc.pipbot.features.FeatureService
 import de.arondc.pipbot.services.LanguageService
@@ -90,7 +90,10 @@ class UserChannelInformationService(
         streamService.findOrCreateMatchingStream(twitchStream)
         twitchStreamService.getChatUserList(twitchStream.userLogin)
             .map { user ->
-            eventPublisher.publishEvent(UpdateChannelInformationForUserEvent(twitchStream.userName, user.userName))
+                updateChannelInformationForUser(
+                    channelName = channelName,
+                    user.userName,
+                )
         }
     }
 
@@ -109,7 +112,7 @@ class UserChannelInformationService(
             )
         }
 
-        eventPublisher.publishEvent(SendMessageEvent(channel, responseMessage))
+        eventPublisher.publishEvent(TwitchCallEvent(CallType.SEND_MESSAGE, channel, responseMessage))
     }
 
     companion object{
