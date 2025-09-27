@@ -150,7 +150,7 @@ class PollService(
     private fun countAnswer(foundPoll: Poll, userName: String, answer: String) {
         val answersForPoll = answers.getValue(foundPoll)
         answersForPoll[userName] = when (foundPoll.hasOptions()) {
-            true -> foundPoll.options.find { it.lowercase() == answer.lowercase() }!!
+            true -> foundPoll.options.find { it.equals(answer, ignoreCase = true) }!!
             false -> answer
         }
     }
@@ -165,7 +165,7 @@ data class Poll(
 ) {
     fun isOpenPoll(): Boolean = options.isEmpty()
     fun hasOptions(): Boolean = options.isNotEmpty()
-    fun hasMatchingOption(option: String): Boolean = options.any { it.lowercase() == option.lowercase() }
+    fun hasMatchingOption(option: String): Boolean = options.any { it.equals(option, ignoreCase = true) }
 }
 
 class PollCreationException(val msg: String) : RuntimeException()
