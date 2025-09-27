@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home - Pipbot</title>
+    <link th:href="@{/css/styles.css}" rel="stylesheet" />
+</head>
+<body>
+
+<h1 th:text="${#messages.msg('frontend.timers.header.text')}"></h1>
+
+<form th:action="@{/timers/start}" th:object="${timerInfo}" method="post">
+    <select th:field="*{channel}">
+        <option th:each="channel: ${channels}" th:text="${channel}" th:value="${channel}"></option>
+    </select>
+    <!--
+<table class="table-view">
+    <thead>
+    <tr>
+        <td th:text="${#messages.msg('frontend.streams.table.headers.channel')}"></td>
+        <td th:text="${#messages.msg('frontend.streams.table.headers.startTimes')}"></td>
+        <td></td>
+        <td></td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="stream: ${streams}">
+        <td th:text="${stream.channelName}"></td>
+        <td th:text="${stream.startTimes}"></td>
+        <td> <a th:href="@{/memes(stream-id=${stream.id})}">memes</a>  </td>
+        <td> <input type="checkbox" th:field="*{streamIds}" th:value="${stream.id}"> </td>
+    </tr>
+    </tbody>
+</table>
+-->
+    <input type="submit" th:value="${#messages.msg('frontend.timers.form.submit.text')}">
+</form>
+</body>
+</html>
