@@ -17,10 +17,22 @@ class ConfigurationService(
 
     fun updateConfiguration(username: String, oAuthToken: String, clientId: String, clientSecret: String) {
         val configuration = configurationRepository.findById(0).get()
-        configuration.username = username
-        configuration.oAuthToken = oAuthToken
-        configuration.clientId = clientId
-        configuration.clientSecret = clientSecret
+        if (username.isNotBlank()) {
+            configuration.username = username
+        }
+
+        if (oAuthToken.isNotBlank()) {
+            configuration.oAuthToken = oAuthToken
+        }
+
+        if (clientId.isNotBlank()) {
+            configuration.clientId = clientId
+        }
+
+        if (clientSecret.isNotBlank()) {
+            configuration.clientSecret = clientSecret
+        }
+
         configurationRepository.save(configuration)
     }
 
@@ -41,12 +53,14 @@ class ConfigurationService(
     }
 
     private fun initConfiguration() {
-        if(twitchConnectorConfig.isNotBlank()){
-            log.warn { "Configuration from authentication.yml was transferred to database." +
-                    " The file format configuration will be deprecated with a future release." }
+        if (twitchConnectorConfig.isNotBlank()) {
+            log.warn {
+                "Configuration from authentication.yml was transferred to database." +
+                        " The file format configuration will be deprecated with a future release."
+            }
         }
 
-        if(configurationRepository.findById(0).isEmpty) {
+        if (configurationRepository.findById(0).isEmpty) {
             configurationRepository.save(
                 Configuration(
                     username = twitchConnectorConfig.user,
