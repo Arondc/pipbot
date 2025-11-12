@@ -64,6 +64,7 @@ dependencies {
     implementation("com.github.twitch4j:twitch4j:1.21.0") {
         exclude("commons-logging", "commons-logging")
     }
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 dependencyManagement {
